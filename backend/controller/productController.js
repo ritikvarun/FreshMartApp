@@ -1,3 +1,4 @@
+import path from "path"
 import uploadOnCloudinary from "../config/cloudinary.js"
 import Product from "../model/productModel.js"
 
@@ -14,13 +15,9 @@ export const addProduct = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" })
         }
 
-        if (!req.files || Object.keys(req.files).length === 0) {
-            return res.status(400).json({ message: "No files received: check multipart/form-data and that files are attached" })
-        }
-
         // Helper to get file path for expected image fields
         const getFilePath = (field) => {
-            if (req.files[field] && Array.isArray(req.files[field]) && req.files[field].length > 0) {
+            if (req.files && req.files[field] && Array.isArray(req.files[field]) && req.files[field].length > 0) {
                 return req.files[field][0].path
             }
             return null
@@ -30,40 +27,32 @@ export const addProduct = async (req, res) => {
         const image2Path = getFilePath('image2')
         const image3Path = getFilePath('image3')
         const image4Path = getFilePath('image4')
+        const image5Path = getFilePath('image5')
 
-        if (!image1Path) {
+        // Resolve Image URLs (Cloudinary first, local public folder fallback)
+        const resolveImageUrl = async (field, filePath, fallback = null) => {
+            if (filePath) {
+                try {
+                    return await uploadOnCloudinary(filePath, "shopx")
+                } catch (uploadErr) {
+                    console.warn(`Cloudinary for ${field} failed, using local public url:`, uploadErr.message)
+                    const host = req.get("host") || "localhost:5000"
+                    const filename = path.basename(filePath)
+                    return `${req.protocol}://${host}/public/${filename}`
+                }
+            }
+            return req.body[field] || fallback
+        }
+
+        let image1 = await resolveImageUrl("image1", image1Path, req.body.image1)
+        if (!image1) {
             return res.status(400).json({ message: "Primary product image (Image 1) is required" })
         }
 
-        let image1, image2, image3, image4
-
-        try {
-            image1 = await uploadOnCloudinary(image1Path, "shopx")
-        } catch (uploadErr) {
-            console.error("Image 1 upload failed:", uploadErr)
-            return res.status(500).json({ message: `Image 1 upload failed: ${uploadErr.message}` })
-        }
-
-        try {
-            image2 = image2Path ? await uploadOnCloudinary(image2Path, "shopx") : image1
-        } catch (uploadErr) {
-            console.error("Image 2 upload failed, falling back to Image 1:", uploadErr)
-            image2 = image1
-        }
-
-        try {
-            image3 = image3Path ? await uploadOnCloudinary(image3Path, "shopx") : image1
-        } catch (uploadErr) {
-            console.error("Image 3 upload failed, falling back to Image 1:", uploadErr)
-            image3 = image1
-        }
-
-        try {
-            image4 = image4Path ? await uploadOnCloudinary(image4Path, "shopx") : image1
-        } catch (uploadErr) {
-            console.error("Image 4 upload failed, falling back to Image 1:", uploadErr)
-            image4 = image1
-        }
+        let image2 = await resolveImageUrl("image2", image2Path, image1)
+        let image3 = await resolveImageUrl("image3", image3Path, image1)
+        let image4 = await resolveImageUrl("image4", image4Path, image1)
+        let image5 = await resolveImageUrl("image5", image5Path, image1)
 
         let parsedSizes = []
         try {
@@ -84,7 +73,8 @@ export const addProduct = async (req, res) => {
             image1,
             image2,
             image3,
-            image4
+            image4,
+            image5
         }
 
         const product = await Product.create(productData)

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,9 +9,15 @@ import {
   StyleSheet,
   StatusBar,
   Dimensions,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useRouter } from "expo-router";
+import { useCart } from "../../../context/CartContext";
+import { useAuth } from "../../../context/AuthContext";
+import { ENDPOINTS } from "../../../config/api";
+import Footer from "../../../components/Footer";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = (width - 48 - 14) / 2;
@@ -19,67 +25,175 @@ const CARD_WIDTH = (width - 48 - 14) / 2;
 // Asset references
 const avatarImg = require("../../../assets/images/avatar_romina.jpg");
 const bannerBasketImg = require("../../../assets/images/banner_basket.jpg");
-const bananaImg = require("../../../assets/images/product_banana.jpg");
-const vegImg = require("../../../assets/images/product_vegetables.jpg");
-const snackImg = require("../../../assets/images/cat_snack.jpg");
-const oilsImg = require("../../../assets/images/cat_oils.jpg");
 
-// Category definitions
+// E-Commerce Categories
 const CATEGORIES = [
-  { id: "1", name: "Fresh", image: vegImg },
-  { id: "2", name: "Snack", image: snackImg },
-  { id: "3", name: "Oils", image: oilsImg },
-  { id: "4", name: "Fruits", image: bananaImg },
+  { id: "all", name: "All", icon: "grid-outline" },
+  { id: "men", name: "Men", icon: "shirt-outline" },
+  { id: "women", name: "Women", icon: "rose-outline" },
+  { id: "kids", name: "Kids", icon: "happy-outline" },
+  { id: "shoes", name: "Shoes", icon: "footsteps-outline" },
+  { id: "accessories", name: "Accessories", icon: "watch-outline" },
 ];
 
-// Products list matching screenshot
-const INITIAL_PRODUCTS = [
+interface HomeProduct {
+  id: string;
+  _id?: string;
+  title: string;
+  category: string;
+  price: string | number;
+  unit: string;
+  bgColor: string;
+  image?: any;
+  image1?: string;
+  isFavorite: boolean;
+  rawProduct?: any;
+}
+
+// Initial E-Commerce catalog
+const INITIAL_PRODUCTS: HomeProduct[] = [
   {
     id: "p1",
-    title: "Fresh Fruits\nBanana",
-    category: "Fruits",
-    price: "$3.50",
-    unit: "/ kg",
-    bgColor: "#FFF9EE",
-    image: bananaImg,
+    title: "Classic White\nLinen Shirt",
+    category: "Men",
+    price: "₹1,499",
+    unit: "Sizes: S, M, L, XL",
+    bgColor: "#F3F4F6",
+    image1: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80",
     isFavorite: true,
+    rawProduct: {
+      name: "Classic White Linen Shirt",
+      price: 1499,
+      category: "Men",
+      subCategory: "TopWear",
+      sizes: ["S", "M", "L", "XL"],
+    },
   },
   {
     id: "p2",
-    title: "Fresh Fruits &\nVegetable",
-    category: "Fresh",
-    price: "$4.80",
-    unit: "/ kg",
-    bgColor: "#EBF8F2",
-    image: vegImg,
+    title: "Air Cushion\nRunning Shoes",
+    category: "Shoes",
+    price: "₹2,499",
+    unit: "Sizes: 7, 8, 9, 10",
+    bgColor: "#EEF2FF",
+    image1: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
     isFavorite: false,
+    rawProduct: {
+      name: "Air Cushion Running Shoes",
+      price: 2499,
+      category: "Shoes",
+      subCategory: "Shoes",
+      sizes: ["7", "8", "9", "10", "11"],
+    },
   },
   {
     id: "p3",
-    title: "Natural Crunchy\nSnack Mix",
-    category: "Snack",
-    price: "$5.90",
-    unit: "/ pack",
-    bgColor: "#FFF1E8",
-    image: snackImg,
+    title: "Floral Printed\nSummer Dress",
+    category: "Women",
+    price: "₹1,899",
+    unit: "Sizes: S, M, L",
+    bgColor: "#FFF1F2",
+    image1: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&q=80",
     isFavorite: false,
+    rawProduct: {
+      name: "Floral Printed Summer Dress",
+      price: 1899,
+      category: "Women",
+      subCategory: "TopWear",
+      sizes: ["S", "M", "L"],
+    },
   },
   {
     id: "p4",
-    title: "Extra Virgin\nOlive Oil",
-    category: "Oils",
-    price: "$12.40",
-    unit: "/ bottle",
-    bgColor: "#FFFBEA",
-    image: oilsImg,
+    title: "Urban Streetwear\nGraphic Hoodie",
+    category: "Unisex",
+    price: "₹1,999",
+    unit: "Sizes: M, L, XXL",
+    bgColor: "#F9FAFB",
+    image1: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=800&q=80",
     isFavorite: true,
+    rawProduct: {
+      name: "Urban Streetwear Graphic Hoodie",
+      price: 1999,
+      category: "Unisex",
+      subCategory: "WinterWear",
+      sizes: ["M", "L", "XL", "XXL"],
+    },
   },
 ];
 
 export default function HomeScreen() {
-  const [activeCategory, setActiveCategory] = useState("Fresh");
+  const router = useRouter();
+  const { addToCart, cartCount, grandTotal } = useCart();
+  const { user } = useAuth();
+  const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [products, setProducts] = useState(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<HomeProduct[]>(INITIAL_PRODUCTS);
+
+  // Size Selector Modal State
+  const [sizeModalProduct, setSizeModalProduct] = useState<any | null>(null);
+  const [selectedModalSize, setSelectedModalSize] = useState<string>("");
+
+  // Load products from backend on mount
+  useEffect(() => {
+    async function loadBackendProducts() {
+      try {
+        const res = await fetch(ENDPOINTS.PRODUCTS.LIST);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const mapped = data.map((p: any) => ({
+              id: p._id,
+              _id: p._id,
+              title: p.name,
+              category: p.category,
+              price: `₹${Number(p.price || 0)}`,
+              unit: p.sizes && p.sizes.length > 0 ? `Sizes: ${p.sizes.join(", ")}` : "Standard",
+              bgColor: "#F9FAFB",
+              image1: p.image1,
+              isFavorite: false,
+              rawProduct: p,
+            }));
+            setProducts(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn("Backend products fetch failed, using local defaults", err);
+      }
+    }
+    loadBackendProducts();
+  }, []);
+
+  const handleAddToCartClick = (product: any) => {
+    const rawSizes = product.rawProduct?.sizes || (Array.isArray(product.sizes) ? product.sizes : []);
+    if (rawSizes && rawSizes.length > 1) {
+      setSizeModalProduct(product);
+      setSelectedModalSize(rawSizes[0]);
+    } else {
+      executeAddToCart(product, rawSizes[0] || "Standard");
+    }
+  };
+
+  const executeAddToCart = (product: any, sizeToUse: string) => {
+    const rawPrice =
+      typeof product.price === "number"
+        ? product.price
+        : parseFloat(String(product.price).replace(/[^0-9.]/g, "")) || 999;
+
+    addToCart(
+      {
+        _id: product._id || product.id,
+        name: product.name || product.title?.replace("\n", " ") || "Product",
+        price: rawPrice,
+        image1:
+          product.image1 ||
+          "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800",
+        category: product.category || "General",
+        sizes: product.rawProduct?.sizes || [sizeToUse],
+      },
+      sizeToUse
+    );
+  };
 
   // Toggle favorite on card
   const toggleFavorite = (id: string) => {
@@ -92,11 +206,16 @@ export default function HomeScreen() {
 
   // Filter products by search & category
   const filteredProducts = products.filter((item) => {
+    const matchesCategory =
+      activeCategory === "All" ||
+      item.category?.toLowerCase() === activeCategory.toLowerCase();
     const matchesSearch = item.title
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    return matchesSearch;
+    return matchesCategory && matchesSearch;
   });
+
+  const greetingName = user?.name ? user.name.split(" ")[0] : "Romina";
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
@@ -111,17 +230,34 @@ export default function HomeScreen() {
           <View style={styles.profileSection}>
             <Image source={avatarImg} style={styles.avatar} />
             <View style={styles.greetingContainer}>
-              <Text style={styles.greetingTitle}>Morning, Romina</Text>
+              <Text style={styles.greetingTitle}>Morning, {greetingName}</Text>
               <Text style={styles.greetingSubtitle}>
                 What would you buy today?
               </Text>
             </View>
           </View>
 
-          <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
-            <Ionicons name="notifications-outline" size={20} color="#1A1D26" />
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            {/* Cart Icon Button with dynamic badge */}
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => router.push("/(root)/cart" as any)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="cart-outline" size={22} color="#1A1D26" />
+              {cartCount > 0 && (
+                <View style={styles.headerCartBadge}>
+                  <Text style={styles.headerCartBadgeText}>{cartCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
+              <Ionicons name="notifications-outline" size={20} color="#1A1D26" />
+            </TouchableOpacity>
+          </View>
         </View>
+
 
         {/* Search & Filter Bar */}
         <View style={styles.searchRow}>
@@ -179,7 +315,7 @@ export default function HomeScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoriesScroll}
         >
-          {CATEGORIES.map((cat) => {
+          {CATEGORIES.map((cat: any) => {
             const isSelected = activeCategory === cat.name;
             return (
               <TouchableOpacity
@@ -193,8 +329,12 @@ export default function HomeScreen() {
                 onPress={() => setActiveCategory(cat.name)}
                 activeOpacity={0.8}
               >
-                <View style={styles.categoryIconCircle}>
-                  <Image source={cat.image} style={styles.categoryThumb} />
+                <View style={[styles.categoryIconCircle, isSelected && { backgroundColor: "rgba(255,255,255,0.2)" }]}>
+                  <Ionicons
+                    name={cat.icon || "grid-outline"}
+                    size={16}
+                    color={isSelected ? "#FFFFFF" : "#1A1D26"}
+                  />
                 </View>
                 <Text
                   style={[
@@ -211,9 +351,9 @@ export default function HomeScreen() {
           })}
         </ScrollView>
 
-        {/* Fresh Products Section */}
+        {/* Featured Products Section */}
         <View style={styles.productsHeaderRow}>
-          <Text style={styles.sectionTitle}>Fresh Products</Text>
+          <Text style={styles.sectionTitle}>Curated Collection</Text>
           <TouchableOpacity activeOpacity={0.6}>
             <Text style={styles.seeAllText}>See all</Text>
           </TouchableOpacity>
@@ -247,24 +387,35 @@ export default function HomeScreen() {
 
               {/* Product Image */}
               <View style={styles.productImageWrapper}>
-                <Image
-                  source={product.image}
-                  style={styles.productImage}
-                  resizeMode="contain"
-                />
+                {product.image1 ? (
+                  <Image
+                    source={{ uri: product.image1 }}
+                    style={styles.productImage}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <Image
+                    source={product.image}
+                    style={styles.productImage}
+                    resizeMode="contain"
+                  />
+                )}
               </View>
 
               {/* Card Bottom: Price and Quick Add */}
               <View style={styles.cardFooter}>
-                <View>
+                <View style={{ flex: 1 }}>
                   <Text style={styles.productPrice}>
-                    {product.price}{" "}
-                    <Text style={styles.productUnit}>{product.unit}</Text>
+                    {product.price}
+                  </Text>
+                  <Text style={styles.productUnit} numberOfLines={1}>
+                    {product.unit}
                   </Text>
                 </View>
 
                 <TouchableOpacity
                   style={styles.addCartBtn}
+                  onPress={() => handleAddToCartClick(product)}
                   activeOpacity={0.8}
                 >
                   <Ionicons name="add" size={18} color="#FFFFFF" />
@@ -273,7 +424,127 @@ export default function HomeScreen() {
             </View>
           ))}
         </View>
+
+        {/* Footer Section */}
+        <Footer />
       </ScrollView>
+
+      {/* Floating Quick Cart Bar */}
+      {cartCount > 0 && (
+        <TouchableOpacity
+          style={styles.floatingCartBar}
+          onPress={() => router.push("/(root)/cart" as any)}
+          activeOpacity={0.9}
+        >
+          <View style={styles.floatingCartLeft}>
+            <View style={styles.cartBarBadge}>
+              <Text style={styles.cartBarBadgeText}>{cartCount}</Text>
+            </View>
+            <View>
+              <Text style={styles.cartBarTitle}>Items in Cart</Text>
+              <Text style={styles.cartBarPrice}>₹{grandTotal.toFixed(0)}</Text>
+            </View>
+          </View>
+
+          <View style={styles.floatingCartRight}>
+            <Text style={styles.viewCartText}>View Cart</Text>
+            <Ionicons name="arrow-forward" size={16} color="#FFFFFF" style={{ marginLeft: 4 }} />
+          </View>
+        </TouchableOpacity>
+      )}
+
+      {/* Size Selection Sheet / Modal */}
+      {sizeModalProduct && (
+        <Modal
+          visible={!!sizeModalProduct}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setSizeModalProduct(null)}
+        >
+          <View style={styles.sizeModalOverlay}>
+            <View style={styles.sizeModalSheet}>
+              {/* Modal Top Header */}
+              <View style={styles.sizeModalHeader}>
+                <Image
+                  source={{
+                    uri:
+                      sizeModalProduct.image1 ||
+                      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800",
+                  }}
+                  style={styles.sizeModalThumb}
+                />
+                <View style={{ flex: 1, marginLeft: 14 }}>
+                  <Text style={styles.sizeModalTitle} numberOfLines={1}>
+                    {sizeModalProduct.title?.replace("\n", " ")}
+                  </Text>
+                  <Text style={styles.sizeModalPrice}>
+                    {sizeModalProduct.price}
+                  </Text>
+                  <Text style={styles.sizeModalCategory}>
+                    Category: {sizeModalProduct.category || "General"}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setSizeModalProduct(null)}
+                  style={styles.sizeModalCloseBtn}
+                >
+                  <Ionicons name="close" size={20} color="#6B7280" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Size Selector Heading */}
+              <Text style={styles.sizeModalSubtitle}>
+                {sizeModalProduct.category?.toLowerCase() === "shoes" ||
+                sizeModalProduct.rawProduct?.subCategory?.toLowerCase() === "shoes"
+                  ? "👟 Select Shoe Size:"
+                  : "👕 Select Apparel Size:"}
+              </Text>
+
+              {/* Sizes Row */}
+              <View style={styles.sizeModalChipsRow}>
+                {(sizeModalProduct.rawProduct?.sizes || ["Std"]).map((sz: string) => {
+                  const isSel = selectedModalSize === sz;
+                  return (
+                    <TouchableOpacity
+                      key={sz}
+                      style={[
+                        styles.sizeModalChip,
+                        isSel && styles.sizeModalChipActive,
+                      ]}
+                      onPress={() => setSelectedModalSize(sz)}
+                      activeOpacity={0.8}
+                    >
+                      <Text
+                        style={[
+                          styles.sizeModalChipText,
+                          isSel && styles.sizeModalChipTextActive,
+                        ]}
+                      >
+                        {sz}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {/* Add to Cart Confirm Action */}
+              <TouchableOpacity
+                style={styles.sizeModalConfirmBtn}
+                onPress={() => {
+                  executeAddToCart(sizeModalProduct, selectedModalSize);
+                  setSizeModalProduct(null);
+                }}
+                activeOpacity={0.88}
+              >
+                <Ionicons name="cart" size={18} color="#FFFFFF" />
+                <Text style={styles.sizeModalConfirmText}>
+                  Add to Cart {selectedModalSize ? `(Size: ${selectedModalSize})` : ""}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }
@@ -599,4 +870,192 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  headerCartBadge: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    backgroundColor: "#E05315",
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 3,
+    borderWidth: 1.5,
+    borderColor: "#FFFFFF",
+  },
+  headerCartBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontWeight: "800",
+  },
+  floatingCartBar: {
+    position: "absolute",
+    bottom: 84,
+    left: 20,
+    right: 20,
+    backgroundColor: "#1A1D26",
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 8,
+    zIndex: 999,
+  },
+  floatingCartLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  cartBarBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#E05315",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+  cartBarBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  cartBarTitle: {
+    fontSize: 11,
+    color: "#9CA3AF",
+  },
+  cartBarPrice: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#FFFFFF",
+  },
+  floatingCartRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E05315",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+  },
+  viewCartText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+
+  // Size Selection Modal
+  sizeModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
+    justifyContent: "flex-end",
+  },
+  sizeModalSheet: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 24,
+    paddingBottom: 36,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 20,
+  },
+  sizeModalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 18,
+  },
+  sizeModalThumb: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    backgroundColor: "#F3F4F6",
+  },
+  sizeModalTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 4,
+  },
+  sizeModalPrice: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#E05315",
+  },
+  sizeModalCategory: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: "#6B7280",
+    marginTop: 2,
+  },
+  sizeModalCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#F3F4F6",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sizeModalSubtitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#1F2937",
+    marginBottom: 12,
+  },
+  sizeModalChipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginBottom: 24,
+  },
+  sizeModalChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: "#F3F4F6",
+    borderWidth: 1.5,
+    borderColor: "#E5E7EB",
+    minWidth: 54,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sizeModalChipActive: {
+    backgroundColor: "#111827",
+    borderColor: "#111827",
+  },
+  sizeModalChipText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#4B5563",
+  },
+  sizeModalChipTextActive: {
+    color: "#FFFFFF",
+  },
+  sizeModalConfirmBtn: {
+    backgroundColor: "#E05315",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    borderRadius: 16,
+    gap: 8,
+    shadowColor: "#E05315",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  sizeModalConfirmText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
 });
+

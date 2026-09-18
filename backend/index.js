@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import path from "path";
 import connectDb from "./config/db.js";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
@@ -62,6 +63,7 @@ const corsOptions = {
 
 app.use(express.json());
 app.use(cookieParser());
+app.use("/public", express.static(path.join(process.cwd(), "public")));
 app.set("trust proxy", 1);
 app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));

@@ -8,76 +8,83 @@ import {
   StyleSheet,
   StatusBar,
   Dimensions,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useCart } from "../../../context/CartContext";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = (width - 48 - 14) / 2;
-
-// Assets
-const bananaImg = require("../../../assets/images/product_banana.jpg");
-const vegImg = require("../../../assets/images/product_vegetables.jpg");
-const snackImg = require("../../../assets/images/cat_snack.jpg");
-const oilsImg = require("../../../assets/images/cat_oils.jpg");
 
 interface SavedProduct {
   id: string;
   title: string;
   category: string;
   price: string;
+  rawPrice: number;
   unit: string;
+  size: string;
   bgColor: string;
-  image: any;
+  image: string;
   rating: number;
 }
 
 const INITIAL_SAVED: SavedProduct[] = [
   {
     id: "s1",
-    title: "Fresh Fruits\nBanana",
-    category: "Fruits",
-    price: "$3.50",
-    unit: "/ kg",
-    bgColor: "#FFF9EE",
-    image: bananaImg,
+    title: "Classic White\nLinen Shirt",
+    category: "Men",
+    price: "₹1,499",
+    rawPrice: 1499,
+    unit: "Size: L",
+    size: "L",
+    bgColor: "#F3F4F6",
+    image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80",
     rating: 4.9,
   },
   {
     id: "s2",
-    title: "Extra Virgin\nOlive Oil",
-    category: "Oils",
-    price: "$12.40",
-    unit: "/ bottle",
-    bgColor: "#FFFBEA",
-    image: oilsImg,
+    title: "Air Cushion\nRunning Shoes",
+    category: "Shoes",
+    price: "₹2,499",
+    rawPrice: 2499,
+    unit: "Size: 9",
+    size: "9",
+    bgColor: "#EEF2FF",
+    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
     rating: 4.8,
   },
   {
     id: "s3",
-    title: "Fresh Fruits &\nVegetable",
-    category: "Fresh",
-    price: "$4.80",
-    unit: "/ kg",
-    bgColor: "#EBF8F2",
-    image: vegImg,
+    title: "Floral Printed\nSummer Dress",
+    category: "Women",
+    price: "₹1,899",
+    rawPrice: 1899,
+    unit: "Size: M",
+    size: "M",
+    bgColor: "#FFF1F2",
+    image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&q=80",
     rating: 4.7,
   },
   {
     id: "s4",
-    title: "Natural Crunchy\nSnack Mix",
-    category: "Snack",
-    price: "$5.90",
-    unit: "/ pack",
-    bgColor: "#FFF1E8",
-    image: snackImg,
-    rating: 4.6,
+    title: "Casual Leather\nSneakers",
+    category: "Shoes",
+    price: "₹2,999",
+    rawPrice: 2999,
+    unit: "Size: 8",
+    size: "8",
+    bgColor: "#F8FAFC",
+    image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&q=80",
+    rating: 4.9,
   },
 ];
 
-const CATEGORIES = ["All", "Fruits", "Fresh", "Snack", "Oils"];
+const CATEGORIES = ["All", "Men", "Women", "Shoes", "Kids"];
 
 export default function SavedScreen() {
+  const { addToCart } = useCart();
   const [savedItems, setSavedItems] = useState<SavedProduct[]>(INITIAL_SAVED);
   const [selectedFilter, setSelectedFilter] = useState("All");
 
@@ -194,9 +201,9 @@ export default function SavedScreen() {
                 {/* Product Image */}
                 <View style={styles.imageContainer}>
                   <Image
-                    source={product.image}
+                    source={{ uri: product.image }}
                     style={styles.image}
-                    resizeMode="contain"
+                    resizeMode="cover"
                   />
                 </View>
 
@@ -215,6 +222,19 @@ export default function SavedScreen() {
                   </Text>
                   <TouchableOpacity
                     style={styles.addToCartBtn}
+                    onPress={() =>
+                      addToCart(
+                        {
+                          _id: product.id,
+                          name: product.title.replace("\n", " "),
+                          price: product.rawPrice,
+                          image1: product.image,
+                          category: product.category,
+                          sizes: [product.size],
+                        },
+                        product.size
+                      )
+                    }
                     activeOpacity={0.8}
                   >
                     <Ionicons name="cart-outline" size={16} color="#FFFFFF" />

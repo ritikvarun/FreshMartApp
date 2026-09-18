@@ -12,73 +12,102 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useCart } from "../../../context/CartContext";
 
 const { width } = Dimensions.get("window");
 
-// Assets
-const bananaImg = require("../../../assets/images/product_banana.jpg");
-const vegImg = require("../../../assets/images/product_vegetables.jpg");
-const snackImg = require("../../../assets/images/cat_snack.jpg");
-const oilsImg = require("../../../assets/images/cat_oils.jpg");
+interface SearchProduct {
+  id: string;
+  title: string;
+  category: string;
+  price: string;
+  rawPrice: number;
+  unit: string;
+  rating: number;
+  image: string;
+  bgColor: string;
+  sizes: string[];
+}
 
-const ALL_PRODUCTS = [
+const ALL_PRODUCTS: SearchProduct[] = [
   {
     id: "sp1",
-    title: "Fresh Yellow Banana",
-    category: "Fruits",
-    price: "$3.50",
-    unit: "/ kg",
+    title: "Air Cushion Running Shoes",
+    category: "Shoes",
+    price: "₹2,499",
+    rawPrice: 2499,
+    unit: "Sizes: 7, 8, 9, 10, 11",
     rating: 4.9,
-    image: bananaImg,
-    bgColor: "#FFF9EE",
+    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
+    bgColor: "#EEF2FF",
+    sizes: ["7", "8", "9", "10", "11"],
   },
   {
     id: "sp2",
-    title: "Organic Mixed Vegetables",
-    category: "Fresh",
-    price: "$4.80",
-    unit: "/ kg",
+    title: "Classic White Linen Shirt",
+    category: "Men",
+    price: "₹1,499",
+    rawPrice: 1499,
+    unit: "Sizes: S, M, L, XL",
     rating: 4.8,
-    image: vegImg,
-    bgColor: "#EBF8F2",
+    image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80",
+    bgColor: "#F3F4F6",
+    sizes: ["S", "M", "L", "XL"],
   },
   {
     id: "sp3",
-    title: "Gourmet Roasted Nut Mix",
-    category: "Snack",
-    price: "$5.90",
-    unit: "/ pack",
-    rating: 4.7,
-    image: snackImg,
-    bgColor: "#FFF1E8",
+    title: "Casual Streetwear Sneakers",
+    category: "Shoes",
+    price: "₹2,999",
+    rawPrice: 2999,
+    unit: "Sizes: 8, 9, 10",
+    rating: 4.9,
+    image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&q=80",
+    bgColor: "#F8FAFC",
+    sizes: ["8", "9", "10"],
   },
   {
     id: "sp4",
-    title: "Extra Virgin Olive Oil 500ml",
-    category: "Oils",
-    price: "$12.40",
-    unit: "/ bot",
-    rating: 4.9,
-    image: oilsImg,
-    bgColor: "#FFFBEA",
+    title: "Floral Printed Summer Dress",
+    category: "Women",
+    price: "₹1,899",
+    rawPrice: 1899,
+    unit: "Sizes: S, M, L",
+    rating: 4.7,
+    image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&q=80",
+    bgColor: "#FFF1F2",
+    sizes: ["S", "M", "L"],
+  },
+  {
+    id: "sp5",
+    title: "Slim Fit Denim Jacket",
+    category: "Men",
+    price: "₹2,199",
+    rawPrice: 2199,
+    unit: "Sizes: M, L, XL",
+    rating: 4.8,
+    image: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=800&q=80",
+    bgColor: "#F1F5F9",
+    sizes: ["M", "L", "XL"],
   },
 ];
 
 const RECENT_SEARCHES = [
-  "Fresh Banana",
-  "Green Salad",
-  "Olive Oil",
-  "Almond Snack",
+  "Running Shoes",
+  "Sneakers",
+  "Linen Shirt",
+  "Summer Dress",
 ];
 
 const POPULAR_CATEGORIES = [
-  { id: "c1", name: "Fresh Fruits", count: "48 items", color: "#FFF8ED", textColor: "#D97706", icon: "nutrition-outline" },
-  { id: "c2", name: "Vegetables", count: "64 items", color: "#ECFDF5", textColor: "#059669", icon: "leaf-outline" },
-  { id: "c3", name: "Nuts & Snacks", count: "32 items", color: "#FFF1F2", textColor: "#E11D48", icon: "fast-food-outline" },
-  { id: "c4", name: "Cooking Oils", count: "19 items", color: "#FEFCE8", textColor: "#CA8A04", icon: "water-outline" },
+  { id: "c1", name: "Shoes & Footwear", count: "36 items", color: "#EEF2FF", textColor: "#4F46E5", icon: "footsteps-outline" },
+  { id: "c2", name: "Men's Wear", count: "48 items", color: "#F3F4F6", textColor: "#1F2937", icon: "shirt-outline" },
+  { id: "c3", name: "Women's Fashion", count: "52 items", color: "#FFF1F2", textColor: "#E11D48", icon: "rose-outline" },
+  { id: "c4", name: "Kids Collection", count: "24 items", color: "#FEFCE8", textColor: "#CA8A04", icon: "happy-outline" },
 ];
 
 export default function SearchScreen() {
+  const { addToCart } = useCart();
   const [query, setQuery] = useState("");
   const [recentSearches, setRecentSearches] = useState(RECENT_SEARCHES);
 
@@ -103,7 +132,7 @@ export default function SearchScreen() {
             style={styles.searchIcon}
           />
           <TextInput
-            placeholder="Search fresh groceries, fruits, snacks..."
+            placeholder="Search shoes, sneakers, clothing, apparel..."
             placeholderTextColor="#9AA0B0"
             value={query}
             onChangeText={setQuery}
@@ -140,7 +169,7 @@ export default function SearchScreen() {
                 <Ionicons name="search" size={40} color="#CBD5E1" />
                 <Text style={styles.noResultsTitle}>No Products Found</Text>
                 <Text style={styles.noResultsSub}>
-                  Try searching for something else like "banana", "vegetable", or "oil".
+                  Try searching for something else like "shoes", "sneakers", "shirt", or "dress".
                 </Text>
               </View>
             ) : (
@@ -153,9 +182,9 @@ export default function SearchScreen() {
                     ]}
                   >
                     <Image
-                      source={item.image}
+                      source={{ uri: item.image }}
                       style={styles.resultImage}
-                      resizeMode="contain"
+                      resizeMode="cover"
                     />
                   </View>
 
@@ -174,6 +203,19 @@ export default function SearchScreen() {
 
                   <TouchableOpacity
                     style={styles.addResultBtn}
+                    onPress={() =>
+                      addToCart(
+                        {
+                          _id: item.id,
+                          name: item.title,
+                          price: item.rawPrice,
+                          image1: item.image,
+                          category: item.category,
+                          sizes: item.sizes,
+                        },
+                        item.sizes[0] || "Standard"
+                      )
+                    }
                     activeOpacity={0.8}
                   >
                     <Ionicons name="add" size={20} color="#FFFFFF" />
@@ -254,10 +296,10 @@ export default function SearchScreen() {
             {/* Recommended Products */}
             <View style={styles.section}>
               <View style={styles.sectionHeaderRow}>
-                <Text style={styles.sectionTitle}>Trending Groceries</Text>
+                <Text style={styles.sectionTitle}>Trending Footwear & Fashion</Text>
               </View>
 
-              {ALL_PRODUCTS.slice(0, 2).map((item) => (
+              {ALL_PRODUCTS.slice(0, 3).map((item) => (
                 <View key={item.id} style={styles.resultCard}>
                   <View
                     style={[
@@ -266,9 +308,9 @@ export default function SearchScreen() {
                     ]}
                   >
                     <Image
-                      source={item.image}
+                      source={{ uri: item.image }}
                       style={styles.resultImage}
-                      resizeMode="contain"
+                      resizeMode="cover"
                     />
                   </View>
 
@@ -283,6 +325,19 @@ export default function SearchScreen() {
 
                   <TouchableOpacity
                     style={styles.addResultBtn}
+                    onPress={() =>
+                      addToCart(
+                        {
+                          _id: item.id,
+                          name: item.title,
+                          price: item.rawPrice,
+                          image1: item.image,
+                          category: item.category,
+                          sizes: item.sizes,
+                        },
+                        item.sizes[0] || "Standard"
+                      )
+                    }
                     activeOpacity={0.8}
                   >
                     <Ionicons name="add" size={20} color="#FFFFFF" />

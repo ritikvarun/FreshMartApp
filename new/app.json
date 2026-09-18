@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "new",
-    "slug": "new",
+    "name": "FreshMart",
+    "slug": "freshmart",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

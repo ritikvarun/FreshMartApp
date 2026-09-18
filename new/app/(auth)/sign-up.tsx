@@ -9,23 +9,58 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
+import { useAuth } from "../../context/AuthContext";
 
 export default function SignUpScreen() {
   const router = useRouter();
+  const { register } = useAuth();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSignUp = () => {
-    // Navigate to Home tabs after signup
-    router.replace("/(root)/(tabs)" as any);
+  const handleSignUp = async () => {
+    if (!fullName.trim()) {
+      setErrorMessage("Please enter your full name.");
+      return;
+    }
+    if (!email.trim() || !email.includes("@")) {
+      setErrorMessage("Please enter a valid email address.");
+      return;
+    }
+    if (password.length < 8) {
+      setErrorMessage("Password must be at least 8 characters long.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setErrorMessage("Passwords do not match.");
+      return;
+    }
+    if (!agreedToTerms) {
+      setErrorMessage("Please accept the Terms of Service to continue.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    const res = await register(fullName.trim(), email.trim(), password);
+    setIsSubmitting(false);
+
+    if (res.success) {
+      router.replace("/(root)/(tabs)/profile" as any);
+    } else {
+      setErrorMessage(res.message || "Registration failed. Please try again.");
+    }
   };
 
   return (
@@ -70,6 +105,13 @@ export default function SignUpScreen() {
 
           {/* Form */}
           <View style={styles.form}>
+            {errorMessage ? (
+              <View style={styles.errorBanner}>
+                <Ionicons name="alert-circle" size={18} color="#EF4444" />
+                <Text style={styles.errorText}>{errorMessage}</Text>
+              </View>
+            ) : null}
+
             {/* Full Name */}
             <Text style={styles.label}>Full Name</Text>
             <View style={styles.inputWrapper}>
@@ -81,10 +123,13 @@ export default function SignUpScreen() {
               />
               <TextInput
                 style={styles.input}
-                placeholder="Romina Reynolds"
+                placeholder="Your Name"
                 placeholderTextColor="#A0A5B5"
                 value={fullName}
-                onChangeText={setFullName}
+                onChangeText={(text) => {
+                  setFullName(text);
+                  if (errorMessage) setErrorMessage("");
+                }}
               />
             </View>
 
@@ -102,14 +147,17 @@ export default function SignUpScreen() {
                 placeholder="name@example.com"
                 placeholderTextColor="#A0A5B5"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  if (errorMessage) setErrorMessage("");
+                }}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
             </View>
 
             {/* Password */}
-            <Text style={styles.label}>Password</Text>
+            <Text style={styles.label}>Password (minimum 8 characters)</Text>
             <View style={styles.inputWrapper}>
               <Ionicons
                 name="lock-closed-outline"
@@ -122,7 +170,10 @@ export default function SignUpScreen() {
                 placeholder="Create a strong password"
                 placeholderTextColor="#A0A5B5"
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (errorMessage) setErrorMessage("");
+                }}
                 secureTextEntry={!showPassword}
               />
               <TouchableOpacity
@@ -152,7 +203,10 @@ export default function SignUpScreen() {
                 placeholder="Repeat your password"
                 placeholderTextColor="#A0A5B5"
                 value={confirmPassword}
-                onChangeText={setConfirmPassword}
+                onChangeText={(text) => {
+                  setConfirmPassword(text);
+                  if (errorMessage) setErrorMessage("");
+                }}
                 secureTextEntry={!showPassword}
               />
             </View>
@@ -182,17 +236,24 @@ export default function SignUpScreen() {
 
             {/* Submit Button */}
             <TouchableOpacity
-              style={styles.submitBtn}
+              style={[styles.submitBtn, isSubmitting && { opacity: 0.7 }]}
               onPress={handleSignUp}
+              disabled={isSubmitting}
               activeOpacity={0.85}
             >
-              <Text style={styles.submitBtnText}>Create Account</Text>
-              <Ionicons
-                name="arrow-forward"
-                size={18}
-                color="#FFFFFF"
-                style={{ marginLeft: 8 }}
-              />
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <>
+                  <Text style={styles.submitBtnText}>Create Account</Text>
+                  <Ionicons
+                    name="arrow-forward"
+                    size={18}
+                    color="#FFFFFF"
+                    style={{ marginLeft: 8 }}
+                  />
+                </>
+              )}
             </TouchableOpacity>
           </View>
 
@@ -423,5 +484,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
     color: "#E05315",
+  },
+  errorBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEE2E2",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#FECACA",
+  },
+  errorText: {
+    color: "#DC2626",
+    fontSize: 13,
+    fontWeight: "500",
+    marginLeft: 8,
+    flex: 1,
   },
 });

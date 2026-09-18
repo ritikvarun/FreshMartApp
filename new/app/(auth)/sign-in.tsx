@@ -9,20 +9,43 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
+import { useAuth } from "../../context/AuthContext";
 
 export default function SignInScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState("romina.reynolds@example.com");
-  const [password, setPassword] = useState("••••••••");
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSignIn = () => {
-    // Navigate to Home tabs
+  const handleSignIn = async () => {
+    if (!email.trim() || !password) {
+      setErrorMessage("Please enter both email and password.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    const res = await login(email.trim(), password);
+    setIsSubmitting(false);
+
+    if (res.success) {
+      router.replace("/(root)/(tabs)/profile" as any);
+    } else {
+      setErrorMessage(res.message || "Login failed. Please check credentials.");
+    }
+  };
+
+  const handleContinueGuest = () => {
     router.replace("/(root)/(tabs)" as any);
   };
 
@@ -56,6 +79,13 @@ export default function SignInScreen() {
 
           {/* Input Form */}
           <View style={styles.form}>
+            {errorMessage ? (
+              <View style={styles.errorBanner}>
+                <Ionicons name="alert-circle" size={18} color="#EF4444" />
+                <Text style={styles.errorText}>{errorMessage}</Text>
+              </View>
+            ) : null}
+
             {/* Email Field */}
             <Text style={styles.label}>Email Address</Text>
             <View style={styles.inputWrapper}>
@@ -70,7 +100,10 @@ export default function SignInScreen() {
                 placeholder="Enter your email"
                 placeholderTextColor="#A0A5B5"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  if (errorMessage) setErrorMessage("");
+                }}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
@@ -90,7 +123,10 @@ export default function SignInScreen() {
                 placeholder="Enter your password"
                 placeholderTextColor="#A0A5B5"
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (errorMessage) setErrorMessage("");
+                }}
                 secureTextEntry={!showPassword}
               />
               <TouchableOpacity
@@ -133,23 +169,30 @@ export default function SignInScreen() {
 
             {/* Submit Button */}
             <TouchableOpacity
-              style={styles.submitBtn}
+              style={[styles.submitBtn, isSubmitting && { opacity: 0.7 }]}
               onPress={handleSignIn}
+              disabled={isSubmitting}
               activeOpacity={0.85}
             >
-              <Text style={styles.submitBtnText}>Sign In</Text>
-              <Ionicons
-                name="arrow-forward"
-                size={18}
-                color="#FFFFFF"
-                style={{ marginLeft: 8 }}
-              />
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <>
+                  <Text style={styles.submitBtnText}>Sign In</Text>
+                  <Ionicons
+                    name="arrow-forward"
+                    size={18}
+                    color="#FFFFFF"
+                    style={{ marginLeft: 8 }}
+                  />
+                </>
+              )}
             </TouchableOpacity>
 
             {/* Guest button */}
             <TouchableOpacity
               style={styles.guestBtn}
-              onPress={handleSignIn}
+              onPress={handleContinueGuest}
               activeOpacity={0.7}
             >
               <Text style={styles.guestBtnText}>Continue as Guest</Text>
@@ -390,5 +433,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
     color: "#E05315",
+  },
+  errorBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEE2E2",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#FECACA",
+  },
+  errorText: {
+    color: "#DC2626",
+    fontSize: 13,
+    fontWeight: "500",
+    marginLeft: 8,
+    flex: 1,
   },
 });
