@@ -1,11 +1,7 @@
 import { Platform } from "react-native";
 
-// If EXPO_PUBLIC_API_URL is configured in .env, use it; otherwise fallback to local Wi-Fi IP / emulator IP
 export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ||
-  (Platform.OS === "android"
-    ? "http://10.0.2.2:5000"
-    : "http://localhost:5000");
+  process.env.EXPO_PUBLIC_API_URL || "https://freshmartapp.onrender.com";
 
 export const ENDPOINTS = {
   AUTH: {

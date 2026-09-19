@@ -2,9 +2,7 @@ import { Platform } from "react-native";
 
 export const API_BASE_URL =
   (typeof process !== "undefined" && process.env?.EXPO_PUBLIC_API_URL) ||
-  (Platform.OS === "android"
-    ? "http://10.0.2.2:5000"
-    : "http://localhost:5000");
+  "https://freshmartapp.onrender.com";
 
 export const ENDPOINTS = {
   ADMIN_LOGIN: `${API_BASE_URL}/api/auth/adminlogin`,
