@@ -13,6 +13,12 @@
     "plugins": [
       "expo-router",
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "513d8c47-4e24-4187-a84c-d21ef84e8312"
+      }
+    }
   }
 }
