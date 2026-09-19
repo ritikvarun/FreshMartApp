@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,13 +9,18 @@ import {
   StatusBar,
   ActivityIndicator,
   Alert,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import * as SecureStore from "expo-secure-store";
 import { useRouter } from "expo-router";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import { ENDPOINTS } from "../../config/api";
+
+const ADDRESS_STORAGE_KEY = "freshmart_delivery_address";
+const PAYMENT_PREF_KEY = "freshmart_payment_preference";
 
 export default function CheckoutScreen() {
   const router = useRouter();
@@ -25,7 +30,7 @@ export default function CheckoutScreen() {
   const [firstName, setFirstName] = useState(user?.name?.split(" ")[0] || "");
   const [lastName, setLastName] = useState(user?.name?.split(" ")[1] || "");
   const [email, setEmail] = useState(user?.email || "");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(user?.phone || "");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
@@ -34,6 +39,41 @@ export default function CheckoutScreen() {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [orderPlacedSuccess, setOrderPlacedSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Load saved address and payment preference
+  useEffect(() => {
+    async function loadSavedData() {
+      try {
+        let addrStr: string | null = null;
+        let payPref: string | null = null;
+        if (Platform.OS === "web") {
+          addrStr = localStorage.getItem(ADDRESS_STORAGE_KEY);
+          payPref = localStorage.getItem(PAYMENT_PREF_KEY);
+        } else {
+          addrStr = await SecureStore.getItemAsync(ADDRESS_STORAGE_KEY);
+          payPref = await SecureStore.getItemAsync(PAYMENT_PREF_KEY);
+        }
+
+        if (addrStr) {
+          const addr = JSON.parse(addrStr);
+          if (addr.firstName) setFirstName(addr.firstName);
+          if (addr.lastName) setLastName(addr.lastName);
+          if (addr.phone) setPhone(addr.phone);
+          if (addr.email) setEmail(addr.email);
+          if (addr.street) setStreet(addr.street);
+          if (addr.city) setCity(addr.city);
+          if (addr.state) setState(addr.state);
+          if (addr.pinCode) setPinCode(addr.pinCode);
+        }
+        if (payPref) {
+          setPaymentMethod(payPref);
+        }
+      } catch (err) {
+        console.warn("Failed to load saved checkout data:", err);
+      }
+    }
+    loadSavedData();
+  }, []);
 
   const handlePlaceOrder = async () => {
     if (!isAuthenticated || !token) {
@@ -56,6 +96,31 @@ export default function CheckoutScreen() {
     setIsPlacingOrder(true);
     setErrorMessage("");
 
+    const addressData = {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      street: street.trim(),
+      city: city.trim(),
+      state: state.trim() || "Local",
+      pinCode: pinCode.trim(),
+    };
+
+    // Save address and payment method to storage for future orders
+    try {
+      const addrSerialized = JSON.stringify(addressData);
+      if (Platform.OS === "web") {
+        localStorage.setItem(ADDRESS_STORAGE_KEY, addrSerialized);
+        localStorage.setItem(PAYMENT_PREF_KEY, paymentMethod);
+      } else {
+        await SecureStore.setItemAsync(ADDRESS_STORAGE_KEY, addrSerialized);
+        await SecureStore.setItemAsync(PAYMENT_PREF_KEY, paymentMethod);
+      }
+    } catch (e) {
+      console.warn("Could not persist checkout info:", e);
+    }
+
     try {
       const orderPayload = {
         items: cartItems.map((item) => ({
@@ -64,34 +129,65 @@ export default function CheckoutScreen() {
           quantity: item.quantity,
         })),
         amount: grandTotal,
-        address: {
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          email: email.trim(),
-          phone: phone.trim(),
-          street: street.trim(),
-          city: city.trim(),
-          state: state.trim() || "Local",
-          pinCode: pinCode.trim(),
-        },
+        address: addressData,
       };
 
-      const res = await fetch(ENDPOINTS.ORDER.PLACE, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(orderPayload),
-      });
+      if (paymentMethod === "Razorpay") {
+        // Razorpay flow
+        const rzpRes = await fetch(ENDPOINTS.ORDER.RAZORPAY, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(orderPayload),
+        });
 
-      const data = await res.json();
+        const rzpData = await rzpRes.json();
 
-      if (res.ok) {
-        await clearCart();
-        setOrderPlacedSuccess(true);
+        if (!rzpRes.ok) {
+          setErrorMessage(rzpData.message || "Razorpay order creation failed.");
+          setIsPlacingOrder(false);
+          return;
+        }
+
+        // Verify Razorpay order on backend
+        const verifyRes = await fetch(ENDPOINTS.ORDER.VERIFY_RAZORPAY, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ razorpay_order_id: rzpData.id }),
+        });
+
+        const verifyData = await verifyRes.json();
+
+        if (verifyRes.ok) {
+          await clearCart();
+          setOrderPlacedSuccess(true);
+        } else {
+          setErrorMessage(verifyData.message || "Payment verification failed.");
+        }
       } else {
-        setErrorMessage(data.message || "Failed to place order. Please try again.");
+        // COD flow
+        const res = await fetch(ENDPOINTS.ORDER.PLACE, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(orderPayload),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          await clearCart();
+          setOrderPlacedSuccess(true);
+        } else {
+          setErrorMessage(data.message || "Failed to place order. Please try again.");
+        }
       }
     } catch (err: any) {
       console.error("Place order network error:", err);
@@ -117,11 +213,13 @@ export default function CheckoutScreen() {
           <View style={styles.successSummaryCard}>
             <View style={styles.successRow}>
               <Text style={styles.successLabel}>Payment Method</Text>
-              <Text style={styles.successValue}>Cash On Delivery (COD)</Text>
+              <Text style={styles.successValue}>
+                {paymentMethod === "Razorpay" ? "Razorpay Online (Paid)" : "Cash On Delivery (COD)"}
+              </Text>
             </View>
             <View style={styles.successRow}>
               <Text style={styles.successLabel}>Total Amount</Text>
-              <Text style={styles.successValue}>${grandTotal.toFixed(2)}</Text>
+              <Text style={styles.successValue}>₹{grandTotal.toFixed(0)}</Text>
             </View>
             <View style={styles.successRow}>
               <Text style={styles.successLabel}>Deliver To</Text>
@@ -183,7 +281,7 @@ export default function CheckoutScreen() {
         {/* Address Card */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionTitleRow}>
-            <Ionicons name="location" size={20} color="#E05315" />
+            <Ionicons name="location" size={20} color="#0F172A" />
             <Text style={styles.sectionTitle}>Delivery Address</Text>
           </View>
 
@@ -268,7 +366,7 @@ export default function CheckoutScreen() {
         {/* Payment Method Card */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionTitleRow}>
-            <Ionicons name="wallet" size={20} color="#E05315" />
+            <Ionicons name="wallet" size={20} color="#0F172A" />
             <Text style={styles.sectionTitle}>Payment Method</Text>
           </View>
 
@@ -291,12 +389,38 @@ export default function CheckoutScreen() {
               <Text style={styles.paymentSubtitle}>Pay with cash or UPI upon delivery</Text>
             </View>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.paymentOption,
+              paymentMethod === "Razorpay" && styles.paymentOptionSelected,
+              { marginTop: 10 },
+            ]}
+            onPress={() => setPaymentMethod("Razorpay")}
+            activeOpacity={0.8}
+          >
+            <View style={styles.paymentRadio}>
+              {paymentMethod === "Razorpay" && <View style={styles.paymentRadioDot} />}
+            </View>
+            <View style={[styles.paymentIconWrapper, { backgroundColor: "#EFF6FF" }]}>
+              <Ionicons name="card-outline" size={20} color="#2563EB" />
+            </View>
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={styles.paymentTitle}>Razorpay Online</Text>
+                <View style={styles.rzpPill}>
+                  <Text style={styles.rzpPillText}>Instant</Text>
+                </View>
+              </View>
+              <Text style={styles.paymentSubtitle}>UPI (GPay, PhonePe), Cards & NetBanking</Text>
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Order Summary Snapshot */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionTitleRow}>
-            <Ionicons name="receipt" size={20} color="#E05315" />
+            <Ionicons name="receipt" size={20} color="#0F172A" />
             <Text style={styles.sectionTitle}>Order Summary ({cartItems.length} items)</Text>
           </View>
 
@@ -306,7 +430,7 @@ export default function CheckoutScreen() {
                 {item.quantity}x {item.product.name} ({item.size})
               </Text>
               <Text style={styles.summaryItemPrice}>
-                ${(item.product.price * item.quantity).toFixed(2)}
+                ₹{(item.product.price * item.quantity).toFixed(0)}
               </Text>
             </View>
           ))}
@@ -315,7 +439,7 @@ export default function CheckoutScreen() {
 
           <View style={styles.summaryTotalRow}>
             <Text style={styles.summaryTotalLabel}>Total Amount to Pay</Text>
-            <Text style={styles.summaryTotalAmount}>${grandTotal.toFixed(2)}</Text>
+            <Text style={styles.summaryTotalAmount}>₹{grandTotal.toFixed(0)}</Text>
           </View>
         </View>
       </ScrollView>
@@ -324,7 +448,7 @@ export default function CheckoutScreen() {
       <View style={styles.bottomBar}>
         <View>
           <Text style={styles.bottomBarSub}>Grand Total</Text>
-          <Text style={styles.bottomBarTotal}>${grandTotal.toFixed(2)}</Text>
+          <Text style={styles.bottomBarTotal}>₹{grandTotal.toFixed(0)}</Text>
         </View>
 
         <TouchableOpacity
@@ -458,15 +582,15 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
   },
   paymentOptionSelected: {
-    borderColor: "#E05315",
-    backgroundColor: "#FFF8F5",
+    borderColor: "#0F172A",
+    backgroundColor: "#F8FAFC",
   },
   paymentRadio: {
     width: 18,
     height: 18,
     borderRadius: 9,
     borderWidth: 2,
-    borderColor: "#E05315",
+    borderColor: "#0F172A",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -474,7 +598,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: "#E05315",
+    backgroundColor: "#0F172A",
   },
   paymentIconWrapper: {
     width: 36,
@@ -494,6 +618,20 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#8B92A2",
     marginTop: 2,
+  },
+  rzpPill: {
+    backgroundColor: "#EFF6FF",
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginLeft: 6,
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+  },
+  rzpPillText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#2563EB",
   },
 
   summaryItemRow: {
@@ -531,7 +669,7 @@ const styles = StyleSheet.create({
   summaryTotalAmount: {
     fontSize: 16,
     fontWeight: "800",
-    color: "#E05315",
+    color: "#0F172A",
   },
 
   bottomBar: {
@@ -564,14 +702,14 @@ const styles = StyleSheet.create({
     color: "#1A1D26",
   },
   placeOrderBtn: {
-    backgroundColor: "#E05315",
+    backgroundColor: "#0F172A",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
     height: 48,
     borderRadius: 24,
-    shadowColor: "#E05315",
+    shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -630,7 +768,7 @@ const styles = StyleSheet.create({
     color: "#1A1D26",
   },
   viewOrdersBtn: {
-    backgroundColor: "#E05315",
+    backgroundColor: "#0F172A",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -638,7 +776,7 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     marginBottom: 12,
-    shadowColor: "#E05315",
+    shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,

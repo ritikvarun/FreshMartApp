@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -45,8 +46,19 @@ export default function SignInScreen() {
     }
   };
 
-  const handleContinueGuest = () => {
-    router.replace("/(root)/(tabs)" as any);
+  const handleGoogleSignIn = () => {
+    Alert.alert(
+      "Google Sign-In",
+      "Google authentication integration will be added soon!"
+    );
+  };
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/(root)/(tabs)" as any);
+    }
   };
 
   return (
@@ -60,24 +72,29 @@ export default function SignInScreen() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
-          {/* Top Brand Logo */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logoCircle}>
-              <Ionicons name="leaf" size={28} color="#FFFFFF" />
-            </View>
-            <Text style={styles.brandTitle}>FreshMart</Text>
+          {/* Top Bar with Back Arrow */}
+          <View style={styles.topBar}>
+            <TouchableOpacity
+              style={styles.backBtn}
+              onPress={handleBack}
+              activeOpacity={0.7}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Ionicons name="arrow-back" size={24} color="#111827" />
+            </TouchableOpacity>
           </View>
 
-          {/* Heading */}
-          <View style={styles.headerTextContainer}>
-            <Text style={styles.title}>Welcome Back 👋</Text>
+          {/* Heading Section */}
+          <View style={styles.headerSection}>
+            <Text style={styles.title}>Hello Again!</Text>
             <Text style={styles.subtitle}>
-              Sign in to order your daily fresh organic fruits, veggies, and groceries.
+              Welcome back you've been missed.
             </Text>
           </View>
 
-          {/* Input Form */}
+          {/* Form */}
           <View style={styles.form}>
             {errorMessage ? (
               <View style={styles.errorBanner}>
@@ -86,19 +103,18 @@ export default function SignInScreen() {
               </View>
             ) : null}
 
-            {/* Email Field */}
-            <Text style={styles.label}>Email Address</Text>
+            {/* Email Address */}
             <View style={styles.inputWrapper}>
               <Ionicons
-                name="mail-outline"
+                name="person-outline"
                 size={20}
-                color="#8E94A4"
+                color="#9CA3AF"
                 style={styles.inputIcon}
               />
               <TextInput
                 style={styles.input}
-                placeholder="Enter your email"
-                placeholderTextColor="#A0A5B5"
+                placeholder="Email Address"
+                placeholderTextColor="#9CA3AF"
                 value={email}
                 onChangeText={(text) => {
                   setEmail(text);
@@ -106,22 +122,22 @@ export default function SignInScreen() {
                 }}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoCorrect={false}
               />
             </View>
 
-            {/* Password Field */}
-            <Text style={styles.label}>Password</Text>
+            {/* Password */}
             <View style={styles.inputWrapper}>
               <Ionicons
                 name="lock-closed-outline"
                 size={20}
-                color="#8E94A4"
+                color="#9CA3AF"
                 style={styles.inputIcon}
               />
               <TextInput
                 style={styles.input}
-                placeholder="Enter your password"
-                placeholderTextColor="#A0A5B5"
+                placeholder="Password"
+                placeholderTextColor="#9CA3AF"
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);
@@ -133,11 +149,12 @@ export default function SignInScreen() {
                 onPress={() => setShowPassword(!showPassword)}
                 style={styles.eyeIcon}
                 activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Ionicons
                   name={showPassword ? "eye-off-outline" : "eye-outline"}
                   size={20}
-                  color="#8E94A4"
+                  color="#9CA3AF"
                 />
               </TouchableOpacity>
             </View>
@@ -156,20 +173,20 @@ export default function SignInScreen() {
                   ]}
                 >
                   {rememberMe && (
-                    <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                    <Ionicons name="checkmark" size={13} color="#FFFFFF" />
                   )}
                 </View>
                 <Text style={styles.rememberText}>Remember me</Text>
               </TouchableOpacity>
 
               <TouchableOpacity activeOpacity={0.7}>
-                <Text style={styles.forgotText}>Forgot password?</Text>
+                <Text style={styles.forgotText}>Forgot Password?</Text>
               </TouchableOpacity>
             </View>
 
-            {/* Submit Button */}
+            {/* Primary Login Button */}
             <TouchableOpacity
-              style={[styles.submitBtn, isSubmitting && { opacity: 0.7 }]}
+              style={[styles.loginBtn, isSubmitting && { opacity: 0.75 }]}
               onPress={handleSignIn}
               disabled={isSubmitting}
               activeOpacity={0.85}
@@ -177,56 +194,37 @@ export default function SignInScreen() {
               {isSubmitting ? (
                 <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
-                <>
-                  <Text style={styles.submitBtnText}>Sign In</Text>
-                  <Ionicons
-                    name="arrow-forward"
-                    size={18}
-                    color="#FFFFFF"
-                    style={{ marginLeft: 8 }}
-                  />
-                </>
+                <Text style={styles.loginBtnText}>Login</Text>
               )}
-            </TouchableOpacity>
-
-            {/* Guest button */}
-            <TouchableOpacity
-              style={styles.guestBtn}
-              onPress={handleContinueGuest}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.guestBtnText}>Continue as Guest</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Social Divider */}
+          {/* Divider */}
           <View style={styles.dividerRow}>
             <View style={styles.divider} />
             <Text style={styles.dividerText}>or continue with</Text>
             <View style={styles.divider} />
           </View>
 
-          {/* Social Buttons */}
+          {/* Social Login (Google only) */}
           <View style={styles.socialRow}>
-            <TouchableOpacity style={styles.socialBtn} activeOpacity={0.8}>
-              <Ionicons name="logo-google" size={20} color="#EA4335" />
-              <Text style={styles.socialBtnText}>Google</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.socialBtn} activeOpacity={0.8}>
-              <Ionicons name="logo-apple" size={20} color="#000000" />
-              <Text style={styles.socialBtnText}>Apple</Text>
+            <TouchableOpacity
+              style={styles.socialBtn}
+              onPress={handleGoogleSignIn}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="logo-google" size={24} color="#EA4335" />
             </TouchableOpacity>
           </View>
 
-          {/* Bottom Link to Sign Up */}
+          {/* Bottom Sign Up Link */}
           <View style={styles.bottomLinkRow}>
             <Text style={styles.bottomLinkText}>Don't have an account? </Text>
             <TouchableOpacity
               onPress={() => router.push("/(auth)/sign-up" as any)}
               activeOpacity={0.7}
             >
-              <Text style={styles.signupLink}>Sign Up</Text>
+              <Text style={styles.signupLink}>Sign up</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -242,76 +240,79 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingTop: 16,
+    paddingTop: 12,
     paddingBottom: 40,
+    flexGrow: 1,
   },
-  logoContainer: {
+  topBar: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 32,
+    marginTop: 4,
   },
-  logoCircle: {
+  backBtn: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#E05315",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#E05315",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    marginLeft: -8,
   },
-  brandTitle: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: "#1A1D26",
-    marginLeft: 10,
-    letterSpacing: -0.5,
-  },
-  headerTextContainer: {
-    marginBottom: 24,
+  headerSection: {
+    marginBottom: 36,
   },
   title: {
-    fontSize: 26,
+    fontSize: 32,
     fontWeight: "800",
-    color: "#1A1D26",
-    letterSpacing: -0.4,
+    color: "#111827",
+    letterSpacing: -0.8,
   },
   subtitle: {
-    fontSize: 13,
-    color: "#8B92A2",
-    marginTop: 6,
-    lineHeight: 19,
+    fontSize: 15,
+    color: "#6B7280",
+    marginTop: 8,
+    lineHeight: 22,
+    fontWeight: "400",
   },
   form: {
-    marginBottom: 20,
+    marginBottom: 8,
   },
-  label: {
+  errorBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEE2E2",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#FECACA",
+  },
+  errorText: {
+    color: "#DC2626",
     fontSize: 13,
-    fontWeight: "700",
-    color: "#1A1D26",
-    marginBottom: 6,
+    fontWeight: "500",
+    marginLeft: 8,
+    flex: 1,
   },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 1,
-    borderColor: "#EEF0F4",
-    backgroundColor: "#FAFBFD",
+    height: 56,
+    borderRadius: 16,
+    borderWidth: 1.2,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#FAFAFA",
     paddingHorizontal: 16,
     marginBottom: 16,
   },
   inputIcon: {
-    marginRight: 10,
+    marginRight: 12,
   },
   input: {
     flex: 1,
-    fontSize: 14,
-    color: "#1A1D26",
+    fontSize: 15,
+    color: "#111827",
   },
   eyeIcon: {
     padding: 4,
@@ -320,7 +321,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 24,
+    marginTop: 4,
+    marginBottom: 28,
   },
   rememberRow: {
     flexDirection: "row",
@@ -335,121 +337,91 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 8,
+    backgroundColor: "#FFFFFF",
   },
   checkboxActive: {
-    backgroundColor: "#E05315",
-    borderColor: "#E05315",
+    backgroundColor: "#2563EB",
+    borderColor: "#2563EB",
   },
   rememberText: {
     fontSize: 13,
     color: "#6B7280",
+    fontWeight: "500",
   },
   forgotText: {
     fontSize: 13,
-    fontWeight: "600",
-    color: "#E05315",
-  },
-  submitBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#E05315",
-    height: 52,
-    borderRadius: 26,
-    shadowColor: "#E05315",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 4,
-    marginBottom: 12,
-  },
-  submitBtnText: {
-    color: "#FFFFFF",
-    fontSize: 15,
     fontWeight: "700",
+    color: "#111827",
   },
-  guestBtn: {
+  loginBtn: {
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: "#111827",
     alignItems: "center",
     justifyContent: "center",
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "#EEF0F4",
-    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 3,
   },
-  guestBtnText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#6B7280",
+  loginBtnText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 0.2,
   },
   dividerRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 20,
+    marginVertical: 32,
   },
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: "#EEF0F4",
+    backgroundColor: "#E5E7EB",
   },
   dividerText: {
     fontSize: 12,
     color: "#9CA3AF",
-    marginHorizontal: 12,
+    marginHorizontal: 16,
+    fontWeight: "500",
   },
   socialRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 28,
   },
   socialBtn: {
-    flexDirection: "row",
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    borderWidth: 1.2,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    flex: 1,
-    height: 50,
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: "#EEF0F4",
-    backgroundColor: "#FFFFFF",
-    marginHorizontal: 6,
-  },
-  socialBtnText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#1A1D26",
-    marginLeft: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 1,
   },
   bottomLinkRow: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    marginTop: 8,
   },
   bottomLinkText: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#6B7280",
+    fontWeight: "500",
   },
   signupLink: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "700",
-    color: "#E05315",
-  },
-  errorBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FEE2E2",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#FECACA",
-  },
-  errorText: {
-    color: "#DC2626",
-    fontSize: 13,
-    fontWeight: "500",
-    marginLeft: 8,
-    flex: 1,
+    color: "#2563EB",
   },
 });

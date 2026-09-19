@@ -151,8 +151,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 2,
   },
   tabItemActive: {
-    backgroundColor: "#E05315",
+    backgroundColor: "#0F172A",
     flex: 1.4,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
   },
   tabItemText: {
     color: "#FFFFFF",

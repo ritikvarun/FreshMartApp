@@ -7,6 +7,7 @@ export interface User {
   _id?: string;
   name: string;
   email: string;
+  phone?: string;
   role?: string;
 }
 
@@ -18,6 +19,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   register: (name: string, email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => Promise<void>;
+  updateUser: (updatedData: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -28,6 +30,7 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => ({ success: false }),
   register: async () => ({ success: false }),
   logout: async () => {},
+  updateUser: async () => {},
 });
 
 const TOKEN_KEY = "freshmart_auth_token";
@@ -202,6 +205,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Update user profile handler
+  const updateUser = async (updatedData: Partial<User>) => {
+    if (!user) return;
+    const newUser = { ...user, ...updatedData };
+    setUser(newUser);
+    await saveStorageItem(USER_KEY, JSON.stringify(newUser));
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -212,6 +223,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         logout,
+        updateUser,
       }}
     >
       {children}

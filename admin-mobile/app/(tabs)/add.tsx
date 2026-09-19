@@ -21,10 +21,11 @@ import { useRouter } from "expo-router";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 import { ENDPOINTS } from "../../config/api";
 
-const CATEGORIES = ["Men", "Women", "Kids", "Unisex"];
+const CATEGORIES = ["Men", "Women", "Kids", "Accessories", "Unisex"];
 const SUB_CATEGORIES = ["TopWear", "BottomWear", "WinterWear", "Shoes", "Accessories"];
 const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
 const SHOE_SIZES = ["6", "7", "8", "9", "10", "11", "12"];
+const ACCESSORY_SIZES = ["Free Size", "Standard", "One Size", "S", "M", "L"];
 
 export default function AdminAddProductScreen() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function AdminAddProductScreen() {
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("Men");
   const [subCategory, setSubCategory] = useState("TopWear");
-  const [sizeType, setSizeType] = useState<"clothing" | "shoes">("clothing");
+  const [sizeType, setSizeType] = useState<"clothing" | "shoes" | "accessories">("clothing");
   const [selectedSizes, setSelectedSizes] = useState<string[]>(["M", "L"]);
   const [customSizeInput, setCustomSizeInput] = useState("");
   const [bestseller, setBestseller] = useState(false);
@@ -386,7 +387,14 @@ export default function AdminAddProductScreen() {
                 <TouchableOpacity
                   key={cat}
                   style={[styles.categoryChip, isSelected && styles.categoryChipActive]}
-                  onPress={() => setCategory(cat)}
+                  onPress={() => {
+                    setCategory(cat);
+                    if (cat === "Accessories") {
+                      setSubCategory("Accessories");
+                      setSizeType("accessories");
+                      setSelectedSizes(["Free Size"]);
+                    }
+                  }}
                   activeOpacity={0.8}
                 >
                   <Text
@@ -418,7 +426,10 @@ export default function AdminAddProductScreen() {
                     if (sub === "Shoes") {
                       setSizeType("shoes");
                       setSelectedSizes(["7", "8", "9", "10"]);
-                    } else if (sizeType === "shoes") {
+                    } else if (sub === "Accessories") {
+                      setSizeType("accessories");
+                      setSelectedSizes(["Free Size"]);
+                    } else if (sizeType === "shoes" || sizeType === "accessories") {
                       setSizeType("clothing");
                       setSelectedSizes(["M", "L", "XL"]);
                     }
@@ -436,13 +447,17 @@ export default function AdminAddProductScreen() {
           </View>
         </View>
 
-        {/* 5. Available Sizes (Apparel vs Shoes) */}
+        {/* 5. Available Sizes (Apparel vs Shoes vs Accessories) */}
         <View style={styles.card}>
           <View style={styles.cardHeaderRow}>
             <View>
               <Text style={styles.sectionTitle}>Available Sizes *</Text>
               <Text style={styles.sectionSubtitle}>
-                {sizeType === "shoes" ? "Shoe number sizes" : "Clothing sizes"}
+                {sizeType === "shoes"
+                  ? "Shoe number sizes"
+                  : sizeType === "accessories"
+                  ? "Accessories sizes"
+                  : "Clothing sizes"}
               </Text>
             </View>
 
@@ -487,12 +502,37 @@ export default function AdminAddProductScreen() {
                   👟 Shoes
                 </Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.sizeTypeBtn,
+                  sizeType === "accessories" && styles.sizeTypeBtnActive,
+                ]}
+                onPress={() => {
+                  setSizeType("accessories");
+                  setSelectedSizes(["Free Size"]);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.sizeTypeBtnText,
+                    sizeType === "accessories" && styles.sizeTypeBtnTextActive,
+                  ]}
+                >
+                  ⌚ Acc.
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
 
           {/* Size Pills Row */}
           <View style={styles.sizesRow}>
-            {(sizeType === "shoes" ? SHOE_SIZES : CLOTHING_SIZES).map((size) => {
+            {(sizeType === "shoes"
+              ? SHOE_SIZES
+              : sizeType === "accessories"
+              ? ACCESSORY_SIZES
+              : CLOTHING_SIZES
+            ).map((size) => {
               const isSelected = selectedSizes.includes(size);
               return (
                 <TouchableOpacity
@@ -515,17 +555,25 @@ export default function AdminAddProductScreen() {
           <View style={styles.customSizeRow}>
             <TextInput
               style={styles.customSizeInput}
-              placeholder={sizeType === "shoes" ? "Add other shoe size (e.g. 6.5, 10.5)..." : "Add custom size (e.g. Free Size, 4XL)..."}
+              placeholder={
+                sizeType === "shoes"
+                  ? "Add other shoe size (e.g. 6.5, 10.5)..."
+                  : sizeType === "accessories"
+                  ? "Add custom accessory size (e.g. Free Size, Adjustable)..."
+                  : "Add custom size (e.g. Free Size, 4XL)..."
+              }
               value={customSizeInput}
               onChangeText={setCustomSizeInput}
             />
             <TouchableOpacity
               style={styles.addCustomSizeBtn}
               onPress={() => {
-                if (customSizeInput.trim() && !selectedSizes.includes(customSizeInput.trim())) {
-                  setSelectedSizes([...selectedSizes, customSizeInput.trim()]);
-                  setCustomSizeInput("");
+                const trimmed = customSizeInput.trim();
+                if (!trimmed) return;
+                if (!selectedSizes.includes(trimmed)) {
+                  setSelectedSizes([...selectedSizes, trimmed]);
                 }
+                setCustomSizeInput("");
               }}
             >
               <Text style={styles.addCustomSizeBtnText}>+ Add</Text>

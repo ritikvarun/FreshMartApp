@@ -50,11 +50,11 @@ export default function CartScreen() {
       {cartItems.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIconCircle}>
-            <Ionicons name="cart-outline" size={56} color="#E05315" />
+            <Ionicons name="cart-outline" size={56} color="#0F172A" />
           </View>
           <Text style={styles.emptyTitle}>Your Cart is Empty</Text>
           <Text style={styles.emptySubtitle}>
-            Looks like you haven't added any fresh groceries to your cart yet.
+            Looks like you haven't added any fresh items to your cart yet.
           </Text>
           <TouchableOpacity
             style={styles.shopNowBtn}
@@ -81,7 +81,7 @@ export default function CartScreen() {
                 <Text style={styles.deliverySubtitle}>
                   {deliveryFee === 0
                     ? "Free delivery applied on this order!"
-                    : "Add $25+ items to get free delivery"}
+                    : "Add ₹499+ items to get free delivery"}
                 </Text>
               </View>
             </View>
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     color: "#1A1D26",
   },
   itemCountBadge: {
-    backgroundColor: "#FFF0E8",
+    backgroundColor: "#F1F5F9",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   itemCountText: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#E05315",
+    color: "#0F172A",
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   billTotalValue: {
     fontSize: 17,
     fontWeight: "800",
-    color: "#E05315",
+    color: "#0F172A",
   },
 
   bottomBar: {
@@ -453,17 +453,17 @@ const styles = StyleSheet.create({
   bottomBarTotal: {
     fontSize: 18,
     fontWeight: "800",
-    color: "#1A1D26",
+    color: "#0F172A",
   },
   checkoutBtn: {
-    backgroundColor: "#E05315",
+    backgroundColor: "#0F172A",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 24,
     height: 48,
     borderRadius: 24,
-    shadowColor: "#E05315",
+    shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "#FFF0E8",
+    backgroundColor: "#F1F5F9",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 20,
@@ -504,13 +504,18 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   shopNowBtn: {
-    backgroundColor: "#E05315",
+    backgroundColor: "#0F172A",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 28,
     height: 48,
     borderRadius: 24,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   },
   shopNowBtnText: {
     color: "#FFFFFF",

@@ -101,6 +101,20 @@ export const listProduct = async (req,res) => {
     }
 }
 
+export const singleProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const product = await Product.findById(id);
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+        return res.status(200).json(product);
+    } catch (error) {
+        console.error("SingleProduct error:", error);
+        return res.status(500).json({ message: `SingleProduct error: ${error.message}` });
+    }
+}
+
 export const removeProduct = async (req,res) => {
     try {
         let {id} = req.params;

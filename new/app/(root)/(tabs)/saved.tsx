@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -83,13 +83,54 @@ const INITIAL_SAVED: SavedProduct[] = [
 
 const CATEGORIES = ["All", "Men", "Women", "Shoes", "Kids"];
 
+import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
+
+const SAVED_STORAGE_KEY = "freshmart_saved_items";
+
 export default function SavedScreen() {
   const { addToCart } = useCart();
   const [savedItems, setSavedItems] = useState<SavedProduct[]>(INITIAL_SAVED);
   const [selectedFilter, setSelectedFilter] = useState("All");
 
+  useEffect(() => {
+    async function loadSaved() {
+      try {
+        let stored: string | null = null;
+        if (Platform.OS === "web") {
+          stored = localStorage.getItem(SAVED_STORAGE_KEY);
+        } else {
+          stored = await SecureStore.getItemAsync(SAVED_STORAGE_KEY);
+        }
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            setSavedItems(parsed);
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to load saved items:", e);
+      }
+    }
+    loadSaved();
+  }, []);
+
+  const updateSavedItems = (items: SavedProduct[]) => {
+    setSavedItems(items);
+    try {
+      const serialized = JSON.stringify(items);
+      if (Platform.OS === "web") {
+        localStorage.setItem(SAVED_STORAGE_KEY, serialized);
+      } else {
+        SecureStore.setItemAsync(SAVED_STORAGE_KEY, serialized);
+      }
+    } catch (e) {
+      console.warn("Failed to save items to storage:", e);
+    }
+  };
+
   const removeItem = (id: string) => {
-    setSavedItems((prev) => prev.filter((item) => item.id !== id));
+    updateSavedItems(savedItems.filter((item) => item.id !== id));
   };
 
   const filteredItems = savedItems.filter((item) => {
@@ -113,7 +154,7 @@ export default function SavedScreen() {
         {savedItems.length > 0 && (
           <TouchableOpacity
             style={styles.clearAllBtn}
-            onPress={() => setSavedItems([])}
+            onPress={() => updateSavedItems([])}
             activeOpacity={0.7}
           >
             <Ionicons name="trash-outline" size={18} color="#8E94A4" />
@@ -162,7 +203,7 @@ export default function SavedScreen() {
         {filteredItems.length === 0 ? (
           <View style={styles.emptyContainer}>
             <View style={styles.emptyIconCircle}>
-              <Ionicons name="heart-dislike-outline" size={42} color="#E05315" />
+              <Ionicons name="heart-dislike-outline" size={42} color="#E11D48" />
             </View>
             <Text style={styles.emptyTitle}>Your Wishlist is Empty</Text>
             <Text style={styles.emptySub}>
@@ -171,7 +212,7 @@ export default function SavedScreen() {
             </Text>
             <TouchableOpacity
               style={styles.exploreBtn}
-              onPress={() => setSavedItems(INITIAL_SAVED)}
+              onPress={() => updateSavedItems(INITIAL_SAVED)}
               activeOpacity={0.85}
             >
               <Text style={styles.exploreBtnText}>Restore Sample Items</Text>
@@ -194,7 +235,7 @@ export default function SavedScreen() {
                     style={styles.heartBtn}
                     activeOpacity={0.7}
                   >
-                    <Ionicons name="heart" size={19} color="#E05315" />
+                    <Ionicons name="heart" size={19} color="#E11D48" />
                   </TouchableOpacity>
                 </View>
 
@@ -300,8 +341,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   filterChipActive: {
-    backgroundColor: "#E05315",
-    borderColor: "#E05315",
+    backgroundColor: "#0F172A",
+    borderColor: "#0F172A",
   },
   filterChipText: {
     fontSize: 13,
@@ -392,10 +433,10 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "#E05315",
+    backgroundColor: "#0F172A",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#E05315",
+    shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -411,7 +452,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#FFF5EF",
+    backgroundColor: "#FFF1F2",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
@@ -430,10 +471,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   exploreBtn: {
-    backgroundColor: "#E05315",
+    backgroundColor: "#0F172A",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 22,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   exploreBtnText: {
     color: "#FFFFFF",

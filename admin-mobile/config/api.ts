@@ -23,4 +23,10 @@ export const ENDPOINTS = {
     ALL: `${API_BASE_URL}/api/return/all`,
     UPDATE: `${API_BASE_URL}/api/return/update`,
   },
+  SETTINGS: {
+    GET: `${API_BASE_URL}/api/setting`,
+    GET_BANNERS: `${API_BASE_URL}/api/setting/banners`,
+    UPDATE_IMAGE: `${API_BASE_URL}/api/setting/update-image`,
+    UPDATE_BANNER: `${API_BASE_URL}/api/setting/update-banner`,
+  },
 };

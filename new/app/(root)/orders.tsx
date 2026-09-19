@@ -116,17 +116,17 @@ export default function OrdersScreen() {
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#E05315" />
+          <ActivityIndicator size="large" color="#0F172A" />
           <Text style={styles.loadingText}>Fetching your orders...</Text>
         </View>
       ) : !isAuthenticated ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIconCircle}>
-            <Ionicons name="lock-closed-outline" size={48} color="#E05315" />
+            <Ionicons name="lock-closed-outline" size={48} color="#0F172A" />
           </View>
           <Text style={styles.emptyTitle}>Sign In Required</Text>
           <Text style={styles.emptySubtitle}>
-            Please log in to view and track your active and past grocery orders.
+            Please log in to view and track your active and past orders.
           </Text>
           <TouchableOpacity
             style={styles.ctaBtn}
@@ -139,11 +139,11 @@ export default function OrdersScreen() {
       ) : orders.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIconCircle}>
-            <Ionicons name="bag-handle-outline" size={48} color="#E05315" />
+            <Ionicons name="bag-handle-outline" size={48} color="#0F172A" />
           </View>
           <Text style={styles.emptyTitle}>No Orders Yet</Text>
           <Text style={styles.emptySubtitle}>
-            You haven't placed any grocery orders yet. Start adding farm-fresh items to your cart!
+            You haven't placed any orders yet. Start adding items to your cart!
           </Text>
           <TouchableOpacity
             style={styles.ctaBtn}
@@ -211,7 +211,7 @@ export default function OrdersScreen() {
                         />
                       ) : (
                         <View style={styles.itemThumbPlaceholder}>
-                          <Ionicons name="basket" size={16} color="#E05315" />
+                          <Ionicons name="basket" size={16} color="#0F172A" />
                         </View>
                       )}
 
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
   totalAmount: {
     fontSize: 15,
     fontWeight: "800",
-    color: "#E05315",
+    color: "#0F172A",
   },
 
   emptyContainer: {
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: "#FFF0E8",
+    backgroundColor: "#F1F5F9",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 18,
@@ -441,13 +441,18 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   ctaBtn: {
-    backgroundColor: "#E05315",
+    backgroundColor: "#0F172A",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 28,
     height: 48,
     borderRadius: 24,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   },
   ctaBtnText: {
     color: "#FFFFFF",

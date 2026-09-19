@@ -1,5 +1,5 @@
 import express from 'express'
-import { addProduct, listProduct, removeProduct } from '../controller/productController.js'
+import { addProduct, listProduct, removeProduct, singleProduct } from '../controller/productController.js'
 import upload from '../middleware/multer.js'
 import adminAuth from "../middleware/adminAuth.js"
 
@@ -14,8 +14,8 @@ productRoutes.post("/addproduct",adminAuth,upload.fields([
     {name:"image5",maxCount:1}]),addProduct)
 
 productRoutes.get("/list", listProduct)
+productRoutes.get("/:id", singleProduct)
+productRoutes.get("/get/:id", singleProduct)
 productRoutes.post("/remove/:id",adminAuth,removeProduct)
-
-
 
 export default productRoutes

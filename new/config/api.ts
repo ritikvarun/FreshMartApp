@@ -15,6 +15,11 @@ export const ENDPOINTS = {
   },
   PRODUCTS: {
     LIST: `${API_BASE_URL}/api/product/list`,
+    DETAIL: (id: string) => `${API_BASE_URL}/api/product/${id}`,
+  },
+  REVIEWS: {
+    GET: (productId: string) => `${API_BASE_URL}/api/review/${productId}`,
+    ADD: `${API_BASE_URL}/api/review/add`,
   },
   CART: {
     GET: `${API_BASE_URL}/api/cart/get`,
@@ -23,7 +28,12 @@ export const ENDPOINTS = {
   },
   ORDER: {
     PLACE: `${API_BASE_URL}/api/order/placeorder`,
+    RAZORPAY: `${API_BASE_URL}/api/order/razorpay`,
+    VERIFY_RAZORPAY: `${API_BASE_URL}/api/order/verifyrazorpay`,
     USER_ORDERS: `${API_BASE_URL}/api/order/userorder`,
+  },
+  SETTINGS: {
+    GET_BANNERS: `${API_BASE_URL}/api/setting/banners`,
   },
 };
 

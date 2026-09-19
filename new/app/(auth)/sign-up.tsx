@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -24,6 +25,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -63,6 +65,21 @@ export default function SignUpScreen() {
     }
   };
 
+  const handleGoogleSignUp = () => {
+    Alert.alert(
+      "Google Sign-In",
+      "Google authentication integration will be added soon!"
+    );
+  };
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/(auth)/sign-in" as any);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -74,32 +91,25 @@ export default function SignUpScreen() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
-          {/* Top Bar with Back Button */}
+          {/* Top Bar with Back Arrow */}
           <View style={styles.topBar}>
             <TouchableOpacity
               style={styles.backBtn}
-              onPress={() => router.back()}
+              onPress={handleBack}
               activeOpacity={0.7}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
-              <Ionicons name="arrow-back" size={20} color="#1A1D26" />
+              <Ionicons name="arrow-back" size={24} color="#111827" />
             </TouchableOpacity>
-
-            <View style={styles.logoRow}>
-              <View style={styles.logoCircleSmall}>
-                <Ionicons name="leaf" size={16} color="#FFFFFF" />
-              </View>
-              <Text style={styles.brandTitleSmall}>FreshMart</Text>
-            </View>
-
-            <View style={{ width: 40 }} />
           </View>
 
-          {/* Heading */}
-          <View style={styles.headerTextContainer}>
-            <Text style={styles.title}>Create Account 🌿</Text>
+          {/* Heading Section */}
+          <View style={styles.headerSection}>
+            <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>
-              Sign up today and get 20% off on your first fresh organic delivery.
+              Sign up to get started and enjoy shopping.
             </Text>
           </View>
 
@@ -113,39 +123,38 @@ export default function SignUpScreen() {
             ) : null}
 
             {/* Full Name */}
-            <Text style={styles.label}>Full Name</Text>
             <View style={styles.inputWrapper}>
               <Ionicons
                 name="person-outline"
                 size={20}
-                color="#8E94A4"
+                color="#9CA3AF"
                 style={styles.inputIcon}
               />
               <TextInput
                 style={styles.input}
-                placeholder="Your Name"
-                placeholderTextColor="#A0A5B5"
+                placeholder="Full Name"
+                placeholderTextColor="#9CA3AF"
                 value={fullName}
                 onChangeText={(text) => {
                   setFullName(text);
                   if (errorMessage) setErrorMessage("");
                 }}
+                autoCapitalize="words"
               />
             </View>
 
             {/* Email Address */}
-            <Text style={styles.label}>Email Address</Text>
             <View style={styles.inputWrapper}>
               <Ionicons
                 name="mail-outline"
                 size={20}
-                color="#8E94A4"
+                color="#9CA3AF"
                 style={styles.inputIcon}
               />
               <TextInput
                 style={styles.input}
-                placeholder="name@example.com"
-                placeholderTextColor="#A0A5B5"
+                placeholder="Email Address"
+                placeholderTextColor="#9CA3AF"
                 value={email}
                 onChangeText={(text) => {
                   setEmail(text);
@@ -153,22 +162,22 @@ export default function SignUpScreen() {
                 }}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoCorrect={false}
               />
             </View>
 
             {/* Password */}
-            <Text style={styles.label}>Password (minimum 8 characters)</Text>
             <View style={styles.inputWrapper}>
               <Ionicons
                 name="lock-closed-outline"
                 size={20}
-                color="#8E94A4"
+                color="#9CA3AF"
                 style={styles.inputIcon}
               />
               <TextInput
                 style={styles.input}
-                placeholder="Create a strong password"
-                placeholderTextColor="#A0A5B5"
+                placeholder="Password (min 8 chars)"
+                placeholderTextColor="#9CA3AF"
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);
@@ -180,38 +189,50 @@ export default function SignUpScreen() {
                 onPress={() => setShowPassword(!showPassword)}
                 style={styles.eyeIcon}
                 activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Ionicons
                   name={showPassword ? "eye-off-outline" : "eye-outline"}
                   size={20}
-                  color="#8E94A4"
+                  color="#9CA3AF"
                 />
               </TouchableOpacity>
             </View>
 
             {/* Confirm Password */}
-            <Text style={styles.label}>Confirm Password</Text>
             <View style={styles.inputWrapper}>
               <Ionicons
                 name="shield-checkmark-outline"
                 size={20}
-                color="#8E94A4"
+                color="#9CA3AF"
                 style={styles.inputIcon}
               />
               <TextInput
                 style={styles.input}
-                placeholder="Repeat your password"
-                placeholderTextColor="#A0A5B5"
+                placeholder="Confirm Password"
+                placeholderTextColor="#9CA3AF"
                 value={confirmPassword}
                 onChangeText={(text) => {
                   setConfirmPassword(text);
                   if (errorMessage) setErrorMessage("");
                 }}
-                secureTextEntry={!showPassword}
+                secureTextEntry={!showConfirmPassword}
               />
+              <TouchableOpacity
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                style={styles.eyeIcon}
+                activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons
+                  name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
+                  size={20}
+                  color="#9CA3AF"
+                />
+              </TouchableOpacity>
             </View>
 
-            {/* Terms Checkbox */}
+            {/* Terms and Conditions Checkbox */}
             <TouchableOpacity
               style={styles.termsRow}
               onPress={() => setAgreedToTerms(!agreedToTerms)}
@@ -224,7 +245,7 @@ export default function SignUpScreen() {
                 ]}
               >
                 {agreedToTerms && (
-                  <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                  <Ionicons name="checkmark" size={13} color="#FFFFFF" />
                 )}
               </View>
               <Text style={styles.termsText}>
@@ -234,9 +255,9 @@ export default function SignUpScreen() {
               </Text>
             </TouchableOpacity>
 
-            {/* Submit Button */}
+            {/* Primary Create Account Button */}
             <TouchableOpacity
-              style={[styles.submitBtn, isSubmitting && { opacity: 0.7 }]}
+              style={[styles.loginBtn, isSubmitting && { opacity: 0.75 }]}
               onPress={handleSignUp}
               disabled={isSubmitting}
               activeOpacity={0.85}
@@ -244,47 +265,37 @@ export default function SignUpScreen() {
               {isSubmitting ? (
                 <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
-                <>
-                  <Text style={styles.submitBtnText}>Create Account</Text>
-                  <Ionicons
-                    name="arrow-forward"
-                    size={18}
-                    color="#FFFFFF"
-                    style={{ marginLeft: 8 }}
-                  />
-                </>
+                <Text style={styles.loginBtnText}>Create Account</Text>
               )}
             </TouchableOpacity>
           </View>
 
-          {/* Social Divider */}
+          {/* Divider */}
           <View style={styles.dividerRow}>
             <View style={styles.divider} />
-            <Text style={styles.dividerText}>or sign up with</Text>
+            <Text style={styles.dividerText}>or continue with</Text>
             <View style={styles.divider} />
           </View>
 
-          {/* Social Buttons */}
+          {/* Social Login (Google only) */}
           <View style={styles.socialRow}>
-            <TouchableOpacity style={styles.socialBtn} activeOpacity={0.8}>
-              <Ionicons name="logo-google" size={20} color="#EA4335" />
-              <Text style={styles.socialBtnText}>Google</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.socialBtn} activeOpacity={0.8}>
-              <Ionicons name="logo-apple" size={20} color="#000000" />
-              <Text style={styles.socialBtnText}>Apple</Text>
+            <TouchableOpacity
+              style={styles.socialBtn}
+              onPress={handleGoogleSignUp}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="logo-google" size={24} color="#EA4335" />
             </TouchableOpacity>
           </View>
 
-          {/* Bottom Link to Sign In */}
+          {/* Bottom Sign In Link */}
           <View style={styles.bottomLinkRow}>
             <Text style={styles.bottomLinkText}>Already have an account? </Text>
             <TouchableOpacity
               onPress={() => router.push("/(auth)/sign-in" as any)}
               activeOpacity={0.7}
             >
-              <Text style={styles.signinLink}>Sign In</Text>
+              <Text style={styles.signupLink}>Sign In</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -302,92 +313,86 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 12,
     paddingBottom: 40,
+    flexGrow: 1,
   },
   topBar: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: 28,
+    marginTop: 4,
   },
   backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#EEF0F4",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFFFFF",
+    marginLeft: -8,
   },
-  logoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  logoCircleSmall: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#E05315",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  brandTitleSmall: {
-    fontSize: 16,
-    fontWeight: "800",
-    color: "#1A1D26",
-    marginLeft: 6,
-    letterSpacing: -0.3,
-  },
-  headerTextContainer: {
-    marginBottom: 24,
+  headerSection: {
+    marginBottom: 28,
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: "800",
-    color: "#1A1D26",
-    letterSpacing: -0.4,
+    color: "#111827",
+    letterSpacing: -0.8,
   },
   subtitle: {
-    fontSize: 13,
-    color: "#8B92A2",
-    marginTop: 6,
-    lineHeight: 19,
+    fontSize: 15,
+    color: "#6B7280",
+    marginTop: 8,
+    lineHeight: 22,
+    fontWeight: "400",
   },
   form: {
-    marginBottom: 16,
+    marginBottom: 8,
   },
-  label: {
+  errorBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEE2E2",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#FECACA",
+  },
+  errorText: {
+    color: "#DC2626",
     fontSize: 13,
-    fontWeight: "700",
-    color: "#1A1D26",
-    marginBottom: 6,
+    fontWeight: "500",
+    marginLeft: 8,
+    flex: 1,
   },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 1,
-    borderColor: "#EEF0F4",
-    backgroundColor: "#FAFBFD",
+    height: 56,
+    borderRadius: 16,
+    borderWidth: 1.2,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#FAFAFA",
     paddingHorizontal: 16,
-    marginBottom: 14,
+    marginBottom: 16,
   },
   inputIcon: {
-    marginRight: 10,
+    marginRight: 12,
   },
   input: {
     flex: 1,
-    fontSize: 14,
-    color: "#1A1D26",
+    fontSize: 15,
+    color: "#111827",
   },
   eyeIcon: {
     padding: 4,
   },
   termsRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    marginVertical: 12,
+    alignItems: "center",
+    marginTop: 4,
+    marginBottom: 24,
   },
   checkbox: {
     width: 20,
@@ -398,109 +403,91 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
-    marginTop: 2,
+    backgroundColor: "#FFFFFF",
   },
   checkboxActive: {
-    backgroundColor: "#E05315",
-    borderColor: "#E05315",
+    backgroundColor: "#2563EB",
+    borderColor: "#2563EB",
   },
   termsText: {
-    flex: 1,
-    fontSize: 12,
+    fontSize: 13,
     color: "#6B7280",
+    flex: 1,
     lineHeight: 18,
   },
   termsLink: {
-    color: "#E05315",
+    color: "#111827",
     fontWeight: "600",
   },
-  submitBtn: {
-    flexDirection: "row",
+  loginBtn: {
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: "#111827",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#E05315",
-    height: 52,
-    borderRadius: 26,
-    shadowColor: "#E05315",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.15,
     shadowRadius: 10,
-    elevation: 4,
-    marginTop: 10,
+    elevation: 3,
   },
-  submitBtnText: {
+  loginBtnText: {
     color: "#FFFFFF",
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "700",
+    letterSpacing: 0.2,
   },
   dividerRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 18,
+    marginVertical: 28,
   },
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: "#EEF0F4",
+    backgroundColor: "#E5E7EB",
   },
   dividerText: {
     fontSize: 12,
     color: "#9CA3AF",
-    marginHorizontal: 12,
+    marginHorizontal: 16,
+    fontWeight: "500",
   },
   socialRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 24,
   },
   socialBtn: {
-    flexDirection: "row",
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    borderWidth: 1.2,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    flex: 1,
-    height: 50,
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: "#EEF0F4",
-    backgroundColor: "#FFFFFF",
-    marginHorizontal: 6,
-  },
-  socialBtnText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#1A1D26",
-    marginLeft: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 1,
   },
   bottomLinkRow: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    marginTop: 8,
   },
   bottomLinkText: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#6B7280",
-  },
-  signinLink: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#E05315",
-  },
-  errorBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FEE2E2",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#FECACA",
-  },
-  errorText: {
-    color: "#DC2626",
-    fontSize: 13,
     fontWeight: "500",
-    marginLeft: 8,
-    flex: 1,
+  },
+  signupLink: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#2563EB",
   },
 });
