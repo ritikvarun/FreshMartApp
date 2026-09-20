@@ -153,7 +153,7 @@ export default function AdminDashboard() {
                 </View>
                 <Text style={styles.statLabel}>Total Store Revenue</Text>
                 <Text style={[styles.statValue, { color: "#10B981" }]}>
-                  ${totalRevenue.toFixed(2)}
+                  ₹{totalRevenue.toFixed(2)}
                 </Text>
               </View>
             </View>
@@ -208,7 +208,7 @@ export default function AdminDashboard() {
                     </View>
 
                     <View style={{ alignItems: "flex-end" }}>
-                      <Text style={styles.orderAmount}>${(ord.amount || 0).toFixed(2)}</Text>
+                      <Text style={styles.orderAmount}>₹{(ord.amount || 0).toFixed(2)}</Text>
                       <View style={styles.statusPill}>
                         <Text style={styles.statusPillText}>{ord.status || "Order Placed"}</Text>
                       </View>
