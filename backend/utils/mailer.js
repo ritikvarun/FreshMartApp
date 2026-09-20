@@ -63,10 +63,18 @@ export const sendAdminOrderAlert = async (orderDetails) => {
             : '<li>Order items recorded</li>'
 
         const streetStr = (address && typeof address === 'object') ? (address.street || '') : ''
+        const landmarkStr = (address && typeof address === 'object' && address.landmark) ? ` (Near ${address.landmark})` : ''
         const cityStr = (address && typeof address === 'object') ? (address.city || '') : ''
         const pinStr = (address && typeof address === 'object') ? (address.pinCode || address.pincode || '') : ''
         const phoneStr = (address && typeof address === 'object') ? (address.phone || 'Not provided') : (address || 'Not provided')
-        const displayAddress = (streetStr || cityStr) ? `${streetStr}, ${cityStr} — ${pinStr}` : (typeof address === 'string' ? address : 'Address recorded')
+        const displayAddress = (streetStr || cityStr) ? `${streetStr}${landmarkStr}, ${cityStr} — ${pinStr}` : (typeof address === 'string' ? address : 'Address recorded')
+
+        let mapUrl = ''
+        if (address && typeof address === 'object' && address.latitude && address.longitude) {
+            mapUrl = `https://www.google.com/maps/search/?api=1&query=${address.latitude},${address.longitude}`
+        } else {
+            mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(displayAddress)}`
+        }
 
         const formattedTime = new Date().toLocaleString("en-IN", {
             timeZone: "Asia/Kolkata",
@@ -91,9 +99,15 @@ export const sendAdminOrderAlert = async (orderDetails) => {
                         <p style="margin:0;color:#6b7280;font-size:14px;">${userEmail || 'Email not provided'}</p>
                     </div>
                     <div style="background:#f9fafb;padding:16px;border-radius:8px;margin-bottom:12px;">
-                        <p style="margin:0 0 4px;font-size:12px;color:#6b7280;text-transform:uppercase;font-weight:600;">Delivery Address</p>
+                        <p style="margin:0 0 4px;font-size:12px;color:#6b7280;text-transform:uppercase;font-weight:600;">
+                            Delivery Address
+                            ${address && typeof address === 'object' && address.isLiveLocation ? '<span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;margin-left:6px;">📍 GPS Live Location</span>' : ''}
+                        </p>
                         <p style="margin:0;color:#111;">${displayAddress}</p>
                         <p style="margin:4px 0 0;color:#6b7280;font-size:14px;">📞 ${phoneStr}</p>
+                        <div style="margin-top:10px;">
+                            <a href="${mapUrl}" style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;padding:6px 14px;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;display:inline-block;">🗺️ Open in Google Maps →</a>
+                        </div>
                     </div>
                     <div style="background:#f9fafb;padding:16px;border-radius:8px;margin-bottom:12px;">
                         <p style="margin:0 0 8px;font-size:12px;color:#6b7280;text-transform:uppercase;font-weight:600;">Items Ordered</p>

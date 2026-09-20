@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as SecureStore from "expo-secure-store";
+import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
@@ -33,9 +34,12 @@ export default function CheckoutScreen() {
   const [email, setEmail] = useState(user?.email || "");
   const [phone, setPhone] = useState(user?.phone || "");
   const [street, setStreet] = useState("");
+  const [landmark, setLandmark] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [pinCode, setPinCode] = useState("");
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+  const [liveLocation, setLiveLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [orderPlacedSuccess, setOrderPlacedSuccess] = useState(false);
@@ -78,9 +82,13 @@ export default function CheckoutScreen() {
           if (addr.phone) setPhone(addr.phone);
           if (addr.email) setEmail(addr.email);
           if (addr.street) setStreet(addr.street);
+          if (addr.landmark) setLandmark(addr.landmark);
           if (addr.city) setCity(addr.city);
           if (addr.state) setState(addr.state);
           if (addr.pinCode) setPinCode(addr.pinCode);
+          if (addr.latitude && addr.longitude) {
+            setLiveLocation({ latitude: addr.latitude, longitude: addr.longitude });
+          }
         }
         if (payPref) {
           setPaymentMethod(payPref);
@@ -91,6 +99,58 @@ export default function CheckoutScreen() {
     }
     loadSavedData();
   }, []);
+
+  // Use Current Location (GPS)
+  const handleUseCurrentLocation = async () => {
+    setIsFetchingLocation(true);
+    setErrorMessage("");
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission Denied",
+          "Location permission is needed to detect your exact delivery address. You can still enter your address manually."
+        );
+        setIsFetchingLocation(false);
+        return;
+      }
+
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      const { latitude, longitude } = loc.coords;
+      setLiveLocation({ latitude, longitude });
+
+      // Reverse geocode to get address components
+      try {
+        const reverseGeocode = await Location.reverseGeocodeAsync({ latitude, longitude });
+        if (reverseGeocode && reverseGeocode.length > 0) {
+          const res = reverseGeocode[0];
+          const detectedStreet = [res.name, res.street, res.subregion].filter(Boolean).join(", ");
+          if (detectedStreet) setStreet(detectedStreet);
+          if (res.city) setCity(res.city);
+          if (res.region) setState(res.region);
+          if (res.postalCode) setPinCode(res.postalCode);
+        }
+      } catch (geocodeErr) {
+        console.warn("Reverse geocode failed:", geocodeErr);
+      }
+
+      Alert.alert(
+        "Location Detected! 📍",
+        "Your exact GPS coordinates have been saved for delivery. Please verify or complete your house / street details."
+      );
+    } catch (err: any) {
+      console.error("Location error:", err);
+      Alert.alert(
+        "Location Detection Failed",
+        "Could not detect current location. Please enter your address manually."
+      );
+    } finally {
+      setIsFetchingLocation(false);
+    }
+  };
 
   const handlePlaceOrder = async () => {
     if (!isAuthenticated || !token) {
@@ -119,9 +179,13 @@ export default function CheckoutScreen() {
       email: email.trim(),
       phone: phone.trim(),
       street: street.trim(),
+      landmark: landmark.trim(),
       city: city.trim(),
       state: state.trim() || "Local",
       pinCode: pinCode.trim(),
+      latitude: liveLocation?.latitude || null,
+      longitude: liveLocation?.longitude || null,
+      isLiveLocation: !!liveLocation,
     };
 
     // Save address and payment method to storage for future orders
@@ -324,6 +388,35 @@ export default function CheckoutScreen() {
             <Text style={styles.sectionTitle}>Delivery Address</Text>
           </View>
 
+          {/* Use Current Location Button */}
+          <TouchableOpacity
+            style={styles.locationDetectBtn}
+            onPress={handleUseCurrentLocation}
+            disabled={isFetchingLocation}
+            activeOpacity={0.8}
+          >
+            {isFetchingLocation ? (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <ActivityIndicator size="small" color="#059669" />
+                <Text style={styles.locationDetectText}>Detecting your GPS location...</Text>
+              </View>
+            ) : (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <Ionicons name="navigate-circle" size={18} color="#059669" />
+                <Text style={styles.locationDetectText}>Use My Current Location (GPS)</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {liveLocation && (
+            <View style={styles.liveLocationActivePill}>
+              <Ionicons name="checkmark-circle" size={14} color="#059669" />
+              <Text style={styles.liveLocationActiveText}>
+                GPS Coordinates Locked: {liveLocation.latitude.toFixed(4)}, {liveLocation.longitude.toFixed(4)}
+              </Text>
+            </View>
+          )}
+
           <View style={styles.row}>
             <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
               <Text style={styles.inputLabel}>First Name *</Text>
@@ -376,6 +469,16 @@ export default function CheckoutScreen() {
               placeholder="e.g. Flat 4B, Green Avenue"
               value={street}
               onChangeText={setStreet}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Nearby Landmark (Optional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. Near Shiv Mandir / Opp. State Bank"
+              value={landmark}
+              onChangeText={setLandmark}
             />
           </View>
 
@@ -870,6 +973,39 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#1A1D26",
     marginLeft: 8,
+  },
+  locationDetectBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#ECFDF5",
+    borderWidth: 1.5,
+    borderColor: "#A7F3D0",
+    borderRadius: 14,
+    paddingVertical: 12,
+    marginBottom: 14,
+  },
+  locationDetectText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#059669",
+  },
+  liveLocationActivePill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "#F0FDF4",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    marginBottom: 14,
+  },
+  liveLocationActiveText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#166534",
   },
   row: {
     flexDirection: "row",

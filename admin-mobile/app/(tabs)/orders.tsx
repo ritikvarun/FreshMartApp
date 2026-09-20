@@ -11,6 +11,7 @@ import {
   Alert,
   Modal,
   Image,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -237,9 +238,66 @@ export default function AdminOrdersScreen() {
                   </View>
                   <View style={styles.infoRow}>
                     <Ionicons name="location-outline" size={14} color="#6B7280" />
-                    <Text style={styles.infoText} numberOfLines={1}>
-                      {order.address?.street}, {order.address?.city} ({order.address?.pinCode})
+                    <Text style={styles.infoText} numberOfLines={2}>
+                      {order.address?.street}
+                      {order.address?.landmark ? `, Near ${order.address.landmark}` : ""}
+                      {order.address?.city ? `, ${order.address.city}` : ""}
+                      {order.address?.pinCode ? ` (${order.address.pinCode})` : ""}
                     </Text>
+                  </View>
+
+                  {order.address?.isLiveLocation && (
+                    <View style={styles.liveLocationBadge}>
+                      <Ionicons name="navigate-circle" size={13} color="#059669" />
+                      <Text style={styles.liveLocationBadgeText}>GPS Live Location Verified</Text>
+                    </View>
+                  )}
+
+                  {/* Address Actions: Google Maps & Call */}
+                  <View style={styles.addressActionRow}>
+                    <TouchableOpacity
+                      style={styles.mapActionBtn}
+                      onPress={() => {
+                        const addr = order.address;
+                        let mapUrl = "";
+                        if (addr?.latitude && addr?.longitude) {
+                          mapUrl = `https://www.google.com/maps/search/?api=1&query=${addr.latitude},${addr.longitude}`;
+                        } else {
+                          const query = [
+                            addr?.street,
+                            addr?.landmark,
+                            addr?.city,
+                            addr?.state,
+                            addr?.pinCode,
+                          ]
+                            .filter(Boolean)
+                            .join(", ");
+                          mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+                        }
+                        Linking.openURL(mapUrl).catch(() => {
+                          Alert.alert("Error", "Could not open Google Maps.");
+                        });
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="map" size={13} color="#2563EB" />
+                      <Text style={styles.mapActionBtnText}>Open in Google Maps</Text>
+                    </TouchableOpacity>
+
+                    {order.address?.phone ? (
+                      <TouchableOpacity
+                        style={styles.callActionBtn}
+                        onPress={() => {
+                          Linking.openURL(`tel:${order.address.phone}`).catch(() => {
+                            Alert.alert("Error", "Could not make call.");
+                          });
+                        }}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons name="call" size={13} color="#059669" />
+                        <Text style={styles.callActionBtnText}>Call</Text>
+                      </TouchableOpacity>
+                    ) : null}
                   </View>
                 </View>
 
@@ -587,5 +645,67 @@ const styles = StyleSheet.create({
   modalOptionTextActive: {
     color: "#E05315",
     fontWeight: "700",
+  },
+  liveLocationBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "#ECFDF5",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    alignSelf: "flex-start",
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: "#A7F3D0",
+  },
+  liveLocationBadgeText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#059669",
+  },
+  addressActionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#F3F4F6",
+  },
+  mapActionBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#EFF6FF",
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    gap: 6,
+  },
+  mapActionBtnText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#2563EB",
+  },
+  callActionBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#ECFDF5",
+    borderWidth: 1,
+    borderColor: "#A7F3D0",
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    gap: 6,
+  },
+  callActionBtnText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#059669",
   },
 });
