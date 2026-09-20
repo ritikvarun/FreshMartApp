@@ -80,7 +80,7 @@ app.get("/api/test-order-alert", async (req, res) => {
       userEmail: "ritikvarun64@gmail.com",
       items: [{ name: "Test Shirt", size: "L", quantity: 1, price: 499 }],
       amount: 499,
-      address: { street: "ShopX Street", city: "Delhi", pinCode: "110001", phone: "9876543210" },
+      address: { street: "FreshMart Market", city: "Delhi", pinCode: "110001", phone: "9876543210" },
       paymentMethod: "COD",
       orderId: "TEST-" + Date.now()
     });

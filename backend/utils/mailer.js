@@ -5,7 +5,7 @@ dotenv.config()
 // ── Helper: send email safely (never crashes server) ─────────
 const getAdminEmail = () => {
     const rawEmail = process.env.ADMIN_EMAIL
-    if (rawEmail && !rawEmail.includes('example.com') && rawEmail.includes('@')) {
+    if (rawEmail && !rawEmail.includes('example.com') && !rawEmail.includes('freshmart.com') && rawEmail.includes('@')) {
         return rawEmail.trim()
     }
     return 'ritikvarun64@gmail.com'
@@ -15,34 +15,39 @@ const sendMail = async (options) => {
     try {
         const apiKey = process.env.RESEND_API_KEY
         if (!apiKey) {
-            console.error('❌ [ShopX Mailer] RESEND_API_KEY is missing in environment variables!')
+            console.error('❌ [FreshMart Mailer] RESEND_API_KEY is missing in environment variables!')
             return { error: 'RESEND_API_KEY is missing' }
         }
 
         const resend = new Resend(apiKey)
 
-        console.log(`📨 [ShopX Mailer] Sending email to: ${options.to}, Subject: ${options.subject}`)
+        console.log(`📨 [FreshMart Mailer] Sending email to: ${options.to}, Subject: ${options.subject}`)
+
+        const fromAddress = process.env.EMAIL_FROM || 
+            (process.env.EMAIL_USER && process.env.EMAIL_USER.includes('@') 
+                ? `FreshMart <${process.env.EMAIL_USER}>` 
+                : 'FreshMart <onboarding@resend.dev>')
 
         const response = await resend.emails.send({
-            from: 'ShopX <onboarding@resend.dev>',
+            from: fromAddress,
             to: options.to,
             subject: options.subject,
             html: options.html
         })
 
         if (response.error) {
-            console.error(`❌ [ShopX Mailer] Email failed to ${options.to}:`, JSON.stringify(response.error))
+            console.error(`❌ [FreshMart Mailer] Email failed to ${options.to}:`, JSON.stringify(response.error))
         } else {
-            console.log(`✅ [ShopX Mailer] Email sent successfully to: ${options.to} (ID: ${response.data?.id})`)
+            console.log(`✅ [FreshMart Mailer] Email sent successfully to: ${options.to} (ID: ${response.data?.id})`)
         }
         return response
     } catch (err) {
-        console.error(`❌ [ShopX Mailer] Exception in sendMail to ${options.to}:`, err.message)
+        console.error(`❌ [FreshMart Mailer] Exception in sendMail to ${options.to}:`, err.message)
         return { error: err.message }
     }
 }
 
-// ── 1. User: Order Confirmation (Disabled) ───────────────────
+// ── 1. User: Order Confirmation (Disabled on free Resend tier) ──
 export const sendOrderConfirmation = async (userEmail, userName, items, totalAmount, orderId) => {
     return null
 }
@@ -71,11 +76,11 @@ export const sendAdminOrderAlert = async (orderDetails) => {
 
         return await sendMail({
             to: adminEmail,
-            subject: `🛒 New Order Received — ₹${amount} — ShopX`,
+            subject: `🛒 New Order Received — ₹${amount} — FreshMart`,
             html: `
             <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
-                <div style="background:#000;padding:24px 32px;">
-                    <h1 style="color:#fff;margin:0;font-size:22px;">ShopX Admin</h1>
+                <div style="background:#16a34a;padding:24px 32px;">
+                    <h1 style="color:#fff;margin:0;font-size:22px;">FreshMart Admin</h1>
                     <span style="background:#22c55e;color:#fff;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;display:inline-block;margin-top:8px;">New Order</span>
                 </div>
                 <div style="padding:32px;">
@@ -94,14 +99,14 @@ export const sendAdminOrderAlert = async (orderDetails) => {
                         <p style="margin:0 0 8px;font-size:12px;color:#6b7280;text-transform:uppercase;font-weight:600;">Items Ordered</p>
                         <ul style="margin:0;padding-left:20px;color:#374151;font-size:14px;">${itemList}</ul>
                     </div>
-                    <div style="padding:16px;background:#000;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
-                        <span style="color:#d1d5db;font-weight:600;">Total · ${paymentMethod || 'COD'}</span>
+                    <div style="padding:16px;background:#16a34a;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
+                        <span style="color:#f0fdf4;font-weight:600;">Total · ${paymentMethod || 'COD'}</span>
                         <span style="color:#fff;font-weight:700;font-size:20px;">₹${amount}</span>
                     </div>
                     <p style="margin:16px 0 0;color:#6b7280;font-size:13px;">⏰ Time (IST): <b>${formattedTime}</b></p>
                     <div style="margin-top:20px;text-align:center;">
-                        <a href="${(process.env.ADMIN_URL || (process.env.NODE_ENV === 'production' ? 'https://shopx-admin-ktdc.onrender.com' : 'http://localhost:5174')).replace(/\/$/, '')}/orders"
-                           style="background:#000;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
+                        <a href="${(process.env.ADMIN_URL || 'https://freshmartapp.onrender.com').replace(/\/$/, '')}/orders"
+                           style="background:#16a34a;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
                             View in Admin Panel →
                         </a>
                     </div>
@@ -110,7 +115,7 @@ export const sendAdminOrderAlert = async (orderDetails) => {
             </div>`
         })
     } catch (err) {
-        console.error("❌ [ShopX Mailer] Error in sendAdminOrderAlert:", err.message)
+        console.error("❌ [FreshMart Mailer] Error in sendAdminOrderAlert:", err.message)
         return null
     }
 }
@@ -127,15 +132,15 @@ export const sendAdminNewUserAlert = async (userName, userEmail, method = 'Stand
 
         return await sendMail({
             to: adminEmail,
-            subject: `🎉 New User Joined ShopX — ${userName}`,
+            subject: `🎉 New User Joined FreshMart — ${userName}`,
             html: `
             <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
-                <div style="background:#000;padding:24px 32px;">
-                    <h1 style="color:#fff;margin:0;font-size:22px;">ShopX Admin</h1>
-                    <span style="background:#10b981;color:#fff;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;display:inline-block;margin-top:8px;">New User Registration</span>
+                <div style="background:#16a34a;padding:24px 32px;">
+                    <h1 style="color:#fff;margin:0;font-size:22px;">FreshMart Admin</h1>
+                    <span style="background:#22c55e;color:#fff;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;display:inline-block;margin-top:8px;">New User Registration</span>
                 </div>
                 <div style="padding:32px;">
-                    <h2 style="margin:0 0 20px;color:#111;">New User Joined ShopX 🚀</h2>
+                    <h2 style="margin:0 0 20px;color:#111;">New User Joined FreshMart 🚀</h2>
                     <div style="background:#f9fafb;padding:16px;border-radius:8px;margin-bottom:16px;border:1px solid #e5e7eb;">
                         <p style="margin:0 0 6px;font-size:12px;color:#6b7280;text-transform:uppercase;font-weight:600;">Customer Info</p>
                         <p style="margin:4px 0;color:#111;font-weight:600;font-size:16px;">👤 ${userName}</p>
@@ -144,19 +149,19 @@ export const sendAdminNewUserAlert = async (userName, userEmail, method = 'Stand
                         <p style="margin:4px 0;color:#6b7280;font-size:13px;">⏰ Time (IST): <b>${formattedTime}</b></p>
                     </div>
                     <div style="margin-top:20px;text-align:center;">
-                        <a href="${(process.env.ADMIN_URL || (process.env.NODE_ENV === 'production' ? 'https://shopx-admin-ktdc.onrender.com' : 'http://localhost:5174')).replace(/\/$/, '')}/users"
-                           style="background:#000;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
+                        <a href="${(process.env.ADMIN_URL || 'https://freshmartapp.onrender.com').replace(/\/$/, '')}/users"
+                           style="background:#16a34a;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
                             View Users in Admin Panel →
                         </a>
                     </div>
                 </div>
                 <div style="background:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;text-align:center;">
-                    <p style="color:#9ca3af;font-size:12px;margin:0;">© 2026 ShopX Admin Notification System</p>
+                    <p style="color:#9ca3af;font-size:12px;margin:0;">© 2026 FreshMart Admin Notification System</p>
                 </div>
             </div>`
         })
     } catch (err) {
-        console.error("❌ [ShopX Mailer] Error in sendAdminNewUserAlert:", err.message)
+        console.error("❌ [FreshMart Mailer] Error in sendAdminNewUserAlert:", err.message)
         return null
     }
 }
@@ -174,15 +179,15 @@ export const sendReturnRequestEmail = async (userEmail, userName, details) => {
 // ── 6. Admin: Return Alert ────────────────────────────────────
 export const sendAdminReturnAlert = async (adminEmail, { userName, userEmail, itemName, reason, description, actionType, refundMethod, refundDetails, returnId }) => {
     try {
-        const targetEmail = adminEmail && !adminEmail.includes('example.com') && adminEmail.includes('@') ? adminEmail.trim() : getAdminEmail()
+        const targetEmail = adminEmail && !adminEmail.includes('example.com') && !adminEmail.includes('freshmart.com') && adminEmail.includes('@') ? adminEmail.trim() : getAdminEmail()
 
         return await sendMail({
             to: targetEmail,
-            subject: `↩️ New ${actionType} Request — ${itemName} — ShopX`,
+            subject: `↩️ New ${actionType} Request — ${itemName} — FreshMart`,
             html: `
             <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
-                <div style="background:#000;padding:24px 32px;">
-                    <h1 style="color:#fff;margin:0;font-size:22px;">ShopX Admin</h1>
+                <div style="background:#16a34a;padding:24px 32px;">
+                    <h1 style="color:#fff;margin:0;font-size:22px;">FreshMart Admin</h1>
                     <span style="background:#ef4444;color:#fff;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;display:inline-block;margin-top:8px;">${actionType} Request</span>
                 </div>
                 <div style="padding:32px;">
@@ -212,8 +217,8 @@ export const sendAdminReturnAlert = async (adminEmail, { userName, userEmail, it
                     </div>
                     `}
                     <div style="margin-top:20px;text-align:center;">
-                        <a href="${(process.env.ADMIN_URL || (process.env.NODE_ENV === 'production' ? 'https://shopx-admin-ktdc.onrender.com' : 'http://localhost:5174')).replace(/\/$/, '')}/returns"
-                           style="background:#000;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
+                        <a href="${(process.env.ADMIN_URL || 'https://freshmartapp.onrender.com').replace(/\/$/, '')}/returns"
+                           style="background:#16a34a;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
                             View Returns Panel →
                         </a>
                     </div>
@@ -222,7 +227,7 @@ export const sendAdminReturnAlert = async (adminEmail, { userName, userEmail, it
             </div>`
         })
     } catch (err) {
-        console.error("❌ [ShopX Mailer] Error in sendAdminReturnAlert:", err.message)
+        console.error("❌ [FreshMart Mailer] Error in sendAdminReturnAlert:", err.message)
         return null
     }
 }
