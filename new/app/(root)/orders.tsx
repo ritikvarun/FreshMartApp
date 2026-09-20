@@ -448,33 +448,28 @@ export default function OrdersScreen() {
                   ))}
                 </View>
 
-                {/* Return / Replacement Action Box */}
-                <View style={styles.returnSection}>
-                  {orderReturn ? (
-                    <View style={styles.returnStatusPill}>
-                      <Ionicons name="sync-circle" size={16} color="#D97706" />
-                      <Text style={styles.returnStatusPillText}>
-                        Return {orderReturn.actionType} Status: <Text style={{ fontWeight: "800" }}>{orderReturn.status || "Pending"}</Text>
-                      </Text>
-                    </View>
-                  ) : order.status === "Delivered" ? (
-                    <TouchableOpacity
-                      style={styles.returnActionBtn}
-                      onPress={() => handleOpenReturnModal(order)}
-                      activeOpacity={0.8}
-                    >
-                      <Ionicons name="refresh-outline" size={15} color="#0F172A" />
-                      <Text style={styles.returnActionBtnText}>Request Return / Replacement</Text>
-                    </TouchableOpacity>
-                  ) : (
-                    <View style={styles.returnNoticeBox}>
-                      <Ionicons name="information-circle-outline" size={14} color="#64748B" />
-                      <Text style={styles.returnNoticeText}>
-                        Return & Replacement available once order is Delivered
-                      </Text>
-                    </View>
-                  )}
-                </View>
+                {/* Return / Replacement Action Box (Only for Delivered orders or Active Returns) */}
+                {(orderReturn || order.status === "Delivered") && (
+                  <View style={styles.returnSection}>
+                    {orderReturn ? (
+                      <View style={styles.returnStatusPill}>
+                        <Ionicons name="sync-circle" size={16} color="#D97706" />
+                        <Text style={styles.returnStatusPillText}>
+                          Return {orderReturn.actionType} Status: <Text style={{ fontWeight: "800" }}>{orderReturn.status || "Pending"}</Text>
+                        </Text>
+                      </View>
+                    ) : (
+                      <TouchableOpacity
+                        style={styles.returnActionBtn}
+                        onPress={() => handleOpenReturnModal(order)}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons name="refresh-outline" size={15} color="#0F172A" />
+                        <Text style={styles.returnActionBtnText}>Request Return / Replacement</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                )}
 
                 {/* Order Footer: Payment & Total Amount */}
                 <View style={styles.orderFooter}>
