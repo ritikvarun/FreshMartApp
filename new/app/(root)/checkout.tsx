@@ -45,10 +45,16 @@ export default function CheckoutScreen() {
   const [placedOrderAmount, setPlacedOrderAmount] = useState(0);
   const [placedPaymentMethod, setPlacedPaymentMethod] = useState("COD");
 
-  // Razorpay Interactive Payment Gateway Sheet
+  // Razorpay Interactive Payment Gateway Sheet (Test Mode Simulation)
   const [showRazorpayModal, setShowRazorpayModal] = useState(false);
   const [razorpayOrderData, setRazorpayOrderData] = useState<any>(null);
-  const [selectedUpiApp, setSelectedUpiApp] = useState("gpay");
+  const [selectedUpiApp, setSelectedUpiApp] = useState<"gpay" | "phonepe" | "card" | "netbanking">("gpay");
+  const [rzpStep, setRzpStep] = useState<"select" | "upi_wait" | "card_otp">("select");
+  const [testUpiId, setTestUpiId] = useState("user@okhdfcbank");
+  const [testCardNumber, setTestCardNumber] = useState("4111 1111 1111 1111");
+  const [testCardExpiry, setTestCardExpiry] = useState("12/28");
+  const [testCardCvv, setTestCardCvv] = useState("123");
+  const [testOtp, setTestOtp] = useState("123456");
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   // Load saved address and payment preference
@@ -501,23 +507,36 @@ export default function CheckoutScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Razorpay Interactive Payment Sheet */}
+      {/* Razorpay Interactive Payment Sheet Modal (Test Mode Simulation) */}
       <Modal
         visible={showRazorpayModal}
-        transparent
         animationType="slide"
+        transparent={true}
         onRequestClose={() => !isProcessingPayment && setShowRazorpayModal(false)}
       >
         <View style={styles.rzpModalOverlay}>
           <View style={styles.rzpModalSheet}>
-            {/* Razorpay Top Brand Header */}
+            {/* Header */}
             <View style={styles.rzpHeader}>
               <View style={styles.rzpBrandRow}>
+                {rzpStep !== "select" && (
+                  <TouchableOpacity
+                    onPress={() => !isProcessingPayment && setRzpStep("select")}
+                    style={styles.rzpBackStepBtn}
+                  >
+                    <Ionicons name="arrow-back" size={20} color="#0F172A" />
+                  </TouchableOpacity>
+                )}
                 <View style={styles.rzpLogoBadge}>
                   <Ionicons name="flash" size={16} color="#0284C7" />
                 </View>
                 <View>
-                  <Text style={styles.rzpBrandTitle}>Razorpay Trusted</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <Text style={styles.rzpBrandTitle}>Razorpay</Text>
+                    <View style={styles.rzpTestBadge}>
+                      <Text style={styles.rzpTestBadgeText}>TEST MODE</Text>
+                    </View>
+                  </View>
                   <Text style={styles.rzpBrandSub}>Secure 256-Bit SSL Encrypted</Text>
                 </View>
               </View>
@@ -532,98 +551,242 @@ export default function CheckoutScreen() {
 
             {/* Total Amount Pill */}
             <View style={styles.rzpAmountCard}>
-              <Text style={styles.rzpAmountLabel}>Amount to Pay</Text>
+              <View>
+                <Text style={styles.rzpAmountLabel}>Order Total</Text>
+                <Text style={styles.rzpMerchantText}>FreshMart Store</Text>
+              </View>
               <Text style={styles.rzpAmountValue}>₹{grandTotal.toFixed(0)}</Text>
             </View>
 
-            {/* Payment Method Selector */}
-            <Text style={styles.rzpSectionTitle}>Select Payment Option</Text>
+            {/* STEP 1: PAYMENT METHOD SELECTION */}
+            {rzpStep === "select" && (
+              <View>
+                <Text style={styles.rzpSectionTitle}>Select Payment Option</Text>
 
-            {/* UPI Option */}
-            <TouchableOpacity
-              style={[styles.rzpOptionCard, selectedUpiApp === "gpay" && styles.rzpOptionActive]}
-              onPress={() => setSelectedUpiApp("gpay")}
-              activeOpacity={0.8}
-            >
-              <View style={styles.rzpOptionLeft}>
-                <View style={[styles.rzpOptionIcon, { backgroundColor: "#E0F2FE" }]}>
-                  <Ionicons name="logo-google" size={18} color="#0284C7" />
-                </View>
-                <View>
-                  <Text style={styles.rzpOptionTitle}>Google Pay / UPI</Text>
-                  <Text style={styles.rzpOptionSub}>Instant UPI payment</Text>
-                </View>
+                {/* Google Pay / UPI */}
+                <TouchableOpacity
+                  style={[styles.rzpOptionCard, selectedUpiApp === "gpay" && styles.rzpOptionActive]}
+                  onPress={() => setSelectedUpiApp("gpay")}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.rzpOptionLeft}>
+                    <View style={[styles.rzpOptionIcon, { backgroundColor: "#E0F2FE" }]}>
+                      <Ionicons name="logo-google" size={18} color="#0284C7" />
+                    </View>
+                    <View>
+                      <Text style={styles.rzpOptionTitle}>Google Pay / UPI</Text>
+                      <Text style={styles.rzpOptionSub}>Instant UPI payment</Text>
+                    </View>
+                  </View>
+                  <Ionicons
+                    name={selectedUpiApp === "gpay" ? "radio-button-on" : "radio-button-off"}
+                    size={20}
+                    color={selectedUpiApp === "gpay" ? "#0F172A" : "#CBD5E1"}
+                  />
+                </TouchableOpacity>
+
+                {/* PhonePe / Paytm */}
+                <TouchableOpacity
+                  style={[styles.rzpOptionCard, selectedUpiApp === "phonepe" && styles.rzpOptionActive]}
+                  onPress={() => setSelectedUpiApp("phonepe")}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.rzpOptionLeft}>
+                    <View style={[styles.rzpOptionIcon, { backgroundColor: "#F3E8FF" }]}>
+                      <Ionicons name="phone-portrait-outline" size={18} color="#7E22CE" />
+                    </View>
+                    <View>
+                      <Text style={styles.rzpOptionTitle}>PhonePe / Paytm</Text>
+                      <Text style={styles.rzpOptionSub}>Pay via PhonePe or Paytm</Text>
+                    </View>
+                  </View>
+                  <Ionicons
+                    name={selectedUpiApp === "phonepe" ? "radio-button-on" : "radio-button-off"}
+                    size={20}
+                    color={selectedUpiApp === "phonepe" ? "#0F172A" : "#CBD5E1"}
+                  />
+                </TouchableOpacity>
+
+                {/* Credit / Debit Card */}
+                <TouchableOpacity
+                  style={[styles.rzpOptionCard, selectedUpiApp === "card" && styles.rzpOptionActive]}
+                  onPress={() => setSelectedUpiApp("card")}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.rzpOptionLeft}>
+                    <View style={[styles.rzpOptionIcon, { backgroundColor: "#FEF3C7" }]}>
+                      <Ionicons name="card-outline" size={18} color="#D97706" />
+                    </View>
+                    <View>
+                      <Text style={styles.rzpOptionTitle}>Cards (Visa, Master, RuPay)</Text>
+                      <Text style={styles.rzpOptionSub}>Credit and debit cards</Text>
+                    </View>
+                  </View>
+                  <Ionicons
+                    name={selectedUpiApp === "card" ? "radio-button-on" : "radio-button-off"}
+                    size={20}
+                    color={selectedUpiApp === "card" ? "#0F172A" : "#CBD5E1"}
+                  />
+                </TouchableOpacity>
+
+                {/* NetBanking */}
+                <TouchableOpacity
+                  style={[styles.rzpOptionCard, selectedUpiApp === "netbanking" && styles.rzpOptionActive]}
+                  onPress={() => setSelectedUpiApp("netbanking")}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.rzpOptionLeft}>
+                    <View style={[styles.rzpOptionIcon, { backgroundColor: "#DCFCE7" }]}>
+                      <Ionicons name="business-outline" size={18} color="#15803D" />
+                    </View>
+                    <View>
+                      <Text style={styles.rzpOptionTitle}>NetBanking</Text>
+                      <Text style={styles.rzpOptionSub}>All Indian banks supported</Text>
+                    </View>
+                  </View>
+                  <Ionicons
+                    name={selectedUpiApp === "netbanking" ? "radio-button-on" : "radio-button-off"}
+                    size={20}
+                    color={selectedUpiApp === "netbanking" ? "#0F172A" : "#CBD5E1"}
+                  />
+                </TouchableOpacity>
+
+                {/* Proceed Button */}
+                <TouchableOpacity
+                  style={styles.rzpPayBtn}
+                  onPress={() => {
+                    if (selectedUpiApp === "gpay" || selectedUpiApp === "phonepe") {
+                      setRzpStep("upi_wait");
+                    } else if (selectedUpiApp === "card") {
+                      setRzpStep("card_otp");
+                    } else {
+                      handleCompleteRazorpayPayment();
+                    }
+                  }}
+                  activeOpacity={0.9}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <Ionicons name="arrow-forward-circle" size={18} color="#FFFFFF" />
+                    <Text style={styles.rzpPayBtnText}>Proceed to Pay ₹{grandTotal.toFixed(0)}</Text>
+                  </View>
+                </TouchableOpacity>
               </View>
-              <Ionicons
-                name={selectedUpiApp === "gpay" ? "radio-button-on" : "radio-button-off"}
-                size={20}
-                color={selectedUpiApp === "gpay" ? "#0F172A" : "#CBD5E1"}
-              />
-            </TouchableOpacity>
+            )}
 
-            {/* PhonePe / Paytm */}
-            <TouchableOpacity
-              style={[styles.rzpOptionCard, selectedUpiApp === "phonepe" && styles.rzpOptionActive]}
-              onPress={() => setSelectedUpiApp("phonepe")}
-              activeOpacity={0.8}
-            >
-              <View style={styles.rzpOptionLeft}>
-                <View style={[styles.rzpOptionIcon, { backgroundColor: "#F3E8FF" }]}>
-                  <Ionicons name="phone-portrait-outline" size={18} color="#7E22CE" />
+            {/* STEP 2: UPI PAYMENT SIMULATOR */}
+            {rzpStep === "upi_wait" && (
+              <View style={styles.rzpSimulationBox}>
+                <View style={styles.rzpSimulationIconCircle}>
+                  <Ionicons name="phone-portrait" size={32} color="#0284C7" />
                 </View>
-                <View>
-                  <Text style={styles.rzpOptionTitle}>PhonePe / Paytm</Text>
-                  <Text style={styles.rzpOptionSub}>Pay via PhonePe or Paytm</Text>
+                <Text style={styles.rzpSimulationTitle}>Approve UPI Payment</Text>
+                <Text style={styles.rzpSimulationSub}>
+                  A payment request of <Text style={{ fontWeight: "800", color: "#0F172A" }}>₹{grandTotal.toFixed(0)}</Text> has been sent to your UPI App.
+                </Text>
+
+                <View style={styles.rzpSimulationInfoRow}>
+                  <Text style={styles.rzpSimulationInfoLabel}>UPI ID:</Text>
+                  <Text style={styles.rzpSimulationInfoValue}>{testUpiId}</Text>
                 </View>
+
+                <View style={styles.rzpTimerBox}>
+                  <Ionicons name="time-outline" size={16} color="#D97706" />
+                  <Text style={styles.rzpTimerText}>Request expires in: 04:59</Text>
+                </View>
+
+                <Text style={styles.rzpSimNotice}>⚡ Razorpay Test Mode: Choose action to test</Text>
+
+                {/* Simulate Success Button */}
+                <TouchableOpacity
+                  style={[styles.rzpSuccessBtn, isProcessingPayment && { opacity: 0.7 }]}
+                  onPress={handleCompleteRazorpayPayment}
+                  disabled={isProcessingPayment}
+                  activeOpacity={0.9}
+                >
+                  {isProcessingPayment ? (
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                      <ActivityIndicator color="#FFFFFF" size="small" />
+                      <Text style={styles.rzpPayBtnText}>Verifying Payment...</Text>
+                    </View>
+                  ) : (
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                      <Ionicons name="checkmark-circle" size={18} color="#FFFFFF" />
+                      <Text style={styles.rzpPayBtnText}>Simulate Success (Approve)</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                {/* Simulate Failure Button */}
+                <TouchableOpacity
+                  style={styles.rzpFailureBtn}
+                  onPress={() => {
+                    Alert.alert("Payment Cancelled", "UPI payment request was declined.");
+                    setRzpStep("select");
+                  }}
+                  disabled={isProcessingPayment}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.rzpFailureBtnText}>Simulate Failure (Decline)</Text>
+                </TouchableOpacity>
               </View>
-              <Ionicons
-                name={selectedUpiApp === "phonepe" ? "radio-button-on" : "radio-button-off"}
-                size={20}
-                color={selectedUpiApp === "phonepe" ? "#0F172A" : "#CBD5E1"}
-              />
-            </TouchableOpacity>
+            )}
 
-            {/* Credit / Debit Card */}
-            <TouchableOpacity
-              style={[styles.rzpOptionCard, selectedUpiApp === "card" && styles.rzpOptionActive]}
-              onPress={() => setSelectedUpiApp("card")}
-              activeOpacity={0.8}
-            >
-              <View style={styles.rzpOptionLeft}>
-                <View style={[styles.rzpOptionIcon, { backgroundColor: "#FEF3C7" }]}>
-                  <Ionicons name="card-outline" size={18} color="#D97706" />
+            {/* STEP 3: CARD 3D SECURE OTP SIMULATOR */}
+            {rzpStep === "card_otp" && (
+              <View style={styles.rzpSimulationBox}>
+                <View style={[styles.rzpSimulationIconCircle, { backgroundColor: "#FEF3C7" }]}>
+                  <Ionicons name="shield-checkmark" size={32} color="#D97706" />
                 </View>
-                <View>
-                  <Text style={styles.rzpOptionTitle}>Cards (Visa, Master, RuPay)</Text>
-                  <Text style={styles.rzpOptionSub}>Credit and debit cards</Text>
+                <Text style={styles.rzpSimulationTitle}>Bank 3D Secure OTP</Text>
+                <Text style={styles.rzpSimulationSub}>
+                  Enter the 6-digit OTP sent to your registered mobile number for card ending in <Text style={{ fontWeight: "800", color: "#0F172A" }}>1111</Text>.
+                </Text>
+
+                <View style={styles.rzpOtpInputBox}>
+                  <Text style={styles.rzpOtpLabel}>ENTER OTP</Text>
+                  <TextInput
+                    style={styles.rzpOtpInput}
+                    value={testOtp}
+                    onChangeText={setTestOtp}
+                    keyboardType="number-pad"
+                    maxLength={6}
+                    placeholder="123456"
+                    placeholderTextColor="#94A3B8"
+                  />
+                  <Text style={styles.rzpOtpHint}>Test Mode OTP is: 123456</Text>
                 </View>
+
+                {/* Submit OTP Button */}
+                <TouchableOpacity
+                  style={[styles.rzpPayBtn, isProcessingPayment && { opacity: 0.7 }]}
+                  onPress={handleCompleteRazorpayPayment}
+                  disabled={isProcessingPayment}
+                  activeOpacity={0.9}
+                >
+                  {isProcessingPayment ? (
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                      <ActivityIndicator color="#FFFFFF" size="small" />
+                      <Text style={styles.rzpPayBtnText}>Verifying OTP...</Text>
+                    </View>
+                  ) : (
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                      <Ionicons name="lock-closed" size={18} color="#FFFFFF" />
+                      <Text style={styles.rzpPayBtnText}>Submit OTP & Pay ₹{grandTotal.toFixed(0)}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                {/* Cancel Button */}
+                <TouchableOpacity
+                  style={styles.rzpCancelBtn}
+                  onPress={() => setRzpStep("select")}
+                  disabled={isProcessingPayment}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.rzpCancelBtnText}>Cancel Transaction</Text>
+                </TouchableOpacity>
               </View>
-              <Ionicons
-                name={selectedUpiApp === "card" ? "radio-button-on" : "radio-button-off"}
-                size={20}
-                color={selectedUpiApp === "card" ? "#0F172A" : "#CBD5E1"}
-              />
-            </TouchableOpacity>
-
-            {/* Pay Button */}
-            <TouchableOpacity
-              style={[styles.rzpPayBtn, isProcessingPayment && { opacity: 0.7 }]}
-              onPress={handleCompleteRazorpayPayment}
-              disabled={isProcessingPayment}
-              activeOpacity={0.9}
-            >
-              {isProcessingPayment ? (
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                  <Text style={styles.rzpPayBtnText}>Verifying Payment...</Text>
-                </View>
-              ) : (
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                  <Ionicons name="shield-checkmark" size={18} color="#FFFFFF" />
-                  <Text style={styles.rzpPayBtnText}>Pay Securely ₹{grandTotal.toFixed(0)}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
+            )}
           </View>
         </View>
       </Modal>
@@ -1091,5 +1254,171 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 15,
     fontWeight: "800",
+  },
+  rzpBackStepBtn: {
+    padding: 4,
+    marginRight: 4,
+  },
+  rzpTestBadge: {
+    backgroundColor: "#FEF3C7",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+  },
+  rzpTestBadgeText: {
+    fontSize: 9,
+    fontWeight: "800",
+    color: "#B45309",
+    letterSpacing: 0.5,
+  },
+  rzpMerchantText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#0F172A",
+    marginTop: 2,
+  },
+  rzpSimulationBox: {
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  rzpSimulationIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#E0F2FE",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  rzpSimulationTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#0F172A",
+    marginBottom: 6,
+  },
+  rzpSimulationSub: {
+    fontSize: 13,
+    color: "#64748B",
+    textAlign: "center",
+    lineHeight: 18,
+    marginBottom: 14,
+    paddingHorizontal: 16,
+  },
+  rzpSimulationInfoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginBottom: 12,
+  },
+  rzpSimulationInfoLabel: {
+    fontSize: 12,
+    color: "#64748B",
+    fontWeight: "600",
+  },
+  rzpSimulationInfoValue: {
+    fontSize: 12,
+    color: "#0F172A",
+    fontWeight: "700",
+  },
+  rzpTimerBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 14,
+  },
+  rzpTimerText: {
+    fontSize: 12,
+    color: "#D97706",
+    fontWeight: "700",
+  },
+  rzpSimNotice: {
+    fontSize: 11,
+    color: "#64748B",
+    fontWeight: "600",
+    marginBottom: 14,
+  },
+  rzpSuccessBtn: {
+    backgroundColor: "#10B981",
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    marginBottom: 10,
+    shadowColor: "#10B981",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  rzpFailureBtn: {
+    borderWidth: 1.5,
+    borderColor: "#EF4444",
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    backgroundColor: "#FEF2F2",
+  },
+  rzpFailureBtnText: {
+    color: "#DC2626",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  rzpOtpInputBox: {
+    width: "100%",
+    backgroundColor: "#F8FAFC",
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginBottom: 16,
+    alignItems: "center",
+  },
+  rzpOtpLabel: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#64748B",
+    letterSpacing: 0.8,
+    marginBottom: 8,
+  },
+  rzpOtpInput: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#CBD5E1",
+    borderRadius: 12,
+    width: "80%",
+    height: 48,
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "800",
+    letterSpacing: 6,
+    color: "#0F172A",
+    marginBottom: 6,
+  },
+  rzpOtpHint: {
+    fontSize: 11,
+    color: "#64748B",
+    fontWeight: "500",
+  },
+  rzpCancelBtn: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    marginTop: 6,
+  },
+  rzpCancelBtnText: {
+    color: "#64748B",
+    fontSize: 13,
+    fontWeight: "600",
   },
 });
