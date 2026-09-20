@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -13,14 +13,47 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useRouter } from "expo-router";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 import { ENDPOINTS } from "../../config/api";
 
+const PRESET_CATEGORIES = ["All", "Men", "Women", "Kids", "Shoes", "Accessories", "Unisex"];
+
+const getCategoryIcon = (cat: string) => {
+  switch (cat.toLowerCase()) {
+    case "men":
+      return "shirt-outline";
+    case "women":
+      return "woman-outline";
+    case "kids":
+      return "happy-outline";
+    case "shoes":
+      return "footsteps-outline";
+    case "accessories":
+      return "watch-outline";
+    case "oils":
+    case "organic":
+      return "water-outline";
+    case "snack":
+    case "bakery":
+      return "fast-food-outline";
+    case "fresh":
+    case "dairy":
+      return "leaf-outline";
+    case "beauty":
+      return "sparkles-outline";
+    default:
+      return "pricetag-outline";
+  }
+};
+
 export default function AdminProductsScreen() {
+  const router = useRouter();
   const { adminToken } = useAdminAuth();
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
 
   const fetchProducts = async () => {
     setIsLoading(true);
@@ -76,9 +109,95 @@ export default function AdminProductsScreen() {
     );
   };
 
-  const filtered = products.filter((p) =>
-    p.name?.toLowerCase().includes(search.toLowerCase()) ||
-    p.category?.toLowerCase().includes(search.toLowerCase())
+  // Collect all unique categories from products & presets
+  const availableCategories = useMemo(() => {
+    const cats = new Set<string>(PRESET_CATEGORIES);
+    products.forEach((p) => {
+      if (p.category && p.category.trim()) {
+        const norm = p.category.trim().charAt(0).toUpperCase() + p.category.trim().slice(1);
+        cats.add(norm);
+      }
+    });
+    return Array.from(cats);
+  }, [products]);
+
+  // Product counts per category
+  const getCategoryCount = (cat: string) => {
+    if (cat === "All") return products.length;
+    return products.filter(
+      (p) => (p.category || "").trim().toLowerCase() === cat.trim().toLowerCase()
+    ).length;
+  };
+
+  // Filtered by Search & Active Category
+  const filtered = useMemo(() => {
+    return products.filter((p) => {
+      const matchesSearch =
+        p.name?.toLowerCase().includes(search.toLowerCase()) ||
+        p.category?.toLowerCase().includes(search.toLowerCase()) ||
+        p.subCategory?.toLowerCase().includes(search.toLowerCase());
+
+      const matchesCategory =
+        activeCategory === "All" ||
+        (p.category || "").trim().toLowerCase() === activeCategory.trim().toLowerCase();
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, search, activeCategory]);
+
+  // Grouped by Category for structured sections
+  const groupedProducts = useMemo(() => {
+    const map: { [cat: string]: any[] } = {};
+    filtered.forEach((item) => {
+      const cat = (item.category || "General").trim();
+      const normCat = cat.charAt(0).toUpperCase() + cat.slice(1);
+      if (!map[normCat]) {
+        map[normCat] = [];
+      }
+      map[normCat].push(item);
+    });
+    return map;
+  }, [filtered]);
+
+  const renderProductCard = (item: any) => (
+    <View key={item._id} style={styles.productCard}>
+      <Image
+        source={{ uri: item.image1 || "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600" }}
+        style={styles.productThumb}
+        resizeMode="cover"
+      />
+
+      <View style={styles.productDetails}>
+        <View style={styles.row}>
+          <Text style={styles.productCategory}>{item.category} · {item.subCategory || "General"}</Text>
+          {item.bestseller ? (
+            <View style={styles.bestsellerBadge}>
+              <Text style={styles.bestsellerText}>BESTSELLER</Text>
+            </View>
+          ) : null}
+        </View>
+
+        <Text style={styles.productName} numberOfLines={1}>
+          {item.name}
+        </Text>
+
+        <Text style={styles.productPrice}>
+          ₹{Number(item.price || 0)}{" "}
+          <Text style={styles.packSizes}>
+            • Sizes: {Array.isArray(item.sizes) ? item.sizes.join(", ") : "Std"}
+          </Text>
+        </Text>
+      </View>
+
+      {/* Delete Button */}
+      <TouchableOpacity
+        style={styles.deleteBtn}
+        onPress={() => handleDeleteProduct(item._id, item.name)}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="trash-outline" size={17} color="#000000" />
+      </TouchableOpacity>
+    </View>
   );
 
   return (
@@ -89,7 +208,7 @@ export default function AdminProductsScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>Store Inventory</Text>
-          <Text style={styles.headerSub}>{products.length} products published</Text>
+          <Text style={styles.headerSub}>{products.length} products organized by category</Text>
         </View>
         <TouchableOpacity style={styles.refreshBtn} onPress={fetchProducts}>
           <Ionicons name="refresh-outline" size={20} color="#000000" />
@@ -108,7 +227,48 @@ export default function AdminProductsScreen() {
         />
       </View>
 
-      {/* Products List */}
+      {/* Category Tabs Bar */}
+      <View style={styles.categoryTabsContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryTabsScroll}
+        >
+          {availableCategories.map((cat) => {
+            const isSelected = activeCategory.toLowerCase() === cat.toLowerCase();
+            const count = getCategoryCount(cat);
+            return (
+              <TouchableOpacity
+                key={cat}
+                style={[styles.categoryTab, isSelected && styles.categoryTabActive]}
+                onPress={() => setActiveCategory(cat)}
+                activeOpacity={0.75}
+              >
+                <Text style={[styles.categoryTabText, isSelected && styles.categoryTabTextActive]}>
+                  {cat}
+                </Text>
+                <View
+                  style={[
+                    styles.categoryCountPill,
+                    isSelected && styles.categoryCountPillActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.categoryCountPillText,
+                      isSelected && styles.categoryCountPillTextActive,
+                    ]}
+                  >
+                    {count}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* Products Content */}
       {isLoading ? (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#000000" />
@@ -117,54 +277,100 @@ export default function AdminProductsScreen() {
       ) : filtered.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="cube-outline" size={48} color="#94A3B8" />
-          <Text style={styles.emptyTitle}>No Products Found</Text>
-          <Text style={styles.emptySub}>No catalog items match your search.</Text>
+          <Text style={styles.emptyTitle}>
+            {activeCategory === "All"
+              ? "No Products Found"
+              : `No Products in "${activeCategory}"`}
+          </Text>
+          <Text style={styles.emptySub}>
+            {activeCategory === "All"
+              ? "No catalog items match your search."
+              : `You haven't added any products to the ${activeCategory} category yet.`}
+          </Text>
+
+          {activeCategory !== "All" && (
+            <TouchableOpacity
+              style={styles.addCategoryBtn}
+              onPress={() =>
+                router.push({
+                  pathname: "/(tabs)/add",
+                  params: { category: activeCategory },
+                } as any)
+              }
+              activeOpacity={0.85}
+            >
+              <Ionicons name="add-circle" size={18} color="#FFFFFF" />
+              <Text style={styles.addCategoryBtnText}>
+                Add Product to {activeCategory}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {filtered.map((item) => (
-            <View key={item._id} style={styles.productCard}>
-              <Image
-                source={{ uri: item.image1 || "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600" }}
-                style={styles.productThumb}
-                resizeMode="cover"
-              />
-
-              <View style={styles.productDetails}>
-                <View style={styles.row}>
-                  <Text style={styles.productCategory}>{item.category} · {item.subCategory || "General"}</Text>
-                  {item.bestseller ? (
-                    <View style={styles.bestsellerBadge}>
-                      <Text style={styles.bestsellerText}>BESTSELLER</Text>
+          {activeCategory === "All" ? (
+            // Grouped By Category View
+            Object.keys(groupedProducts).map((catName) => {
+              const catItems = groupedProducts[catName];
+              return (
+                <View key={catName} style={styles.categorySection}>
+                  <View style={styles.categorySectionHeader}>
+                    <View style={styles.categoryTitleRow}>
+                      <Ionicons
+                        name={getCategoryIcon(catName) as any}
+                        size={17}
+                        color="#000000"
+                      />
+                      <Text style={styles.categorySectionTitle}>
+                        {catName.toUpperCase()}
+                      </Text>
                     </View>
-                  ) : null}
+                    <View style={styles.categorySectionBadge}>
+                      <Text style={styles.categorySectionBadgeText}>
+                        {catItems.length} {catItems.length === 1 ? "item" : "items"}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {catItems.map((item) => renderProductCard(item))}
                 </View>
-
-                <Text style={styles.productName} numberOfLines={1}>
-                  {item.name}
-                </Text>
-
-                <Text style={styles.productPrice}>
-                  ₹{Number(item.price || 0)}{" "}
-                  <Text style={styles.packSizes}>
-                    • Sizes: {Array.isArray(item.sizes) ? item.sizes.join(", ") : "Std"}
+              );
+            })
+          ) : (
+            // Single Category View
+            <View style={styles.categorySection}>
+              <View style={styles.categorySectionHeader}>
+                <View style={styles.categoryTitleRow}>
+                  <Ionicons
+                    name={getCategoryIcon(activeCategory) as any}
+                    size={17}
+                    color="#000000"
+                  />
+                  <Text style={styles.categorySectionTitle}>
+                    {activeCategory.toUpperCase()} CATALOG
                   </Text>
-                </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.categoryAddQuickBtn}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(tabs)/add",
+                      params: { category: activeCategory },
+                    } as any)
+                  }
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="add" size={14} color="#000000" />
+                  <Text style={styles.categoryAddQuickBtnText}>Add More</Text>
+                </TouchableOpacity>
               </View>
 
-              {/* Delete Button */}
-              <TouchableOpacity
-                style={styles.deleteBtn}
-                onPress={() => handleDeleteProduct(item._id, item.name)}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="trash-outline" size={17} color="#000000" />
-              </TouchableOpacity>
+              {filtered.map((item) => renderProductCard(item))}
             </View>
-          ))}
+          )}
         </ScrollView>
       )}
     </SafeAreaView>
@@ -334,5 +540,122 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 8,
+  },
+  categoryTabsContainer: {
+    height: 48,
+    marginBottom: 6,
+  },
+  categoryTabsScroll: {
+    paddingHorizontal: 20,
+    gap: 8,
+    alignItems: "center",
+  },
+  categoryTab: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    gap: 6,
+    height: 36,
+  },
+  categoryTabActive: {
+    backgroundColor: "#000000",
+    borderColor: "#000000",
+  },
+  categoryTabText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#475569",
+  },
+  categoryTabTextActive: {
+    color: "#FFFFFF",
+  },
+  categoryCountPill: {
+    backgroundColor: "#F1F5F9",
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 10,
+  },
+  categoryCountPillActive: {
+    backgroundColor: "rgba(255, 255, 255, 0.22)",
+  },
+  categoryCountPillText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#64748B",
+  },
+  categoryCountPillTextActive: {
+    color: "#FFFFFF",
+  },
+  categorySection: {
+    marginBottom: 20,
+  },
+  categorySectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 8,
+    marginBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F5F9",
+  },
+  categoryTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  categorySectionTitle: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#000000",
+    letterSpacing: 0.5,
+  },
+  categorySectionBadge: {
+    backgroundColor: "#F1F5F9",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  categorySectionBadgeText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#000000",
+  },
+  categoryAddQuickBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "#F1F5F9",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  categoryAddQuickBtnText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#000000",
+  },
+  addCategoryBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#000000",
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 14,
+    marginTop: 16,
+    gap: 8,
+  },
+  addCategoryBtnText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "700",
   },
 });

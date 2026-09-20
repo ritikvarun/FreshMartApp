@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -17,11 +17,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 import { ENDPOINTS } from "../../config/api";
 
-const CATEGORIES = ["Men", "Women", "Kids", "Accessories", "Unisex"];
+const CATEGORIES = ["Men", "Women", "Kids", "Shoes", "Accessories", "Unisex", "Grocery", "Beauty"];
 const SUB_CATEGORIES = ["TopWear", "BottomWear", "WinterWear", "Shoes", "Accessories"];
 const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
 const SHOE_SIZES = ["6", "7", "8", "9", "10", "11", "12"];
@@ -29,6 +29,7 @@ const ACCESSORY_SIZES = ["Free Size", "Standard", "One Size", "S", "M", "L"];
 
 export default function AdminAddProductScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ category?: string }>();
   const { adminToken } = useAdminAuth();
 
   // Form State
@@ -42,6 +43,21 @@ export default function AdminAddProductScreen() {
   const [customSizeInput, setCustomSizeInput] = useState("");
   const [bestseller, setBestseller] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (params.category) {
+      setCategory(params.category);
+      if (params.category.toLowerCase() === "shoes") {
+        setSubCategory("Shoes");
+        setSizeType("shoes");
+        setSelectedSizes(["7", "8", "9", "10"]);
+      } else if (params.category.toLowerCase() === "accessories") {
+        setSubCategory("Accessories");
+        setSizeType("accessories");
+        setSelectedSizes(["Free Size"]);
+      }
+    }
+  }, [params.category]);
 
   // 5 Photo Slots System
   const [images, setImages] = useState<string[]>(["", "", "", "", ""]);
