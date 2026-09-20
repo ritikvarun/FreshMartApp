@@ -1,4 +1,5 @@
 import React from "react";
+import { Platform } from "react-native";
 import { Tabs } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
@@ -7,19 +8,31 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#E05315",
-        tabBarInactiveTintColor: "#8E94A4",
+        tabBarActiveTintColor: "#000000",
+        tabBarInactiveTintColor: "#94A3B8",
         tabBarStyle: {
           backgroundColor: "#FFFFFF",
           borderTopWidth: 1,
-          borderTopColor: "#EEF0F4",
-          height: 60,
-          paddingBottom: 8,
+          borderTopColor: "#E2E8F0",
+          height: Platform.OS === "ios" ? 88 : Platform.OS === "web" ? 70 : 66,
+          paddingBottom: Platform.OS === "ios" ? 26 : Platform.OS === "web" ? 8 : 8,
           paddingTop: 6,
+          shadowColor: "#000000",
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          elevation: 6,
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: "600",
+          fontWeight: "700",
+          letterSpacing: -0.2,
+          marginBottom: Platform.OS === "web" ? 6 : 4,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 2,
+          alignItems: "center",
+          justifyContent: "center",
         },
       }}
     >
@@ -30,7 +43,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "grid" : "grid-outline"}
-              size={22}
+              size={21}
               color={color}
             />
           ),
@@ -43,7 +56,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "bag-handle" : "bag-handle-outline"}
-              size={22}
+              size={21}
               color={color}
             />
           ),
@@ -56,7 +69,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "add-circle" : "add-circle-outline"}
-              size={24}
+              size={23}
               color={color}
             />
           ),
@@ -69,7 +82,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "images" : "images-outline"}
-              size={22}
+              size={21}
               color={color}
             />
           ),
@@ -82,7 +95,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "cube" : "cube-outline"}
-              size={22}
+              size={21}
               color={color}
             />
           ),
@@ -95,7 +108,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "return-down-back" : "return-down-back-outline"}
-              size={22}
+              size={21}
               color={color}
             />
           ),

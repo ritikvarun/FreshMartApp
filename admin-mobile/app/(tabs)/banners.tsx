@@ -224,7 +224,7 @@ export default function AdminBannersScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#E05315" />
+          <ActivityIndicator size="large" color="#000000" />
           <Text style={styles.loadingText}>Loading banners...</Text>
         </View>
       ) : (
@@ -422,8 +422,8 @@ export default function AdminBannersScreen() {
                 onPress={() => setShowUrlInput(!showUrlInput)}
                 activeOpacity={0.7}
               >
-                <View style={[styles.modalOptionIcon, { backgroundColor: "#FEF3C7" }]}>
-                  <Ionicons name="link" size={22} color="#D97706" />
+                <View style={[styles.modalOptionIcon, { backgroundColor: "#F1F5F9" }]}>
+                  <Ionicons name="link" size={22} color="#000000" />
                 </View>
                 <View style={{ flex: 1, marginLeft: 14 }}>
                   <Text style={styles.modalOptionTitle}>Paste Image URL</Text>
@@ -624,8 +624,8 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
   },
   categoryChipActive: {
-    backgroundColor: "#E05315",
-    borderColor: "#E05315",
+    backgroundColor: "#000000",
+    borderColor: "#000000",
   },
   categoryChipText: {
     fontSize: 12,

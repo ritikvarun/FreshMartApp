@@ -61,7 +61,7 @@ export default function AdminLoginScreen() {
             {/* Header */}
             <View style={styles.header}>
               <View style={styles.badge}>
-                <Ionicons name="shield-checkmark" size={14} color="#E05315" />
+                <Ionicons name="shield-checkmark" size={14} color="#000000" />
                 <Text style={styles.badgeText}>STORE MANAGER</Text>
               </View>
 
@@ -181,7 +181,9 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFF0E8",
+    backgroundColor: "#F1F5F9",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -190,14 +192,14 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 11,
     fontWeight: "800",
-    color: "#E05315",
+    color: "#000000",
     marginLeft: 4,
     letterSpacing: 0.5,
   },
   title: {
     fontSize: 22,
-    fontWeight: "800",
-    color: "#1A1D26",
+    fontWeight: "900",
+    color: "#000000",
     marginBottom: 6,
   },
   subtitle: {

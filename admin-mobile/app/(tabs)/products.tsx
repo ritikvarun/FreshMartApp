@@ -92,31 +92,31 @@ export default function AdminProductsScreen() {
           <Text style={styles.headerSub}>{products.length} products published</Text>
         </View>
         <TouchableOpacity style={styles.refreshBtn} onPress={fetchProducts}>
-          <Ionicons name="refresh-outline" size={20} color="#1A1D26" />
+          <Ionicons name="refresh-outline" size={20} color="#000000" />
         </TouchableOpacity>
       </View>
 
       {/* Search Input */}
       <View style={styles.searchWrapper}>
-        <Ionicons name="search-outline" size={18} color="#9CA3AF" />
+        <Ionicons name="search-outline" size={18} color="#94A3B8" />
         <TextInput
           style={styles.searchInput}
           placeholder="Filter products by name or category..."
           value={search}
           onChangeText={setSearch}
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor="#94A3B8"
         />
       </View>
 
       {/* Products List */}
       {isLoading ? (
         <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#E05315" />
+          <ActivityIndicator size="large" color="#000000" />
           <Text style={styles.loaderText}>Loading Inventory...</Text>
         </View>
       ) : filtered.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="cube-outline" size={48} color="#9CA3AF" />
+          <Ionicons name="cube-outline" size={48} color="#94A3B8" />
           <Text style={styles.emptyTitle}>No Products Found</Text>
           <Text style={styles.emptySub}>No catalog items match your search.</Text>
         </View>
@@ -161,7 +161,7 @@ export default function AdminProductsScreen() {
                 onPress={() => handleDeleteProduct(item._id, item.name)}
                 activeOpacity={0.7}
               >
-                <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                <Ionicons name="trash-outline" size={17} color="#000000" />
               </TouchableOpacity>
             </View>
           ))}
@@ -184,38 +184,39 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+    borderBottomColor: "#F1F5F9",
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#1A1D26",
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#000000",
+    letterSpacing: -0.5,
   },
   headerSub: {
     fontSize: 12,
-    color: "#8B92A2",
+    color: "#64748B",
     marginTop: 2,
   },
   refreshBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#F1F5F9",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#E2E8F0",
   },
   searchWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#F8FAFC",
     marginHorizontal: 20,
     borderRadius: 14,
     paddingHorizontal: 12,
     height: 44,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#E2E8F0",
     marginTop: 10,
     marginBottom: 8,
   },
@@ -223,7 +224,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 8,
     fontSize: 13,
-    color: "#1A1D26",
+    color: "#000000",
   },
   loaderContainer: {
     flex: 1,
@@ -232,7 +233,7 @@ const styles = StyleSheet.create({
   },
   loaderText: {
     marginTop: 10,
-    color: "#8B92A2",
+    color: "#64748B",
     fontSize: 13,
   },
   emptyContainer: {
@@ -243,13 +244,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: "700",
-    color: "#1A1D26",
+    fontWeight: "800",
+    color: "#000000",
     marginTop: 10,
   },
   emptySub: {
     fontSize: 12,
-    color: "#8B92A2",
+    color: "#64748B",
     marginTop: 4,
   },
   scrollContent: {
@@ -262,21 +263,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     borderRadius: 18,
-    padding: 12,
+    padding: 14,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#EEF0F4",
-    shadowColor: "#000",
+    borderColor: "#E2E8F0",
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
     shadowRadius: 6,
-    elevation: 1,
+    elevation: 2,
   },
   productThumb: {
     width: 60,
     height: 60,
     borderRadius: 12,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#F1F5F9",
   },
   productDetails: {
     flex: 1,
@@ -288,44 +289,48 @@ const styles = StyleSheet.create({
   },
   productCategory: {
     fontSize: 11,
-    fontWeight: "600",
-    color: "#E05315",
+    fontWeight: "700",
+    color: "#64748B",
     textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   bestsellerBadge: {
-    backgroundColor: "#FEF3C7",
-    paddingHorizontal: 6,
-    paddingVertical: 1,
+    backgroundColor: "#000000",
+    paddingHorizontal: 7,
+    paddingVertical: 2,
     borderRadius: 6,
     marginLeft: 6,
   },
   bestsellerText: {
     fontSize: 9,
     fontWeight: "800",
-    color: "#D97706",
+    color: "#FFFFFF",
+    letterSpacing: 0.4,
   },
   productName: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#1A1D26",
+    color: "#000000",
     marginTop: 2,
   },
   productPrice: {
     fontSize: 13,
     fontWeight: "800",
-    color: "#1A1D26",
+    color: "#000000",
     marginTop: 3,
   },
   packSizes: {
     fontSize: 11,
-    fontWeight: "400",
-    color: "#8B92A2",
+    fontWeight: "500",
+    color: "#64748B",
   },
   deleteBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#FEE2E2",
+    backgroundColor: "#F1F5F9",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 8,

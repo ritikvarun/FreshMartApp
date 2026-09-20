@@ -110,16 +110,16 @@ export default function AdminOrdersScreen() {
   const getStatusStyle = (status: string) => {
     switch (status?.toLowerCase()) {
       case "delivered":
-        return { bg: "#ECFDF5", text: "#059669" };
+        return { bg: "#000000", text: "#FFFFFF", border: "#000000" };
       case "out for delivery":
-        return { bg: "#FFF7ED", text: "#EA580C" };
+        return { bg: "#1E293B", text: "#FFFFFF", border: "#1E293B" };
       case "shipped":
-        return { bg: "#F5F3FF", text: "#7C3AED" };
+        return { bg: "#334155", text: "#FFFFFF", border: "#334155" };
       case "packing":
-        return { bg: "#FEFCE8", text: "#CA8A04" };
+        return { bg: "#F1F5F9", text: "#000000", border: "#CBD5E1" };
       case "order placed":
       default:
-        return { bg: "#EFF6FF", text: "#2563EB" };
+        return { bg: "#FFFFFF", text: "#000000", border: "#000000" };
     }
   };
 
@@ -134,7 +134,7 @@ export default function AdminOrdersScreen() {
           <Text style={styles.headerSub}>{orders.length} total orders recorded</Text>
         </View>
         <TouchableOpacity style={styles.refreshBtn} onPress={fetchOrders}>
-          <Ionicons name="refresh-outline" size={20} color="#1A1D26" />
+          <Ionicons name="refresh-outline" size={20} color="#000000" />
         </TouchableOpacity>
       </View>
 
@@ -180,12 +180,12 @@ export default function AdminOrdersScreen() {
       {/* Orders List */}
       {isLoading ? (
         <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#E05315" />
+          <ActivityIndicator size="large" color="#000000" />
           <Text style={styles.loaderText}>Loading Orders...</Text>
         </View>
       ) : filteredOrders.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="file-tray-outline" size={48} color="#9CA3AF" />
+          <Ionicons name="file-tray-outline" size={48} color="#94A3B8" />
           <Text style={styles.emptyTitle}>No Orders Found</Text>
           <Text style={styles.emptySub}>No orders match your active filter.</Text>
         </View>
@@ -229,15 +229,15 @@ export default function AdminOrdersScreen() {
                 {/* Customer Details */}
                 <View style={styles.customerBox}>
                   <View style={styles.infoRow}>
-                    <Ionicons name="person-outline" size={14} color="#6B7280" />
+                    <Ionicons name="person-outline" size={14} color="#64748B" />
                     <Text style={styles.customerName}>{customerName}</Text>
                   </View>
                   <View style={styles.infoRow}>
-                    <Ionicons name="call-outline" size={14} color="#6B7280" />
+                    <Ionicons name="call-outline" size={14} color="#64748B" />
                     <Text style={styles.infoText}>{order.address?.phone || "No phone"}</Text>
                   </View>
                   <View style={styles.infoRow}>
-                    <Ionicons name="location-outline" size={14} color="#6B7280" />
+                    <Ionicons name="location-outline" size={14} color="#64748B" />
                     <Text style={styles.infoText} numberOfLines={2}>
                       {order.address?.street}
                       {order.address?.landmark ? `, Near ${order.address.landmark}` : ""}
@@ -248,7 +248,7 @@ export default function AdminOrdersScreen() {
 
                   {order.address?.isLiveLocation && (
                     <View style={styles.liveLocationBadge}>
-                      <Ionicons name="navigate-circle" size={13} color="#059669" />
+                      <Ionicons name="navigate-circle" size={13} color="#000000" />
                       <Text style={styles.liveLocationBadgeText}>GPS Live Location Verified</Text>
                     </View>
                   )}
@@ -280,7 +280,7 @@ export default function AdminOrdersScreen() {
                       }}
                       activeOpacity={0.8}
                     >
-                      <Ionicons name="map" size={13} color="#2563EB" />
+                      <Ionicons name="map" size={13} color="#000000" />
                       <Text style={styles.mapActionBtnText}>Open in Google Maps</Text>
                     </TouchableOpacity>
 
@@ -294,7 +294,7 @@ export default function AdminOrdersScreen() {
                         }}
                         activeOpacity={0.8}
                       >
-                        <Ionicons name="call" size={13} color="#059669" />
+                        <Ionicons name="call" size={13} color="#FFFFFF" />
                         <Text style={styles.callActionBtnText}>Call</Text>
                       </TouchableOpacity>
                     ) : null}
@@ -315,13 +315,20 @@ export default function AdminOrdersScreen() {
                 {/* Order Footer: Payment & Change Status Button */}
                 <View style={styles.cardFooter}>
                   <View style={styles.paymentBadge}>
-                    <Ionicons name="cash-outline" size={13} color="#059669" />
+                    <Ionicons name="cash-outline" size={13} color="#000000" />
                     <Text style={styles.paymentText}>{order.paymentMethod || "COD"}</Text>
                   </View>
 
                   {/* Status Button (Tappable to change) */}
                   <TouchableOpacity
-                    style={[styles.statusBtn, { backgroundColor: statusTheme.bg }]}
+                    style={[
+                      styles.statusBtn,
+                      {
+                        backgroundColor: statusTheme.bg,
+                        borderWidth: 1,
+                        borderColor: statusTheme.border,
+                      },
+                    ]}
                     onPress={() => setSelectedOrder(order)}
                     activeOpacity={0.8}
                   >
@@ -344,7 +351,7 @@ export default function AdminOrdersScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Update Order Status</Text>
               <TouchableOpacity onPress={() => setSelectedOrder(null)}>
-                <Ionicons name="close" size={20} color="#6B7280" />
+                <Ionicons name="close" size={20} color="#000000" />
               </TouchableOpacity>
             </View>
 
@@ -367,7 +374,7 @@ export default function AdminOrdersScreen() {
                     {status}
                   </Text>
                   {isCurrent && (
-                    <Ionicons name="checkmark" size={18} color="#E05315" />
+                    <Ionicons name="checkmark" size={18} color="#FFFFFF" />
                   )}
                 </TouchableOpacity>
               );
@@ -393,35 +400,36 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#1A1D26",
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#000000",
+    letterSpacing: -0.5,
   },
   headerSub: {
     fontSize: 12,
-    color: "#8B92A2",
+    color: "#64748B",
     marginTop: 2,
   },
   refreshBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#F1F5F9",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#E2E8F0",
   },
   searchWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#F8FAFC",
     marginHorizontal: 20,
     borderRadius: 14,
     paddingHorizontal: 12,
     height: 44,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#E2E8F0",
     marginTop: 6,
     marginBottom: 10,
   },
@@ -429,7 +437,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 8,
     fontSize: 13,
-    color: "#1A1D26",
+    color: "#000000",
   },
   filterWrapper: {
     height: 44,
@@ -444,18 +452,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
     alignItems: "center",
     justifyContent: "center",
     height: 36,
   },
   filterChipActive: {
-    backgroundColor: "#111827",
+    backgroundColor: "#000000",
+    borderColor: "#000000",
   },
   filterChipText: {
     fontSize: 12,
-    fontWeight: "600",
-    color: "#4B5563",
+    fontWeight: "700",
+    color: "#475569",
   },
   filterChipTextActive: {
     color: "#FFFFFF",
@@ -467,7 +478,7 @@ const styles = StyleSheet.create({
   },
   loaderText: {
     marginTop: 10,
-    color: "#8B92A2",
+    color: "#64748B",
     fontSize: 13,
   },
   emptyContainer: {
@@ -478,60 +489,60 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: "700",
-    color: "#1A1D26",
+    fontWeight: "800",
+    color: "#000000",
     marginTop: 10,
   },
   emptySub: {
     fontSize: 12,
-    color: "#8B92A2",
+    color: "#64748B",
     marginTop: 4,
   },
   ordersScroll: {
     paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingBottom: 28,
   },
   orderCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
-    padding: 16,
+    padding: 18,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: "#EEF0F4",
-    shadowColor: "#000",
+    borderColor: "#E2E8F0",
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
-    shadowRadius: 8,
-    elevation: 1,
+    shadowRadius: 6,
+    elevation: 2,
   },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    paddingBottom: 10,
+    paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+    borderBottomColor: "#F1F5F9",
   },
   orderId: {
     fontSize: 15,
-    fontWeight: "800",
-    color: "#1A1D26",
+    fontWeight: "900",
+    color: "#000000",
   },
   orderDate: {
     fontSize: 11,
-    color: "#8B92A2",
+    color: "#64748B",
     marginTop: 2,
   },
   orderAmount: {
-    fontSize: 16,
-    fontWeight: "800",
-    color: "#E05315",
+    fontSize: 17,
+    fontWeight: "900",
+    color: "#000000",
   },
   customerBox: {
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-    gap: 4,
+    borderBottomColor: "#F1F5F9",
+    gap: 6,
   },
   infoRow: {
     flexDirection: "row",
@@ -541,11 +552,11 @@ const styles = StyleSheet.create({
   customerName: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#1A1D26",
+    color: "#000000",
   },
   infoText: {
     fontSize: 12,
-    color: "#4B5563",
+    color: "#475569",
     flex: 1,
   },
   itemsPreview: {
@@ -555,23 +566,25 @@ const styles = StyleSheet.create({
   itemsHeader: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#6B7280",
+    color: "#64748B",
     marginBottom: 4,
   },
   itemText: {
     fontSize: 12,
-    color: "#374151",
+    color: "#334155",
   },
   cardFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: 8,
+    paddingTop: 10,
   },
   paymentBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#ECFDF5",
+    backgroundColor: "#F1F5F9",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
@@ -579,8 +592,8 @@ const styles = StyleSheet.create({
   },
   paymentText: {
     fontSize: 11,
-    fontWeight: "700",
-    color: "#059669",
+    fontWeight: "800",
+    color: "#000000",
   },
   statusBtn: {
     flexDirection: "row",
@@ -596,7 +609,7 @@ const styles = StyleSheet.create({
 
   modalBackdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
+    backgroundColor: "rgba(0,0,0,0.6)",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 24,
@@ -604,9 +617,14 @@ const styles = StyleSheet.create({
   modalCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 24,
-    padding: 20,
+    padding: 22,
     width: "100%",
     maxWidth: 380,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
   },
   modalHeader: {
     flexDirection: "row",
@@ -614,13 +632,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalTitle: {
-    fontSize: 17,
-    fontWeight: "800",
-    color: "#1A1D26",
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#000000",
   },
   modalSub: {
     fontSize: 12,
-    color: "#6B7280",
+    color: "#64748B",
     marginTop: 4,
     marginBottom: 16,
   },
@@ -632,80 +650,83 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 12,
     marginBottom: 6,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
   },
   modalOptionActive: {
-    backgroundColor: "#FFF0E8",
+    backgroundColor: "#000000",
+    borderColor: "#000000",
   },
   modalOptionText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#374151",
+    color: "#000000",
   },
   modalOptionTextActive: {
-    color: "#E05315",
-    fontWeight: "700",
+    color: "#FFFFFF",
+    fontWeight: "800",
   },
   liveLocationBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-    backgroundColor: "#ECFDF5",
+    gap: 5,
+    backgroundColor: "#F1F5F9",
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: 6,
     alignSelf: "flex-start",
     marginTop: 6,
     borderWidth: 1,
-    borderColor: "#A7F3D0",
+    borderColor: "#E2E8F0",
   },
   liveLocationBadgeText: {
     fontSize: 10,
-    fontWeight: "700",
-    color: "#059669",
+    fontWeight: "800",
+    color: "#000000",
   },
   addressActionRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
     marginTop: 10,
-    paddingTop: 8,
+    paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: "#F3F4F6",
+    borderTopColor: "#F1F5F9",
   },
   mapActionBtn: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#EFF6FF",
-    borderWidth: 1,
-    borderColor: "#BFDBFE",
-    borderRadius: 8,
-    paddingVertical: 7,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#000000",
+    borderRadius: 10,
+    paddingVertical: 8,
     paddingHorizontal: 10,
     gap: 6,
   },
   mapActionBtnText: {
     fontSize: 12,
-    fontWeight: "700",
-    color: "#2563EB",
+    fontWeight: "800",
+    color: "#000000",
   },
   callActionBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#ECFDF5",
-    borderWidth: 1,
-    borderColor: "#A7F3D0",
-    borderRadius: 8,
-    paddingVertical: 7,
-    paddingHorizontal: 14,
+    backgroundColor: "#000000",
+    borderWidth: 1.5,
+    borderColor: "#000000",
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     gap: 6,
   },
   callActionBtnText: {
     fontSize: 12,
-    fontWeight: "700",
-    color: "#059669",
+    fontWeight: "800",
+    color: "#FFFFFF",
   },
 });

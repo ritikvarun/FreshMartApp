@@ -78,19 +78,19 @@ export default function AdminReturnsScreen() {
           <Text style={styles.headerSub}>{returns.length} customer return requests</Text>
         </View>
         <TouchableOpacity style={styles.refreshBtn} onPress={fetchReturns}>
-          <Ionicons name="refresh-outline" size={20} color="#1A1D26" />
+          <Ionicons name="refresh-outline" size={20} color="#000000" />
         </TouchableOpacity>
       </View>
 
       {/* Content */}
       {isLoading ? (
         <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#E05315" />
+          <ActivityIndicator size="large" color="#000000" />
           <Text style={styles.loaderText}>Loading Returns...</Text>
         </View>
       ) : returns.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="checkmark-circle-outline" size={48} color="#10B981" />
+          <Ionicons name="checkmark-circle-outline" size={48} color="#000000" />
           <Text style={styles.emptyTitle}>No Pending Returns</Text>
           <Text style={styles.emptySub}>All customer return requests are up to date.</Text>
         </View>
@@ -129,8 +129,8 @@ export default function AdminReturnsScreen() {
                   onPress={() => handleUpdateReturn(ret._id, "Rejected")}
                   activeOpacity={0.8}
                 >
-                  <Ionicons name="close" size={16} color="#FFFFFF" />
-                  <Text style={styles.actionBtnText}>Reject</Text>
+                  <Ionicons name="close" size={16} color="#000000" />
+                  <Text style={[styles.actionBtnText, { color: "#000000" }]}>Reject</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -154,27 +154,28 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+    borderBottomColor: "#F1F5F9",
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#1A1D26",
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#000000",
+    letterSpacing: -0.5,
   },
   headerSub: {
     fontSize: 12,
-    color: "#8B92A2",
+    color: "#64748B",
     marginTop: 2,
   },
   refreshBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#F1F5F9",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#E2E8F0",
   },
   loaderContainer: {
     flex: 1,
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
   },
   loaderText: {
     marginTop: 10,
-    color: "#8B92A2",
+    color: "#64748B",
     fontSize: 13,
   },
   emptyContainer: {
@@ -194,13 +195,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: "700",
-    color: "#1A1D26",
+    fontWeight: "800",
+    color: "#000000",
     marginTop: 10,
   },
   emptySub: {
     fontSize: 12,
-    color: "#8B92A2",
+    color: "#64748B",
     marginTop: 4,
   },
   scrollContent: {
@@ -214,12 +215,12 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#EEF0F4",
-    shadowColor: "#000",
+    borderColor: "#E2E8F0",
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
     shadowRadius: 6,
-    elevation: 1,
+    elevation: 2,
   },
   cardTop: {
     flexDirection: "row",
@@ -229,23 +230,25 @@ const styles = StyleSheet.create({
   },
   orderId: {
     fontSize: 14,
-    fontWeight: "800",
-    color: "#1A1D26",
+    fontWeight: "900",
+    color: "#000000",
   },
   statusBadge: {
-    backgroundColor: "#FEF3C7",
+    backgroundColor: "#F1F5F9",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
   },
   statusText: {
     fontSize: 11,
-    fontWeight: "700",
-    color: "#D97706",
+    fontWeight: "800",
+    color: "#000000",
   },
   reasonText: {
     fontSize: 13,
-    color: "#4B5563",
+    color: "#475569",
     lineHeight: 18,
     marginBottom: 12,
   },
@@ -258,15 +261,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    height: 38,
+    height: 40,
     borderRadius: 12,
     gap: 4,
   },
   approveBtn: {
-    backgroundColor: "#10B981",
+    backgroundColor: "#000000",
   },
   rejectBtn: {
-    backgroundColor: "#EF4444",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#000000",
   },
   actionBtnText: {
     color: "#FFFFFF",

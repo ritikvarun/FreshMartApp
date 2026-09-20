@@ -102,7 +102,7 @@ export default function AdminDashboard() {
         </View>
 
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.7}>
-          <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+          <Ionicons name="log-out-outline" size={20} color="#000000" />
         </TouchableOpacity>
       </View>
 
@@ -113,11 +113,27 @@ export default function AdminDashboard() {
       >
         {isLoading ? (
           <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color="#E05315" />
+            <ActivityIndicator size="large" color="#000000" />
             <Text style={styles.loaderText}>Loading Store Metrics...</Text>
           </View>
         ) : (
           <>
+            {/* Hero Revenue Card */}
+            <View style={styles.revenueCard}>
+              <View style={styles.revenueCardHeader}>
+                <View style={styles.revenueIconWrapper}>
+                  <Ionicons name="wallet-outline" size={22} color="#FFFFFF" />
+                </View>
+                <View style={styles.liveIndicator}>
+                  <View style={styles.liveDot} />
+                  <Text style={styles.liveText}>LIVE METRICS</Text>
+                </View>
+              </View>
+              <Text style={styles.revenueLabel}>TOTAL STORE REVENUE</Text>
+              <Text style={styles.revenueValue}>₹{totalRevenue.toFixed(2)}</Text>
+              <Text style={styles.revenueSub}>Real-time accumulated customer payments</Text>
+            </View>
+
             {/* Stat Cards Row */}
             <View style={styles.statsGrid}>
               {/* Card 1: Total Orders */}
@@ -126,8 +142,8 @@ export default function AdminDashboard() {
                 onPress={() => router.push("/(tabs)/orders" as any)}
                 activeOpacity={0.8}
               >
-                <View style={[styles.statIconWrapper, { backgroundColor: "#FFF0E8" }]}>
-                  <Ionicons name="bag-handle" size={24} color="#E05315" />
+                <View style={styles.statIconWrapper}>
+                  <Ionicons name="bag-handle" size={22} color="#000000" />
                 </View>
                 <Text style={styles.statLabel}>Total Orders</Text>
                 <Text style={styles.statValue}>{totalOrders}</Text>
@@ -139,45 +155,34 @@ export default function AdminDashboard() {
                 onPress={() => router.push("/(tabs)/products" as any)}
                 activeOpacity={0.8}
               >
-                <View style={[styles.statIconWrapper, { backgroundColor: "#EBF8F2" }]}>
-                  <Ionicons name="cube" size={24} color="#10B981" />
+                <View style={styles.statIconWrapper}>
+                  <Ionicons name="cube" size={22} color="#000000" />
                 </View>
                 <Text style={styles.statLabel}>Total Products</Text>
                 <Text style={styles.statValue}>{totalProducts}</Text>
               </TouchableOpacity>
-
-              {/* Card 3: Total Revenue */}
-              <View style={[styles.statCard, { width: "100%" }]}>
-                <View style={[styles.statIconWrapper, { backgroundColor: "#EEF4FF" }]}>
-                  <Ionicons name="cash" size={24} color="#3B82F6" />
-                </View>
-                <Text style={styles.statLabel}>Total Store Revenue</Text>
-                <Text style={[styles.statValue, { color: "#10B981" }]}>
-                  ₹{totalRevenue.toFixed(2)}
-                </Text>
-              </View>
             </View>
 
             {/* Quick Actions Bar */}
             <View style={styles.actionsCard}>
-              <Text style={styles.sectionTitle}>Quick Store Actions</Text>
+              <Text style={styles.sectionTitle}>Store Operations</Text>
               <View style={styles.actionButtonsRow}>
                 <TouchableOpacity
-                  style={styles.actionBtn}
+                  style={styles.actionBtnPrimary}
                   onPress={() => router.push("/(tabs)/add" as any)}
                   activeOpacity={0.85}
                 >
-                  <Ionicons name="add-circle" size={20} color="#FFFFFF" />
-                  <Text style={styles.actionBtnText}>Add Product</Text>
+                  <Ionicons name="add-circle" size={19} color="#FFFFFF" />
+                  <Text style={styles.actionBtnPrimaryText}>Add Product</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.actionBtn, { backgroundColor: "#1A1D26" }]}
+                  style={styles.actionBtnSecondary}
                   onPress={() => router.push("/(tabs)/orders" as any)}
                   activeOpacity={0.85}
                 >
-                  <Ionicons name="list" size={20} color="#FFFFFF" />
-                  <Text style={styles.actionBtnText}>All Orders</Text>
+                  <Ionicons name="list" size={19} color="#000000" />
+                  <Text style={styles.actionBtnSecondaryText}>All Orders</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -186,8 +191,12 @@ export default function AdminDashboard() {
             <View style={styles.sectionCard}>
               <View style={styles.sectionHeaderRow}>
                 <Text style={styles.sectionTitle}>Recent Customer Orders</Text>
-                <TouchableOpacity onPress={() => router.push("/(tabs)/orders" as any)}>
+                <TouchableOpacity
+                  style={styles.seeAllBtn}
+                  onPress={() => router.push("/(tabs)/orders" as any)}
+                >
                   <Text style={styles.seeAllText}>View All</Text>
+                  <Ionicons name="arrow-forward" size={13} color="#000000" />
                 </TouchableOpacity>
               </View>
 
@@ -237,43 +246,46 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+    borderBottomColor: "#F1F5F9",
   },
   badgeRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 2,
+    marginBottom: 4,
   },
   dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "#10B981",
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: "#000000",
     marginRight: 6,
   },
   badgeText: {
     fontSize: 10,
     fontWeight: "800",
-    color: "#10B981",
-    letterSpacing: 0.5,
+    color: "#0F172A",
+    letterSpacing: 0.6,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#1A1D26",
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#000000",
+    letterSpacing: -0.5,
   },
   logoutBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#FEE2E2",
+    backgroundColor: "#F1F5F9",
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 32,
+    paddingTop: 18,
+    paddingBottom: 36,
   },
   loaderContainer: {
     paddingTop: 60,
@@ -282,14 +294,78 @@ const styles = StyleSheet.create({
   loaderText: {
     marginTop: 12,
     fontSize: 13,
-    color: "#8B92A2",
+    color: "#64748B",
+    fontWeight: "500",
+  },
+  revenueCard: {
+    backgroundColor: "#000000",
+    borderRadius: 22,
+    padding: 22,
+    marginBottom: 16,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  revenueCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  revenueIconWrapper: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "rgba(255,255,255,0.14)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  liveIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.12)",
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 5,
+  },
+  liveDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: "#22C55E",
+  },
+  liveText: {
+    color: "#FFFFFF",
+    fontSize: 9,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
+  revenueLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#94A3B8",
+    letterSpacing: 0.6,
+    marginBottom: 4,
+  },
+  revenueValue: {
+    fontSize: 32,
+    fontWeight: "900",
+    color: "#FFFFFF",
+    letterSpacing: -0.5,
+    marginBottom: 4,
+  },
+  revenueSub: {
+    fontSize: 11,
+    color: "#64748B",
+    fontWeight: "500",
   },
   statsGrid: {
     flexDirection: "row",
-    flexWrap: "wrap",
     justifyContent: "space-between",
-    rowGap: 14,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   statCard: {
     width: "48%",
@@ -297,97 +373,120 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#EEF0F4",
-    shadowColor: "#000",
+    borderColor: "#E2E8F0",
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
-    shadowRadius: 8,
+    shadowRadius: 6,
     elevation: 2,
   },
   statIconWrapper: {
-    width: 44,
-    height: 44,
+    width: 42,
+    height: 42,
     borderRadius: 14,
+    backgroundColor: "#F1F5F9",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   statLabel: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#6B7280",
+    color: "#64748B",
     marginBottom: 4,
   },
   statValue: {
     fontSize: 24,
-    fontWeight: "800",
-    color: "#1A1D26",
+    fontWeight: "900",
+    color: "#000000",
   },
   actionsCard: {
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#F8FAFC",
     borderRadius: 20,
-    padding: 16,
-    marginBottom: 20,
+    padding: 18,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#E2E8F0",
   },
   sectionTitle: {
     fontSize: 15,
     fontWeight: "800",
-    color: "#1A1D26",
+    color: "#000000",
+    letterSpacing: -0.2,
     marginBottom: 12,
   },
   actionButtonsRow: {
     flexDirection: "row",
     gap: 12,
   },
-  actionBtn: {
+  actionBtnPrimary: {
     flex: 1,
-    backgroundColor: "#E05315",
+    backgroundColor: "#000000",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    height: 44,
+    height: 46,
     borderRadius: 14,
     gap: 6,
   },
-  actionBtnText: {
+  actionBtnPrimaryText: {
     color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  actionBtnSecondary: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#000000",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 46,
+    borderRadius: 14,
+    gap: 6,
+  },
+  actionBtnSecondaryText: {
+    color: "#000000",
     fontSize: 13,
     fontWeight: "700",
   },
   sectionCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
-    padding: 16,
+    padding: 18,
     borderWidth: 1,
-    borderColor: "#EEF0F4",
-    marginBottom: 16,
+    borderColor: "#E2E8F0",
   },
   sectionHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 14,
+  },
+  seeAllBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   seeAllText: {
     fontSize: 12,
-    fontWeight: "700",
-    color: "#E05315",
+    fontWeight: "800",
+    color: "#000000",
   },
   emptyText: {
     fontSize: 13,
-    color: "#9CA3AF",
+    color: "#94A3B8",
     textAlign: "center",
-    paddingVertical: 14,
+    paddingVertical: 18,
   },
   recentOrderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+    borderBottomColor: "#F1F5F9",
   },
   orderLeft: {
     flex: 1,
@@ -395,28 +494,30 @@ const styles = StyleSheet.create({
   orderCustomer: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#1A1D26",
+    color: "#000000",
   },
   orderMeta: {
     fontSize: 11,
-    color: "#8B92A2",
+    color: "#64748B",
     marginTop: 2,
   },
   orderAmount: {
     fontSize: 14,
     fontWeight: "800",
-    color: "#1A1D26",
+    color: "#000000",
   },
   statusPill: {
-    backgroundColor: "#FFF7ED",
+    backgroundColor: "#F1F5F9",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 3,
     borderRadius: 8,
-    marginTop: 3,
+    marginTop: 4,
   },
   statusPillText: {
     fontSize: 10,
-    fontWeight: "700",
-    color: "#D97706",
+    fontWeight: "800",
+    color: "#000000",
   },
 });
