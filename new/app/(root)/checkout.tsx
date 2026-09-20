@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -39,6 +40,16 @@ export default function CheckoutScreen() {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [orderPlacedSuccess, setOrderPlacedSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Captured order details for success screen (preserves amount after clearCart)
+  const [placedOrderAmount, setPlacedOrderAmount] = useState(0);
+  const [placedPaymentMethod, setPlacedPaymentMethod] = useState("COD");
+
+  // Razorpay Interactive Payment Gateway Sheet
+  const [showRazorpayModal, setShowRazorpayModal] = useState(false);
+  const [razorpayOrderData, setRazorpayOrderData] = useState<any>(null);
+  const [selectedUpiApp, setSelectedUpiApp] = useState("gpay");
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   // Load saved address and payment preference
   useEffect(() => {
@@ -133,7 +144,7 @@ export default function CheckoutScreen() {
       };
 
       if (paymentMethod === "Razorpay") {
-        // Razorpay flow
+        // Razorpay flow: Create order on backend
         const rzpRes = await fetch(ENDPOINTS.ORDER.RAZORPAY, {
           method: "POST",
           headers: {
@@ -151,24 +162,11 @@ export default function CheckoutScreen() {
           return;
         }
 
-        // Verify Razorpay order on backend
-        const verifyRes = await fetch(ENDPOINTS.ORDER.VERIFY_RAZORPAY, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ razorpay_order_id: rzpData.id }),
-        });
-
-        const verifyData = await verifyRes.json();
-
-        if (verifyRes.ok) {
-          await clearCart();
-          setOrderPlacedSuccess(true);
-        } else {
-          setErrorMessage(verifyData.message || "Payment verification failed.");
-        }
+        // Open Razorpay Checkout Modal
+        setRazorpayOrderData(rzpData);
+        setShowRazorpayModal(true);
+        setIsPlacingOrder(false);
+        return;
       } else {
         // COD flow
         const res = await fetch(ENDPOINTS.ORDER.PLACE, {
@@ -183,6 +181,8 @@ export default function CheckoutScreen() {
         const data = await res.json();
 
         if (res.ok) {
+          setPlacedOrderAmount(grandTotal);
+          setPlacedPaymentMethod("COD");
           await clearCart();
           setOrderPlacedSuccess(true);
         } else {
@@ -194,6 +194,39 @@ export default function CheckoutScreen() {
       setErrorMessage("Network error: Could not reach backend server.");
     } finally {
       setIsPlacingOrder(false);
+    }
+  };
+
+  // Complete Razorpay Payment (Verify with backend)
+  const handleCompleteRazorpayPayment = async () => {
+    if (!razorpayOrderData) return;
+    setIsProcessingPayment(true);
+    try {
+      const verifyRes = await fetch(ENDPOINTS.ORDER.VERIFY_RAZORPAY, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ razorpay_order_id: razorpayOrderData.id }),
+      });
+
+      const verifyData = await verifyRes.json();
+
+      if (verifyRes.ok) {
+        setPlacedOrderAmount(grandTotal);
+        setPlacedPaymentMethod("Razorpay");
+        await clearCart();
+        setShowRazorpayModal(false);
+        setOrderPlacedSuccess(true);
+      } else {
+        Alert.alert("Payment Failed", verifyData.message || "Payment verification failed.");
+      }
+    } catch (err) {
+      console.error("Payment verify error:", err);
+      Alert.alert("Payment Error", "Could not complete payment verification.");
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
 
@@ -214,12 +247,12 @@ export default function CheckoutScreen() {
             <View style={styles.successRow}>
               <Text style={styles.successLabel}>Payment Method</Text>
               <Text style={styles.successValue}>
-                {paymentMethod === "Razorpay" ? "Razorpay Online (Paid)" : "Cash On Delivery (COD)"}
+                {placedPaymentMethod === "Razorpay" ? "Razorpay Online (Paid)" : "Cash On Delivery (COD)"}
               </Text>
             </View>
             <View style={styles.successRow}>
               <Text style={styles.successLabel}>Total Amount</Text>
-              <Text style={styles.successValue}>₹{grandTotal.toFixed(0)}</Text>
+              <Text style={styles.successValue}>₹{placedOrderAmount.toFixed(0)}</Text>
             </View>
             <View style={styles.successRow}>
               <Text style={styles.successLabel}>Deliver To</Text>
@@ -467,6 +500,133 @@ export default function CheckoutScreen() {
           )}
         </TouchableOpacity>
       </View>
+
+      {/* Razorpay Interactive Payment Sheet */}
+      <Modal
+        visible={showRazorpayModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => !isProcessingPayment && setShowRazorpayModal(false)}
+      >
+        <View style={styles.rzpModalOverlay}>
+          <View style={styles.rzpModalSheet}>
+            {/* Razorpay Top Brand Header */}
+            <View style={styles.rzpHeader}>
+              <View style={styles.rzpBrandRow}>
+                <View style={styles.rzpLogoBadge}>
+                  <Ionicons name="flash" size={16} color="#0284C7" />
+                </View>
+                <View>
+                  <Text style={styles.rzpBrandTitle}>Razorpay Trusted</Text>
+                  <Text style={styles.rzpBrandSub}>Secure 256-Bit SSL Encrypted</Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                onPress={() => !isProcessingPayment && setShowRazorpayModal(false)}
+                disabled={isProcessingPayment}
+                style={styles.rzpCloseBtn}
+              >
+                <Ionicons name="close" size={20} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Total Amount Pill */}
+            <View style={styles.rzpAmountCard}>
+              <Text style={styles.rzpAmountLabel}>Amount to Pay</Text>
+              <Text style={styles.rzpAmountValue}>₹{grandTotal.toFixed(0)}</Text>
+            </View>
+
+            {/* Payment Method Selector */}
+            <Text style={styles.rzpSectionTitle}>Select Payment Option</Text>
+
+            {/* UPI Option */}
+            <TouchableOpacity
+              style={[styles.rzpOptionCard, selectedUpiApp === "gpay" && styles.rzpOptionActive]}
+              onPress={() => setSelectedUpiApp("gpay")}
+              activeOpacity={0.8}
+            >
+              <View style={styles.rzpOptionLeft}>
+                <View style={[styles.rzpOptionIcon, { backgroundColor: "#E0F2FE" }]}>
+                  <Ionicons name="logo-google" size={18} color="#0284C7" />
+                </View>
+                <View>
+                  <Text style={styles.rzpOptionTitle}>Google Pay / UPI</Text>
+                  <Text style={styles.rzpOptionSub}>Instant UPI payment</Text>
+                </View>
+              </View>
+              <Ionicons
+                name={selectedUpiApp === "gpay" ? "radio-button-on" : "radio-button-off"}
+                size={20}
+                color={selectedUpiApp === "gpay" ? "#0F172A" : "#CBD5E1"}
+              />
+            </TouchableOpacity>
+
+            {/* PhonePe / Paytm */}
+            <TouchableOpacity
+              style={[styles.rzpOptionCard, selectedUpiApp === "phonepe" && styles.rzpOptionActive]}
+              onPress={() => setSelectedUpiApp("phonepe")}
+              activeOpacity={0.8}
+            >
+              <View style={styles.rzpOptionLeft}>
+                <View style={[styles.rzpOptionIcon, { backgroundColor: "#F3E8FF" }]}>
+                  <Ionicons name="phone-portrait-outline" size={18} color="#7E22CE" />
+                </View>
+                <View>
+                  <Text style={styles.rzpOptionTitle}>PhonePe / Paytm</Text>
+                  <Text style={styles.rzpOptionSub}>Pay via PhonePe or Paytm</Text>
+                </View>
+              </View>
+              <Ionicons
+                name={selectedUpiApp === "phonepe" ? "radio-button-on" : "radio-button-off"}
+                size={20}
+                color={selectedUpiApp === "phonepe" ? "#0F172A" : "#CBD5E1"}
+              />
+            </TouchableOpacity>
+
+            {/* Credit / Debit Card */}
+            <TouchableOpacity
+              style={[styles.rzpOptionCard, selectedUpiApp === "card" && styles.rzpOptionActive]}
+              onPress={() => setSelectedUpiApp("card")}
+              activeOpacity={0.8}
+            >
+              <View style={styles.rzpOptionLeft}>
+                <View style={[styles.rzpOptionIcon, { backgroundColor: "#FEF3C7" }]}>
+                  <Ionicons name="card-outline" size={18} color="#D97706" />
+                </View>
+                <View>
+                  <Text style={styles.rzpOptionTitle}>Cards (Visa, Master, RuPay)</Text>
+                  <Text style={styles.rzpOptionSub}>Credit and debit cards</Text>
+                </View>
+              </View>
+              <Ionicons
+                name={selectedUpiApp === "card" ? "radio-button-on" : "radio-button-off"}
+                size={20}
+                color={selectedUpiApp === "card" ? "#0F172A" : "#CBD5E1"}
+              />
+            </TouchableOpacity>
+
+            {/* Pay Button */}
+            <TouchableOpacity
+              style={[styles.rzpPayBtn, isProcessingPayment && { opacity: 0.7 }]}
+              onPress={handleCompleteRazorpayPayment}
+              disabled={isProcessingPayment}
+              activeOpacity={0.9}
+            >
+              {isProcessingPayment ? (
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                  <Text style={styles.rzpPayBtnText}>Verifying Payment...</Text>
+                </View>
+              ) : (
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <Ionicons name="shield-checkmark" size={18} color="#FFFFFF" />
+                  <Text style={styles.rzpPayBtnText}>Pay Securely ₹{grandTotal.toFixed(0)}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -797,5 +957,139 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     fontSize: 14,
     fontWeight: "600",
+  },
+
+  // Razorpay Checkout Modal Styles
+  rzpModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(15, 23, 42, 0.65)",
+    justifyContent: "flex-end",
+  },
+  rzpModalSheet: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 22,
+    paddingTop: 20,
+    paddingBottom: 36,
+  },
+  rzpHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F5F9",
+  },
+  rzpBrandRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  rzpLogoBadge: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: "#E0F2FE",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rzpBrandTitle: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#0F172A",
+  },
+  rzpBrandSub: {
+    fontSize: 11,
+    color: "#64748B",
+    marginTop: 1,
+  },
+  rzpCloseBtn: {
+    padding: 6,
+  },
+  rzpAmountCard: {
+    backgroundColor: "#F8FAFC",
+    borderRadius: 16,
+    padding: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginBottom: 18,
+  },
+  rzpAmountLabel: {
+    fontSize: 13,
+    color: "#64748B",
+    fontWeight: "600",
+  },
+  rzpAmountValue: {
+    fontSize: 20,
+    fontWeight: "900",
+    color: "#0F172A",
+  },
+  rzpSectionTitle: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#64748B",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+    marginBottom: 10,
+  },
+  rzpOptionCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    marginBottom: 10,
+    backgroundColor: "#FFFFFF",
+  },
+  rzpOptionActive: {
+    borderColor: "#0F172A",
+    backgroundColor: "#F8FAFC",
+  },
+  rzpOptionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  rzpOptionIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rzpOptionTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#0F172A",
+  },
+  rzpOptionSub: {
+    fontSize: 11,
+    color: "#64748B",
+    marginTop: 1,
+  },
+  rzpPayBtn: {
+    backgroundColor: "#0F172A",
+    height: 50,
+    borderRadius: 25,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 14,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  rzpPayBtnText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "800",
   },
 });
