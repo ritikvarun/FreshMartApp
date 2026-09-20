@@ -114,16 +114,17 @@ export const googleLogin = async (req,res) => {
 
 export const adminLogin = async (req,res) => {
     try {
-        let { email, password } = req.body
-        const inputEmail = (email || '').trim().toLowerCase()
-        const configEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase()
+        let { email, password } = req.body;
+        const inputEmail = (email || "").trim().toLowerCase();
+        const configEmail = (process.env.ADMIN_EMAIL || "admin@freshmart.com").trim().toLowerCase();
+        const configPassword = process.env.ADMIN_PASSWORD || "AdminPassword123";
 
-        if (inputEmail && configEmail && inputEmail === configEmail && password === process.env.ADMIN_PASSWORD) {
-            let token = await genToken1(process.env.ADMIN_EMAIL)
-            res.cookie("token", token, adminCookieOptions)
-            return res.status(200).json({ token })
+        if (inputEmail && configEmail && inputEmail === configEmail && password === configPassword) {
+            let token = await genToken1(configEmail);
+            res.cookie("token", token, adminCookieOptions);
+            return res.status(200).json({ token });
         }
-        return res.status(400).json({ message: "Invalid credentials" })
+        return res.status(400).json({ message: "Invalid credentials" });
 
     } catch (error) {
         console.log("AdminLogin error")
