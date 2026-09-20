@@ -28,6 +28,10 @@ export const ENDPOINTS = {
     VERIFY_RAZORPAY: `${API_BASE_URL}/api/order/verifyrazorpay`,
     USER_ORDERS: `${API_BASE_URL}/api/order/userorder`,
   },
+  RETURN: {
+    REQUEST: `${API_BASE_URL}/api/return/request`,
+    MY_RETURNS: `${API_BASE_URL}/api/return/my`,
+  },
   SETTINGS: {
     GET_BANNERS: `${API_BASE_URL}/api/setting/banners`,
   },
