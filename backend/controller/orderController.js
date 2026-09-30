@@ -17,11 +17,31 @@ const getRazorpayInstance = () => {
     })
 }
 
+// ── Commission & Settlement Split Calculation Helper ────────
+const computeSplits = (items = [], totalAmount = 0, customDeliveryFee = 50) => {
+    const deliveryFee = Number(customDeliveryFee) || 50;
+    const computedItemsTotal = items.reduce((sum, it) => {
+        const p = Number(it.price || 0);
+        const q = Number(it.quantity || it.qty || 1);
+        return sum + (p * q);
+    }, 0);
+    const itemTotal = computedItemsTotal > 0 ? computedItemsTotal : Math.max(0, totalAmount - deliveryFee);
+    const adminCommission = Math.round(itemTotal * 0.10); // 10% platform commission
+    const shopPayout = Math.max(0, itemTotal - adminCommission);
+    const deliveryBoyPayout = deliveryFee;
+    return { itemTotal, deliveryFee, adminCommission, shopPayout, deliveryBoyPayout };
+}
+
 // ── Place Order (COD) ────────────────────────────────────────
 export const placeOrder = async (req, res) => {
     try {
-        const { items, amount, address } = req.body
+        const { items, amount, address, orderType, shopId, shopName, shopPhone, deliveryFee: userDeliveryFee } = req.body
         const userId = req.userId
+
+        const splits = computeSplits(items, amount, userDeliveryFee)
+        const primaryShopId = shopId || items?.[0]?.shopId || null
+        const primaryShopName = shopName || items?.[0]?.shopName || 'FreshMart Partner Store'
+        const primaryShopPhone = shopPhone || items?.[0]?.shopPhone || ''
 
         const orderData = {
             items,
@@ -30,7 +50,13 @@ export const placeOrder = async (req, res) => {
             address,
             paymentMethod: 'COD',
             payment: false,
-            date: Date.now()
+            date: Date.now(),
+            orderType: orderType || (items?.length === 1 && (items[0]?.quantity || 1) === 1 ? 'single' : 'multi'),
+            shopId: primaryShopId,
+            shopName: primaryShopName,
+            shopPhone: primaryShopPhone,
+            deliveryStatus: 'Unassigned',
+            ...splits
         }
 
         const newOrder = new Order(orderData)
@@ -57,7 +83,7 @@ export const placeOrder = async (req, res) => {
             console.error("Failed to trigger order alert email:", mailErr)
         }
 
-        return res.status(201).json({ message: 'Order Place' })
+        return res.status(201).json({ message: 'Order Placed successfully', order: newOrder })
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: 'Order Place error' })
@@ -68,8 +94,13 @@ export const placeOrder = async (req, res) => {
 // ── Place Order (Razorpay) ────────────────────────────────────
 export const placeOrderRazorpay = async (req, res) => {
     try {
-        const { items, amount, address } = req.body
+        const { items, amount, address, orderType, shopId, shopName, shopPhone, deliveryFee: userDeliveryFee } = req.body
         const userId = req.userId
+
+        const splits = computeSplits(items, amount, userDeliveryFee)
+        const primaryShopId = shopId || items?.[0]?.shopId || null
+        const primaryShopName = shopName || items?.[0]?.shopName || 'FreshMart Partner Store'
+        const primaryShopPhone = shopPhone || items?.[0]?.shopPhone || ''
 
         const orderData = {
             items,
@@ -78,7 +109,13 @@ export const placeOrderRazorpay = async (req, res) => {
             address,
             paymentMethod: 'Razorpay',
             payment: false,
-            date: Date.now()
+            date: Date.now(),
+            orderType: orderType || (items?.length === 1 && (items[0]?.quantity || 1) === 1 ? 'single' : 'multi'),
+            shopId: primaryShopId,
+            shopName: primaryShopName,
+            shopPhone: primaryShopPhone,
+            deliveryStatus: 'Unassigned',
+            ...splits
         }
 
         const newOrder = new Order(orderData)
@@ -253,5 +290,47 @@ export const updateStatus = async (req, res) => {
         return res.status(201).json({ message: 'Status Updated' })
     } catch (error) {
         return res.status(500).json({ message: error.message })
+    }
+}
+
+// ── Admin: Financial Splits & Settlement Summary ────────────
+export const getOrderSplitsSummary = async (req, res) => {
+    try {
+        const orders = await Order.find({})
+        const totalGrossVolume = orders.reduce((sum, o) => sum + (o.amount || 0), 0)
+        const totalAdminCommission = orders.reduce((sum, o) => sum + (o.adminCommission || 0), 0)
+        const totalShopPayouts = orders.reduce((sum, o) => sum + (o.shopPayout || 0), 0)
+        const totalDeliveryPayouts = orders.reduce((sum, o) => sum + (o.deliveryBoyPayout || 0), 0)
+
+        res.status(200).json({
+            totalOrders: orders.length,
+            totalGrossVolume,
+            totalAdminCommission,
+            totalShopPayouts,
+            totalDeliveryPayouts,
+            orders
+        })
+    } catch (error) {
+        return res.status(500).json({ message: "Splits summary error: " + error.message })
+    }
+}
+
+// ── Assign Delivery Partner to Order ─────────────────────────
+export const assignDeliveryPartner = async (req, res) => {
+    try {
+        const { orderId, deliveryBoyId, deliveryBoyName, deliveryBoyPhone } = req.body
+        const updated = await Order.findByIdAndUpdate(
+            orderId,
+            {
+                deliveryBoyId,
+                deliveryBoyName,
+                deliveryBoyPhone,
+                deliveryStatus: 'Assigned'
+            },
+            { new: true }
+        )
+        return res.status(200).json({ message: "Delivery partner assigned", order: updated })
+    } catch (error) {
+        return res.status(500).json({ message: "Assign delivery error: " + error.message })
     }
 }

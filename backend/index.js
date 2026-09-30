@@ -4,7 +4,11 @@ import path from "path";
 import connectDb from "./config/db.js";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
-dotenv.config();
+import fs from "fs";
+const envPath = fs.existsSync(path.join(process.cwd(), "backend/.env"))
+  ? path.join(process.cwd(), "backend/.env")
+  : path.join(process.cwd(), ".env");
+dotenv.config({ path: envPath });
 import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
@@ -13,6 +17,8 @@ import orderRoutes from "./routes/orderRoutes.js";
 import returnRoutes from "./routes/returnRoutes.js";
 import settingRouter from "./routes/settingRoute.js";
 import reviewRouter from "./routes/reviewRoute.js";
+import shopRoutes from "./routes/shopRoutes.js";
+import deliveryRoutes from "./routes/deliveryRoutes.js";
 
 let port = process.env.PORT || 6000;
 
@@ -24,7 +30,9 @@ const localOrigins = [
   "https://shopx-6u3e.onrender.com",
   "http://localhost:5173",
   "http://localhost:5174",
-  "http://localhost:3000"
+  "http://localhost:3000",
+  "http://localhost:8081",
+  "http://localhost:8082"
 ];
 const productionOrigins = [
   process.env.FRONTEND_URL,
@@ -116,6 +124,8 @@ app.use("/api/order", orderRoutes);
 app.use("/api/return", returnRoutes);
 app.use("/api/setting", settingRouter);
 app.use("/api/review", reviewRouter);
+app.use("/api/shop", shopRoutes);
+app.use("/api/delivery", deliveryRoutes);
 
 app.listen(port, () => {
   console.log("Hello From Server");

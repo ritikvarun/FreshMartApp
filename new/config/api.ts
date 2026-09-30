@@ -35,5 +35,19 @@ export const ENDPOINTS = {
   SETTINGS: {
     GET_BANNERS: `${API_BASE_URL}/api/setting/banners`,
   },
+  SHOPS: {
+    LIST: `${API_BASE_URL}/api/shop/list`,
+    DETAIL: (id: string) => `${API_BASE_URL}/api/shop/${id}`,
+    REGISTER: `${API_BASE_URL}/api/shop/register`,
+    LOGIN: `${API_BASE_URL}/api/shop/login`,
+  },
+  DELIVERY: {
+    REGISTER: `${API_BASE_URL}/api/delivery/register`,
+    LOGIN: `${API_BASE_URL}/api/delivery/login`,
+    TOGGLE_ONLINE: `${API_BASE_URL}/api/delivery/toggle-online`,
+    AVAILABLE_ORDERS: `${API_BASE_URL}/api/delivery/available-orders`,
+    ACCEPT_ORDER: `${API_BASE_URL}/api/delivery/accept-order`,
+    UPDATE_STATUS: `${API_BASE_URL}/api/delivery/update-status`,
+  },
 };
 

@@ -51,8 +51,28 @@ const productSchema = new mongoose.Schema({
     },
     bestseller:{
         type:Boolean
+    },
+    shopId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Shop",
+        default: null
+    },
+    shopName: {
+        type: String,
+        default: "FreshMart Direct"
+    },
+    shopPhone: {
+        type: String,
+        default: ""
+    },
+    shopAddress: {
+        type: String,
+        default: ""
+    },
+    isAvailable: {
+        type: Boolean,
+        default: true
     }
-
 },{timestamps:true})
 
 const Product = mongoose.model("Product" , productSchema)

@@ -12,6 +12,7 @@ import {
   Alert,
   Modal,
   TextInput,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -172,6 +173,36 @@ export default function ProductDetailScreen() {
   const handleBuyNow = async () => {
     await handleAddToCart();
     router.push("/(root)/checkout" as any);
+  };
+
+  const handleCallShop = () => {
+    const phone = product?.shopPhone || "9876543210";
+    const cleanNumber = phone.replace(/[^0-9+]/g, "");
+    Linking.openURL(`tel:${cleanNumber}`).catch(() => {
+      Alert.alert("Notice", "Unable to open phone dialer");
+    });
+  };
+
+  const handleWhatsAppShop = () => {
+    const phone = product?.shopPhone || "9876543210";
+    const cleanNumber = phone.replace(/[^0-9]/g, "");
+    const formatted = cleanNumber.startsWith("91") ? cleanNumber : `91${cleanNumber}`;
+    const text = encodeURIComponent(
+      `Namaste! Mujhe FreshMart app par aapka item "${product?.name}" ke baare me inquiry karni hai (Price: ₹${product?.price}). Kya ye available hai?`
+    );
+    const url = `whatsapp://send?phone=${formatted}&text=${text}`;
+
+    Linking.canOpenURL(url)
+      .then((supported) => {
+        if (supported) {
+          Linking.openURL(url);
+        } else {
+          Linking.openURL(`https://wa.me/${formatted}?text=${text}`);
+        }
+      })
+      .catch(() => {
+        Alert.alert("Notice", "Could not open WhatsApp.");
+      });
   };
 
   const submitReview = async () => {
@@ -460,6 +491,62 @@ export default function ProductDetailScreen() {
             </View>
           </View>
 
+          {/* Verified Shop / Supplier & Direct Inquiry Card */}
+          <View style={styles.supplierCard}>
+            <View style={styles.supplierHeaderRow}>
+              <View style={styles.supplierIconWrap}>
+                <Ionicons name="storefront" size={20} color="#059669" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.supplierHeading}>Supplied & Sold By</Text>
+                <Text style={styles.supplierName}>{product.shopName || "FreshMart Partner Store"}</Text>
+              </View>
+              <View style={styles.verifiedStoreBadge}>
+                <Ionicons name="shield-checkmark" size={12} color="#059669" />
+                <Text style={styles.verifiedStoreText}>Verified</Text>
+              </View>
+            </View>
+
+            <View style={styles.supplierAddressRow}>
+              <Ionicons name="location-outline" size={14} color="#6B7280" style={{ marginRight: 4, marginTop: 1 }} />
+              <Text style={styles.supplierAddressText}>
+                {product.shopAddress || "Main Market / Local Distribution Hub"}
+              </Text>
+            </View>
+
+            {/* Quick Action: Call Shop & WhatsApp Inquiry */}
+            <View style={styles.supplierActionRow}>
+              <TouchableOpacity
+                style={styles.supplierCallBtn}
+                onPress={handleCallShop}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="call" size={14} color="#FFFFFF" />
+                <Text style={styles.supplierCallText}>Call Shop</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.supplierWhatsAppBtn}
+                onPress={handleWhatsAppShop}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="logo-whatsapp" size={15} color="#FFFFFF" />
+                <Text style={styles.supplierWhatsAppText}>Inquire on WhatsApp</Text>
+              </TouchableOpacity>
+
+              {product.shopId && (
+                <TouchableOpacity
+                  style={styles.supplierStoreBtn}
+                  onPress={() => router.push(`/(root)/shop/${product.shopId}` as any)}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="grid-outline" size={14} color="#111827" />
+                  <Text style={styles.supplierStoreText}>All Items</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+
           {/* Description Section */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionHeading}>Product Description</Text>
@@ -555,7 +642,10 @@ export default function ProductDetailScreen() {
             activeOpacity={0.85}
           >
             <Ionicons name="cart-outline" size={18} color="#111827" style={{ marginRight: 6 }} />
-            <Text style={styles.addToCartBtnText}>Add to Cart</Text>
+            <View>
+              <Text style={styles.addToCartBtnText}>Add to Cart</Text>
+              <Text style={styles.btnSubText}>Multi-Material Order</Text>
+            </View>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -564,7 +654,10 @@ export default function ProductDetailScreen() {
             activeOpacity={0.85}
           >
             <Ionicons name="flash-outline" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
-            <Text style={styles.buyNowBtnText}>Buy Now</Text>
+            <View>
+              <Text style={styles.buyNowBtnText}>Buy Now</Text>
+              <Text style={styles.btnSubTextWhite}>Single Material Express</Text>
+            </View>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -1232,5 +1325,122 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "700",
+  },
+  supplierCard: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginTop: 14,
+    marginBottom: 4,
+  },
+  supplierHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  supplierIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "#ECFDF5",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  supplierHeading: {
+    fontSize: 10,
+    color: "#6B7280",
+    fontWeight: "600",
+    textTransform: "uppercase",
+  },
+  supplierName: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#111827",
+    marginTop: 1,
+  },
+  verifiedStoreBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#ECFDF5",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    gap: 3,
+  },
+  verifiedStoreText: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#059669",
+  },
+  supplierAddressRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginTop: 6,
+  },
+  supplierAddressText: {
+    fontSize: 11,
+    color: "#4B5563",
+    flex: 1,
+    lineHeight: 15,
+  },
+  supplierActionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+    gap: 8,
+  },
+  supplierCallBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#2563EB",
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    gap: 4,
+  },
+  supplierCallText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  supplierWhatsAppBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#16A34A",
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    gap: 4,
+  },
+  supplierWhatsAppText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  supplierStoreBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E5E7EB",
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    gap: 3,
+  },
+  supplierStoreText: {
+    color: "#111827",
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  btnSubText: {
+    fontSize: 9,
+    color: "#4B5563",
+    fontWeight: "500",
+  },
+  btnSubTextWhite: {
+    fontSize: 9,
+    color: "rgba(255,255,255,0.8)",
+    fontWeight: "500",
   },
 });

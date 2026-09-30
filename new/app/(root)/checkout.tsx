@@ -203,6 +203,8 @@ export default function CheckoutScreen() {
     }
 
     try {
+      const isSingle = cartItems.length === 1 && (cartItems[0]?.quantity || 1) === 1;
+      const primaryItem = cartItems[0]?.product as any;
       const orderPayload = {
         items: cartItems.map((item) => ({
           ...item.product,
@@ -211,6 +213,11 @@ export default function CheckoutScreen() {
         })),
         amount: grandTotal,
         address: addressData,
+        orderType: isSingle ? "single" : "multi",
+        shopId: primaryItem?.shopId || null,
+        shopName: primaryItem?.shopName || "FreshMart Partner Store",
+        shopPhone: primaryItem?.shopPhone || "",
+        deliveryFee: 50,
       };
 
       if (paymentMethod === "Razorpay") {
@@ -380,6 +387,29 @@ export default function CheckoutScreen() {
             <Text style={styles.errorText}>{errorMessage}</Text>
           </View>
         ) : null}
+
+        {/* Order Type & Multi-Material Summary Card */}
+        <View style={styles.orderTypeCard}>
+          <View style={styles.orderTypeHeader}>
+            <View style={styles.orderTypeIcon}>
+              <Ionicons
+                name={cartItems.length === 1 && (cartItems[0]?.quantity || 1) === 1 ? "flash" : "layers"}
+                size={18}
+                color="#059669"
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.orderTypeTitle}>
+                {cartItems.length === 1 && (cartItems[0]?.quantity || 1) === 1
+                  ? "⚡ Single Material Express Order"
+                  : `🛒 Multi-Material Consolidated Order (${cartItems.length} Items)`}
+              </Text>
+              <Text style={styles.orderTypeSub}>
+                Doorstep delivery by verified freelance delivery partner
+              </Text>
+            </View>
+          </View>
+        </View>
 
         {/* Address Card */}
         <View style={styles.sectionCard}>
@@ -1556,5 +1586,36 @@ const styles = StyleSheet.create({
     color: "#64748B",
     fontSize: 13,
     fontWeight: "600",
+  },
+  orderTypeCard: {
+    backgroundColor: "#F0FDF4",
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    marginBottom: 16,
+  },
+  orderTypeHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  orderTypeIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "#DCFCE7",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  orderTypeTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#166534",
+  },
+  orderTypeSub: {
+    fontSize: 11,
+    color: "#15803D",
+    marginTop: 2,
   },
 });

@@ -613,6 +613,31 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* Verified Shops & Suppliers Banner Card */}
+        <TouchableOpacity
+          style={styles.shopsPromoCard}
+          onPress={() => router.push("/(root)/shops" as any)}
+          activeOpacity={0.88}
+        >
+          <View style={styles.shopsPromoLeft}>
+            <View style={styles.shopsPromoBadge}>
+              <Ionicons name="shield-checkmark" size={12} color="#059669" />
+              <Text style={styles.shopsPromoBadgeText}>LOCAL STORES & SUPPLIERS</Text>
+            </View>
+            <Text style={styles.shopsPromoTitle}>Nearby Materials & Verified Shops</Text>
+            <Text style={styles.shopsPromoSub}>
+              Browse shops, direct call to shopkeeper, or inquiry on WhatsApp
+            </Text>
+            <View style={styles.shopsPromoAction}>
+              <Text style={styles.shopsPromoActionText}>Explore Stores</Text>
+              <Ionicons name="arrow-forward-circle" size={18} color="#059669" />
+            </View>
+          </View>
+          <View style={styles.shopsPromoIconBox}>
+            <Ionicons name="storefront" size={32} color="#059669" />
+          </View>
+        </TouchableOpacity>
+
         {/* Categories Section */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Categories</Text>
@@ -2097,5 +2122,70 @@ const styles = StyleSheet.create({
     color: "#DC2626",
     fontSize: 13.5,
     fontWeight: "700",
+  },
+  shopsPromoCard: {
+    backgroundColor: "#F0FDF4",
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 4,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  shopsPromoLeft: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  shopsPromoBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    alignSelf: "flex-start",
+    gap: 4,
+    marginBottom: 6,
+  },
+  shopsPromoBadgeText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#166534",
+    letterSpacing: 0.5,
+  },
+  shopsPromoTitle: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#111827",
+    lineHeight: 20,
+  },
+  shopsPromoSub: {
+    fontSize: 12,
+    color: "#4B5563",
+    marginTop: 3,
+    lineHeight: 16,
+  },
+  shopsPromoAction: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 10,
+  },
+  shopsPromoActionText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#059669",
+  },
+  shopsPromoIconBox: {
+    width: 60,
+    height: 60,
+    borderRadius: 16,
+    backgroundColor: "#DCFCE7",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

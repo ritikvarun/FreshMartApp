@@ -540,6 +540,69 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Marketplace & Partner Programs (₹500 Registration) */}
+        <View style={styles.menuGroup}>
+          <Text style={styles.menuGroupTitle}>Marketplace & Partner Programs</Text>
+
+          {/* Browse Shops */}
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push("/(root)/shops" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.menuIconCircle, { backgroundColor: "#ECFDF5" }]}>
+              <Ionicons name="storefront-outline" size={20} color="#059669" />
+            </View>
+            <View style={styles.menuContent}>
+              <Text style={styles.menuTitle}>Verified Shops & Suppliers</Text>
+              <Text style={styles.menuSubtitle}>Find local shops, address, call & inquiry</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+          </TouchableOpacity>
+
+          {/* Register Shop */}
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push("/(auth)/register-shop" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.menuIconCircle, { backgroundColor: "#FEF3C7" }]}>
+              <Ionicons name="business-outline" size={20} color="#D97706" />
+            </View>
+            <View style={styles.menuContent}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <Text style={styles.menuTitle}>Register as Shop Partner</Text>
+                <View style={{ backgroundColor: "#FEF3C7", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                  <Text style={{ fontSize: 10, fontWeight: "800", color: "#D97706" }}>₹500 FEE</Text>
+                </View>
+              </View>
+              <Text style={styles.menuSubtitle}>Aadhaar/GST verification & sell materials</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+          </TouchableOpacity>
+
+          {/* Register Delivery Partner */}
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push("/(auth)/register-delivery" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.menuIconCircle, { backgroundColor: "#EFF6FF" }]}>
+              <Ionicons name="bicycle-outline" size={20} color="#2563EB" />
+            </View>
+            <View style={styles.menuContent}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <Text style={styles.menuTitle}>Become a Delivery Partner</Text>
+                <View style={{ backgroundColor: "#EFF6FF", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                  <Text style={{ fontSize: 10, fontWeight: "800", color: "#2563EB" }}>₹500 FEE</Text>
+                </View>
+              </View>
+              <Text style={styles.menuSubtitle}>Deliver at any location & earn per order</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+          </TouchableOpacity>
+        </View>
+
         {/* Support & Logout */}
         <View style={styles.menuGroup}>
           <Text style={styles.menuGroupTitle}>More</Text>
