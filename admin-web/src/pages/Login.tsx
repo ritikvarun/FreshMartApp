@@ -14,8 +14,8 @@ import { useAdminAuth } from "../context/AdminAuthContext";
 
 export const Login: React.FC = () => {
   const { login } = useAdminAuth();
-  const [email, setEmail] = useState("admin@freshmart.com");
-  const [password, setPassword] = useState("AdminPassword123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
