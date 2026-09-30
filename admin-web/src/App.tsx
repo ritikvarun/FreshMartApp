@@ -173,8 +173,8 @@ const AdminApp: React.FC = () => {
   ).length;
 
   return (
-    <div className="flex min-h-screen w-full max-w-full bg-slate-50 text-slate-900 font-sans">
-      {/* Persistent Left Sidebar on lg+, Slide-over drawer on <lg */}
+    <div className="flex h-screen w-screen overflow-hidden bg-slate-50 text-slate-900 font-sans">
+      {/* Persistent Left Sidebar: Always fixed height, stationary */}
       <Sidebar
         currentTab={currentTab}
         setCurrentTab={setCurrentTab}
@@ -184,9 +184,9 @@ const AdminApp: React.FC = () => {
         pendingReturnsCount={returnsCount}
       />
 
-      {/* Main Content Area: critical min-w-0 to prevent flex blowout */}
-      <div className="flex flex-1 flex-col min-w-0 w-full max-w-full overflow-x-hidden">
-        {/* Sticky Top Header */}
+      {/* Main Content Area: Header (fixed) + Content (only this scrolls) */}
+      <div className="flex flex-1 flex-col h-full min-w-0 overflow-hidden">
+        {/* Top Header: Stationary */}
         <Header
           currentTab={currentTab}
           onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
@@ -196,8 +196,8 @@ const AdminApp: React.FC = () => {
           setSoundEnabled={setSoundEnabled}
         />
 
-        {/* Dynamic Page Container */}
-        <main className="flex-1 min-w-0 w-full max-w-full overflow-y-auto overflow-x-hidden p-3.5 sm:p-5 lg:p-7">
+        {/* Dynamic Page Container: ONLY THIS SCROLLS INDEPENDENTLY */}
+        <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-3.5 sm:p-5 lg:p-7">
           {currentTab === "dashboard" && (
             <Dashboard
               orders={orders}

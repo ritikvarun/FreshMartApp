@@ -104,14 +104,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         />
       )}
 
-      {/* Sidebar Container: Pinned to side with z-[99] so it never scrolls up */}
+      {/* Sidebar Container: Permanently fixed on the left on desktop, drawer on mobile */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-[99] flex w-72 h-screen flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:sticky lg:top-0 lg:h-screen lg:shrink-0 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-[99] flex w-72 h-full flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:static lg:h-full lg:w-72 lg:shrink-0 lg:translate-x-0 ${
           isOpenMobile ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         }`}
       >
         {/* Brand Header */}
-        <div className="flex h-18 items-center justify-between border-b border-slate-100 px-6">
+        <div className="flex h-16 sm:h-18 shrink-0 items-center justify-between border-b border-slate-100 px-6">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white shadow-md shadow-slate-900/10">
               <ShieldCheck className="h-5 w-5 text-emerald-400" />
@@ -138,7 +138,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Live Status Indicator */}
-        <div className="px-6 pt-4 pb-2">
+        <div className="px-6 pt-4 pb-2 shrink-0">
           <div className="flex items-center justify-between rounded-xl bg-emerald-50/70 border border-emerald-100/80 px-3.5 py-2 text-xs font-medium text-emerald-900">
             <div className="flex items-center gap-2">
               <span className="relative flex h-2 w-2">
@@ -192,7 +192,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Admin Footer & Logout */}
-        <div className="border-t border-slate-100 p-4">
+        <div className="border-t border-slate-100 p-4 shrink-0">
           <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3 border border-slate-100">
             <div className="flex items-center gap-3 overflow-hidden">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-sm shadow-xs">
