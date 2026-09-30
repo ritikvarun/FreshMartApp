@@ -7,8 +7,6 @@ import {
   EyeOff,
   ArrowRight,
   AlertCircle,
-  Sparkles,
-  KeyRound,
 } from "lucide-react";
 import { useAdminAuth } from "../context/AdminAuthContext";
 
@@ -36,12 +34,6 @@ export const Login: React.FC = () => {
     if (!res.success) {
       setErrorMessage(res.message || "Admin login failed.");
     }
-  };
-
-  const handleFillDemo = () => {
-    setEmail("admin@freshmart.com");
-    setPassword("AdminPassword123");
-    setErrorMessage("");
   };
 
   return (
@@ -128,30 +120,18 @@ export const Login: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-200"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-200 cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
 
-            {/* Quick Fill Button */}
-            <div className="flex items-center justify-between pt-1">
-              <button
-                type="button"
-                onClick={handleFillDemo}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition"
-              >
-                <KeyRound className="h-3.5 w-3.5" />
-                Fill Default Credentials
-              </button>
-            </div>
-
             {/* Submit */}
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/25 transition hover:brightness-110 active:scale-[0.99] disabled:opacity-50 cursor-pointer"
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/25 transition hover:brightness-110 active:scale-[0.99] disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? (
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-950 border-t-transparent" />
@@ -167,7 +147,7 @@ export const Login: React.FC = () => {
           {/* Footer note */}
           <div className="mt-8 border-t border-slate-800/80 pt-4 text-center">
             <p className="text-[11px] text-slate-500">
-              Connected to FreshMart Local & Cloud Backend API (Port 5000)
+              FreshMart Hyperlocal Admin & Dispatch Console
             </p>
           </div>
         </div>
