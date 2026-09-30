@@ -952,7 +952,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#64748B",
     marginTop: 2,
-    maxWidth: width - 150,
+    maxWidth: 150,
   },
   earningBadge: {
     backgroundColor: "#ECFDF5",
