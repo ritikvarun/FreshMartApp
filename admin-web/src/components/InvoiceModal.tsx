@@ -72,13 +72,13 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ order, onClose }) =>
             <div>
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-black text-sm">
-                  FM
+                  AkA
                 </div>
-                <span className="text-xl font-black tracking-tight text-slate-900">FreshMart</span>
+                <span className="text-xl font-black tracking-tight text-slate-900">AkA</span>
               </div>
               <p className="mt-1 text-xs text-slate-500">
-                Fresh & Fast Hyperlocal Delivery Network<br />
-                GSTIN: 07AAACH7409R1ZZ • Support: help@freshmart.com
+                AkA Hyperlocal Materials & Goods Delivery Network<br />
+                GSTIN: 07AAACH7409R1ZZ • Support: help@aka-app.com
               </p>
             </div>
 
@@ -186,7 +186,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ order, onClose }) =>
 
           {/* Footer Terms */}
           <div className="mt-8 border-t border-dashed border-slate-200 pt-4 text-[11px] text-slate-400 text-center">
-            Thank you for shopping with FreshMart! For returns or questions, please visit FreshMart Customer App.
+            Thank you for shopping with AkA! For returns or questions, please visit AkA Customer App.
           </div>
         </div>
       </div>

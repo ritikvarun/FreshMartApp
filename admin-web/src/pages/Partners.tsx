@@ -163,7 +163,7 @@ export const Partners: React.FC = () => {
                   <Store className="mx-auto h-10 w-10 text-slate-300" />
                   <h3 className="mt-3 text-base font-bold text-slate-800">No Partner Stores Registered</h3>
                   <p className="mt-1 text-xs text-slate-500">
-                    Merchant stores applying to sell on FreshMart will be listed here for KYC verification.
+                    Merchant stores applying to sell on AkA will be listed here for KYC verification.
                   </p>
                 </div>
               ) : (
@@ -216,9 +216,16 @@ export const Partners: React.FC = () => {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-slate-400">Registration Fee:</span>
-                          <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700">
-                            <CheckCircle2 className="h-3 w-3" /> ₹500 Received
-                          </span>
+                          <div className="text-right">
+                            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700">
+                              <CheckCircle2 className="h-3 w-3" /> ₹500 Paid
+                            </span>
+                            {(s as any).registrationTxnId && (
+                              <span className="block font-mono text-[10px] text-slate-400 mt-0.5">
+                                UTR: {(s as any).registrationTxnId}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-400">Location:</span>
@@ -264,7 +271,7 @@ export const Partners: React.FC = () => {
                   <Bike className="mx-auto h-10 w-10 text-slate-300" />
                   <h3 className="mt-3 text-base font-bold text-slate-800">No Delivery Riders Registered</h3>
                   <p className="mt-1 text-xs text-slate-500">
-                    Riders applying to deliver orders for FreshMart will be listed here.
+                    Riders applying to deliver orders for AkA will be listed here.
                   </p>
                 </div>
               ) : (
@@ -334,9 +341,16 @@ export const Partners: React.FC = () => {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-slate-400">Registration Fee:</span>
-                          <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700">
-                            <CheckCircle2 className="h-3 w-3" /> ₹500 Received
-                          </span>
+                          <div className="text-right">
+                            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700">
+                              <CheckCircle2 className="h-3 w-3" /> ₹500 Paid
+                            </span>
+                            {(d as any).registrationTxnId && (
+                              <span className="block font-mono text-[10px] text-slate-400 mt-0.5">
+                                UTR: {(d as any).registrationTxnId}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
 

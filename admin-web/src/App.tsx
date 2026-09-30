@@ -156,7 +156,7 @@ const AdminApp: React.FC = () => {
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-slate-950 shadow-xl shadow-emerald-500/20 animate-bounce">
           <ShieldCheck className="h-8 w-8" />
         </div>
-        <h2 className="mt-4 text-base font-extrabold tracking-tight">FreshMart Admin Console</h2>
+        <h2 className="mt-4 text-base font-extrabold tracking-tight">AkA Admin Console</h2>
         <p className="mt-1 text-xs text-slate-400">Verifying session authentication...</p>
       </div>
     );

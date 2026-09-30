@@ -9,6 +9,7 @@ import {
   StatusBar,
   ActivityIndicator,
   Alert,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -25,6 +26,7 @@ export default function RegisterDeliveryPartnerScreen() {
   const [drivingLicense, setDrivingLicense] = useState("");
   const [vehicleType, setVehicleType] = useState("Bike");
   const [vehicleNumber, setVehicleNumber] = useState("");
+  const [txnId, setTxnId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
@@ -49,7 +51,7 @@ export default function RegisterDeliveryPartnerScreen() {
         vehicleNumber: vehicleNumber.trim(),
         registrationFeePaid: true,
         registrationFeeAmount: 500,
-        registrationTxnId: `TXN_DL_${Date.now()}`,
+        registrationTxnId: txnId.trim() || `TXN_DL_${Date.now()}`,
       };
 
       const res = await fetch(ENDPOINTS.DELIVERY.REGISTER, {
@@ -183,6 +185,39 @@ export default function RegisterDeliveryPartnerScreen() {
             onChangeText={setDrivingLicense}
             style={styles.input}
           />
+
+          {/* ₹500 Registration Payment Section */}
+          <View style={{ marginTop: 18, padding: 14, backgroundColor: "#EFF6FF", borderRadius: 14, borderWidth: 1, borderColor: "#BFDBFE" }}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <View>
+                <Text style={{ fontSize: 13, fontWeight: "800", color: "#1E40AF" }}>Onboarding Fee: ₹500</Text>
+                <Text style={{ fontSize: 11, color: "#2563EB" }}>One-time delivery fleet kit & verification</Text>
+              </View>
+              <View style={{ backgroundColor: "#DBEAFE", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                <Text style={{ fontSize: 10, fontWeight: "900", color: "#1E40AF" }}>UPI APPROVED</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={{ marginTop: 10, backgroundColor: "#2563EB", paddingVertical: 10, borderRadius: 10, alignItems: "center" }}
+              onPress={() =>
+                Linking.openURL("upi://pay?pa=aka.delivery@okhdfcbank&pn=AkA%20Enterprises&am=500&cu=INR").catch(() => {
+                  Alert.alert("UPI Notice", "Open any UPI App (GPay/PhonePe) and pay ₹500 to UPI ID: aka.delivery@okhdfcbank");
+                })
+              }
+            >
+              <Text style={{ fontSize: 12, fontWeight: "800", color: "#FFFFFF" }}>⚡ Pay ₹500 via Any UPI App (GPay/PhonePe)</Text>
+            </TouchableOpacity>
+
+            <Text style={[styles.label, { marginTop: 12, color: "#1E40AF" }]}>12-Digit UPI Transaction / UTR Number</Text>
+            <TextInput
+              placeholder="e.g. 423456789012"
+              placeholderTextColor="#94A3B8"
+              value={txnId}
+              onChangeText={setTxnId}
+              style={[styles.input, { backgroundColor: "#FFFFFF", borderColor: "#93C5FD" }]}
+            />
+          </View>
 
           {/* Submit */}
           <TouchableOpacity

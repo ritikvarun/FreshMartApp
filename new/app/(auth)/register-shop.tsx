@@ -9,6 +9,7 @@ import {
   StatusBar,
   ActivityIndicator,
   Alert,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -28,6 +29,7 @@ export default function RegisterShopScreen() {
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("Delhi NCR");
   const [pinCode, setPinCode] = useState("");
+  const [txnId, setTxnId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feePaidSuccess, setFeePaidSuccess] = useState(true); // ₹500 fee
 
@@ -61,7 +63,7 @@ export default function RegisterShopScreen() {
         },
         registrationFeePaid: feePaidSuccess,
         registrationFeeAmount: 500,
-        registrationTxnId: `TXN_FEE_${Date.now()}`,
+        registrationTxnId: txnId.trim() || `TXN_SH_${Date.now()}`,
       };
 
       const res = await fetch(ENDPOINTS.SHOPS.REGISTER, {
@@ -229,6 +231,39 @@ export default function RegisterShopScreen() {
                 style={styles.input}
               />
             </View>
+          </View>
+
+          {/* ₹500 Registration Payment Section */}
+          <View style={{ marginTop: 18, padding: 14, backgroundColor: "#F0FDF4", borderRadius: 14, borderWidth: 1, borderColor: "#BBF7D0" }}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <View>
+                <Text style={{ fontSize: 13, fontWeight: "800", color: "#166534" }}>Onboarding Fee: ₹500</Text>
+                <Text style={{ fontSize: 11, color: "#15803D" }}>One-time merchant verification charge</Text>
+              </View>
+              <View style={{ backgroundColor: "#DCFCE7", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                <Text style={{ fontSize: 10, fontWeight: "900", color: "#166534" }}>UPI APPROVED</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={{ marginTop: 10, backgroundColor: "#059669", paddingVertical: 10, borderRadius: 10, alignItems: "center" }}
+              onPress={() =>
+                Linking.openURL("upi://pay?pa=aka.merchant@okhdfcbank&pn=AkA%20Enterprises&am=500&cu=INR").catch(() => {
+                  Alert.alert("UPI Notice", "Open any UPI App (GPay/PhonePe) and pay ₹500 to UPI ID: aka.merchant@okhdfcbank");
+                })
+              }
+            >
+              <Text style={{ fontSize: 12, fontWeight: "800", color: "#FFFFFF" }}>⚡ Pay ₹500 via Any UPI App (GPay/PhonePe)</Text>
+            </TouchableOpacity>
+
+            <Text style={[styles.label, { marginTop: 12, color: "#166534" }]}>12-Digit UPI Transaction / UTR Number</Text>
+            <TextInput
+              placeholder="e.g. 423456789012"
+              placeholderTextColor="#94A3B8"
+              value={txnId}
+              onChangeText={setTxnId}
+              style={[styles.input, { backgroundColor: "#FFFFFF", borderColor: "#86EFAC" }]}
+            />
           </View>
 
           {/* Submit Button with Fee Confirmation */}

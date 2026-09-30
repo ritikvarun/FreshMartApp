@@ -236,6 +236,15 @@ export const Orders: React.FC<OrdersProps> = ({
                     <span className="rounded-md bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-700 uppercase">
                       {order.paymentMethod || "COD"}
                     </span>
+                    <span
+                      className={`rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase ${
+                        (order as any).orderType === "single"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-purple-100 text-purple-800"
+                      }`}
+                    >
+                      {(order as any).orderType === "single" ? "Single Material" : "Multi-Material / Parchi"}
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between sm:justify-end gap-3">
@@ -310,6 +319,15 @@ export const Orders: React.FC<OrdersProps> = ({
                         </a>
                       )}
                     </div>
+
+                    {(order as any).orderNotes ? (
+                      <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-2.5 text-xs text-amber-900 mt-2">
+                        <span className="font-extrabold text-[10px] uppercase block tracking-wider text-amber-700">
+                          📝 Parchi / Requirement Note:
+                        </span>
+                        {(order as any).orderNotes}
+                      </div>
+                    ) : null}
                   </div>
 
                   {/* Col 2: Ordered Items */}

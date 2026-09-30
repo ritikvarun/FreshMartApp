@@ -1,18 +1,18 @@
 {
   "expo": {
-    "name": "FreshMart",
-    "slug": "freshmart",
+    "name": "AkA",
+    "slug": "aka",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "new",
+    "scheme": "aka",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      "package": "com.freshmart.app",
+      "package": "com.aka.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

@@ -35,12 +35,12 @@ const computeSplits = (items = [], totalAmount = 0, customDeliveryFee = 50) => {
 // ── Place Order (COD) ────────────────────────────────────────
 export const placeOrder = async (req, res) => {
     try {
-        const { items, amount, address, orderType, shopId, shopName, shopPhone, deliveryFee: userDeliveryFee } = req.body
+        const { items, amount, address, orderType, orderNotes, shopId, shopName, shopPhone, deliveryFee: userDeliveryFee } = req.body
         const userId = req.userId
 
         const splits = computeSplits(items, amount, userDeliveryFee)
         const primaryShopId = shopId || items?.[0]?.shopId || null
-        const primaryShopName = shopName || items?.[0]?.shopName || 'FreshMart Partner Store'
+        const primaryShopName = shopName || items?.[0]?.shopName || 'AkA Partner Store'
         const primaryShopPhone = shopPhone || items?.[0]?.shopPhone || ''
 
         const orderData = {
@@ -52,6 +52,7 @@ export const placeOrder = async (req, res) => {
             payment: false,
             date: Date.now(),
             orderType: orderType || (items?.length === 1 && (items[0]?.quantity || 1) === 1 ? 'single' : 'multi'),
+            orderNotes: orderNotes || '',
             shopId: primaryShopId,
             shopName: primaryShopName,
             shopPhone: primaryShopPhone,
@@ -94,12 +95,12 @@ export const placeOrder = async (req, res) => {
 // ── Place Order (Razorpay) ────────────────────────────────────
 export const placeOrderRazorpay = async (req, res) => {
     try {
-        const { items, amount, address, orderType, shopId, shopName, shopPhone, deliveryFee: userDeliveryFee } = req.body
+        const { items, amount, address, orderType, orderNotes, shopId, shopName, shopPhone, deliveryFee: userDeliveryFee } = req.body
         const userId = req.userId
 
         const splits = computeSplits(items, amount, userDeliveryFee)
         const primaryShopId = shopId || items?.[0]?.shopId || null
-        const primaryShopName = shopName || items?.[0]?.shopName || 'FreshMart Partner Store'
+        const primaryShopName = shopName || items?.[0]?.shopName || 'AkA Partner Store'
         const primaryShopPhone = shopPhone || items?.[0]?.shopPhone || ''
 
         const orderData = {
@@ -111,6 +112,7 @@ export const placeOrderRazorpay = async (req, res) => {
             payment: false,
             date: Date.now(),
             orderType: orderType || (items?.length === 1 && (items[0]?.quantity || 1) === 1 ? 'single' : 'multi'),
+            orderNotes: orderNotes || '',
             shopId: primaryShopId,
             shopName: primaryShopName,
             shopPhone: primaryShopPhone,

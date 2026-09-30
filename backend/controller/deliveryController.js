@@ -1,5 +1,6 @@
 import DeliveryPartner from "../model/deliveryModel.js";
 import Order from "../model/orderModel.js";
+import Shop from "../model/shopModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -216,6 +217,14 @@ export const updateDeliveryStatus = async (req, res) => {
         $inc: { walletBalance: payout, totalDeliveries: 1 },
         $set: { activeOrderId: null },
       });
+
+      // Credit material sales to shop's wallet
+      if (order.shopId) {
+        const shopAmount = order.shopPayout || Math.max(0, (order.amount || 0) - payout - 50);
+        await Shop.findByIdAndUpdate(order.shopId, {
+          $inc: { walletBalance: shopAmount, totalOrders: 1 },
+        });
+      }
     }
 
     await order.save();

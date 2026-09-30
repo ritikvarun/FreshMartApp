@@ -65,7 +65,7 @@ export default function ShopDetailScreen() {
     const formatted = cleanNumber.startsWith("91") ? cleanNumber : `91${cleanNumber}`;
     const itemMsg = productName ? `regarding "${productName}"` : "regarding your materials list";
     const text = encodeURIComponent(
-      `Namaste ${shop.name}! I am contacting you from FreshMart app ${itemMsg}. Can you please provide price and stock availability?`
+      `Namaste ${shop.name}! I am contacting you from AkA app ${itemMsg}. Can you please provide price and stock availability?`
     );
     const url = `whatsapp://send?phone=${formatted}&text=${text}`;
 

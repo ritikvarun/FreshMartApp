@@ -13,6 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -295,7 +296,7 @@ export default function ProfileScreen() {
               <Ionicons name="person-outline" size={32} color="#111827" />
             </View>
 
-            <Text style={styles.guestTitle}>Welcome to FreshMart</Text>
+            <Text style={styles.guestTitle}>Welcome to AkA</Text>
             <Text style={styles.guestSubtitle}>
               Log in or create an account to view your orders, saved items, and unlock member discounts.
             </Text>
@@ -581,6 +582,22 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
           </TouchableOpacity>
 
+          {/* Shopkeeper Console (Add Materials) */}
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push("/(root)/shop-dashboard" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.menuIconCircle, { backgroundColor: "#F0FDF4" }]}>
+              <Ionicons name="cube-outline" size={20} color="#16A34A" />
+            </View>
+            <View style={styles.menuContent}>
+              <Text style={styles.menuTitle}>Shopkeeper Console</Text>
+              <Text style={styles.menuSubtitle}>Add materials, manage catalog & withdraw earnings</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+          </TouchableOpacity>
+
           {/* Register Delivery Partner */}
           <TouchableOpacity
             style={styles.menuItem}
@@ -598,6 +615,22 @@ export default function ProfileScreen() {
                 </View>
               </View>
               <Text style={styles.menuSubtitle}>Deliver at any location & earn per order</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+          </TouchableOpacity>
+
+          {/* Delivery Partner Console (Duty & Orders) */}
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push("/(root)/delivery-dashboard" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.menuIconCircle, { backgroundColor: "#EEF2FF" }]}>
+              <Ionicons name="speedometer-outline" size={20} color="#4F46E5" />
+            </View>
+            <View style={styles.menuContent}>
+              <Text style={styles.menuTitle}>Delivery Partner Console</Text>
+              <Text style={styles.menuSubtitle}>Toggle Duty ON/OFF, accept orders & view earnings</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
           </TouchableOpacity>
@@ -935,20 +968,22 @@ export default function ProfileScreen() {
             <View style={styles.supportOptionsRow}>
               <TouchableOpacity
                 style={styles.supportBox}
-                onPress={() => Alert.alert("Helpline", "Toll-Free Customer Care: 1800-123-4567")}
+                onPress={() => Linking.openURL("tel:+919876543210")}
               >
-                <Ionicons name="call-outline" size={24} color="#111827" />
-                <Text style={styles.supportBoxTitle}>Call Us</Text>
-                <Text style={styles.supportBoxSub}>1800-123-4567</Text>
+                <Ionicons name="call-outline" size={24} color="#059669" />
+                <Text style={styles.supportBoxTitle}>Call Support</Text>
+                <Text style={styles.supportBoxSub}>+91 98765 43210</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.supportBox}
-                onPress={() => Alert.alert("Email Support", "Email us at: support@freshmart.com")}
+                onPress={() =>
+                  Linking.openURL("https://wa.me/919876543210?text=Namaste%20AkA%20Support,%20mujhe%20inquiry%20karni%20hai")
+                }
               >
-                <Ionicons name="mail-outline" size={24} color="#111827" />
-                <Text style={styles.supportBoxTitle}>Email</Text>
-                <Text style={styles.supportBoxSub}>support@freshmart</Text>
+                <Ionicons name="logo-whatsapp" size={24} color="#16A34A" />
+                <Text style={styles.supportBoxTitle}>WhatsApp</Text>
+                <Text style={styles.supportBoxSub}>Instant Help Desk</Text>
               </TouchableOpacity>
             </View>
 

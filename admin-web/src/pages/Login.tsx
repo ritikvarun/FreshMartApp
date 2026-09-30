@@ -59,7 +59,7 @@ export const Login: React.FC = () => {
             </div>
 
             <h1 className="mt-3 text-2xl font-black tracking-tight text-white sm:text-3xl">
-              FreshMart Admin
+              AkA Admin
             </h1>
             <p className="mt-1.5 text-xs sm:text-sm text-slate-400">
               Sign in to manage orders, inventory, settlements, and delivery fleet.
@@ -147,7 +147,7 @@ export const Login: React.FC = () => {
           {/* Footer note */}
           <div className="mt-8 border-t border-slate-800/80 pt-4 text-center">
             <p className="text-[11px] text-slate-500">
-              FreshMart Hyperlocal Admin & Dispatch Console
+              AkA Hyperlocal Admin & Dispatch Console
             </p>
           </div>
         </div>

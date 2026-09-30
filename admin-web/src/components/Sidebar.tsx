@@ -119,7 +119,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="text-base font-extrabold tracking-tight text-slate-900">
-                  FreshMart
+                  AkA
                 </span>
                 <span className="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-emerald-800 uppercase">
                   Admin

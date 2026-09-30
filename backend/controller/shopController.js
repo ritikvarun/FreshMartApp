@@ -81,17 +81,25 @@ export const registerShop = async (req, res) => {
   }
 };
 
-// ── Shop Login ───────────────────────────────────────────────
+// ── Shop Login (Supports Phone / Aadhaar Number / GST Number) ──
 export const loginShop = async (req, res) => {
   try {
-    const { phone, password } = req.body;
-    if (!phone || !password) {
-      return res.status(400).json({ message: "Phone and password are required" });
+    const { identifier, phone, password } = req.body;
+    const loginKey = (identifier || phone || "").trim();
+    if (!loginKey || !password) {
+      return res.status(400).json({ message: "Phone / Aadhaar / GST and password are required" });
     }
 
-    const shop = await Shop.findOne({ phone });
+    const shop = await Shop.findOne({
+      $or: [
+        { phone: loginKey },
+        { aadhaarNumber: loginKey },
+        { gstNumber: loginKey },
+      ],
+    });
+
     if (!shop) {
-      return res.status(404).json({ message: "Shop not found with this phone number" });
+      return res.status(404).json({ message: "Shop not found with provided Phone, Aadhaar, or GST Number" });
     }
 
     const isMatch = await bcrypt.compare(password, shop.password);
@@ -110,6 +118,89 @@ export const loginShop = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ message: "Shop login error: " + error.message });
+  }
+};
+
+// ── Shop Partner: Add Product Directly from Mobile ──────────
+export const addShopProduct = async (req, res) => {
+  try {
+    const {
+      shopId,
+      name,
+      description,
+      price,
+      category,
+      subCategory,
+      sizes,
+      image1,
+      image2,
+      image3,
+      bestseller,
+    } = req.body;
+
+    if (!shopId || !name || !price) {
+      return res.status(400).json({ message: "Shop ID, product name, and price are required" });
+    }
+
+    const shop = await Shop.findById(shopId);
+    if (!shop) {
+      return res.status(404).json({ message: "Shop not found" });
+    }
+
+    let parsedSizes = [];
+    try {
+      parsedSizes = typeof sizes === "string" ? JSON.parse(sizes) : sizes;
+    } catch (e) {
+      parsedSizes = Array.isArray(sizes) ? sizes : [sizes || "Standard"];
+    }
+
+    const product = new Product({
+      name,
+      description: description || `${name} supplied by ${shop.name}`,
+      price: Number(price),
+      category: category || shop.category || "Building Materials",
+      subCategory: subCategory || "Supplies",
+      sizes: parsedSizes.length > 0 ? parsedSizes : ["Standard"],
+      image1: image1 || shop.image || "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&auto=format&fit=crop&q=80",
+      image2: image2 || "",
+      image3: image3 || "",
+      image4: "",
+      image5: "",
+      bestseller: bestseller === true || bestseller === "true",
+      date: Date.now(),
+      shopId: shop._id,
+      shopName: shop.name,
+      shopPhone: shop.phone,
+      shopAddress: shop.address?.street ? `${shop.address.street}, ${shop.address.city || ""}` : "",
+      isAvailable: true,
+    });
+
+    await product.save();
+    return res.status(201).json({ message: "Material listed successfully!", product });
+  } catch (error) {
+    return res.status(500).json({ message: "addShopProduct error: " + error.message });
+  }
+};
+
+// ── Shop Partner: Get All Products by Shop ──────────────────
+export const getMyShopProducts = async (req, res) => {
+  try {
+    const { shopId } = req.params;
+    const products = await Product.find({ shopId }).sort({ createdAt: -1 });
+    return res.status(200).json({ count: products.length, products });
+  } catch (error) {
+    return res.status(500).json({ message: "getMyShopProducts error: " + error.message });
+  }
+};
+
+// ── Shop Partner: Toggle Open/Closed ────────────────────────
+export const toggleShopOpen = async (req, res) => {
+  try {
+    const { shopId, isOpen } = req.body;
+    const shop = await Shop.findByIdAndUpdate(shopId, { isOpen }, { new: true }).select("-password");
+    return res.status(200).json({ message: `Shop is now ${isOpen ? "Open" : "Closed"}`, shop });
+  } catch (error) {
+    return res.status(500).json({ message: "toggleShopOpen error: " + error.message });
   }
 };
 

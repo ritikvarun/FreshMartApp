@@ -41,6 +41,10 @@ const orderSchema = new mongoose.Schema({
         enum: ["single", "multi"],
         default: "multi"
     },
+    orderNotes: {
+        type: String,
+        default: ""
+    },
     shopId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Shop",
@@ -48,7 +52,7 @@ const orderSchema = new mongoose.Schema({
     },
     shopName: {
         type: String,
-        default: "FreshMart Store"
+        default: "AkA Store"
     },
     shopPhone: {
         type: String,

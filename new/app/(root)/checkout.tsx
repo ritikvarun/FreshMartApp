@@ -44,6 +44,8 @@ export default function CheckoutScreen() {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [orderPlacedSuccess, setOrderPlacedSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [orderType, setOrderType] = useState<"single" | "multi">("single");
+  const [orderNotes, setOrderNotes] = useState("");
 
   // Captured order details for success screen (preserves amount after clearCart)
   const [placedOrderAmount, setPlacedOrderAmount] = useState(0);
@@ -203,7 +205,6 @@ export default function CheckoutScreen() {
     }
 
     try {
-      const isSingle = cartItems.length === 1 && (cartItems[0]?.quantity || 1) === 1;
       const primaryItem = cartItems[0]?.product as any;
       const orderPayload = {
         items: cartItems.map((item) => ({
@@ -213,9 +214,10 @@ export default function CheckoutScreen() {
         })),
         amount: grandTotal,
         address: addressData,
-        orderType: isSingle ? "single" : "multi",
+        orderType: orderType,
+        orderNotes: orderNotes.trim(),
         shopId: primaryItem?.shopId || null,
-        shopName: primaryItem?.shopName || "FreshMart Partner Store",
+        shopName: primaryItem?.shopName || "AkA Partner Store",
         shopPhone: primaryItem?.shopPhone || "",
         deliveryFee: 50,
       };
@@ -535,6 +537,79 @@ export default function CheckoutScreen() {
           </View>
         </View>
 
+        {/* Order Type & Custom Material Note Card */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionTitleRow}>
+            <Ionicons name="cube-outline" size={20} color="#0F172A" />
+            <Text style={styles.sectionTitle}>Material Order Configuration</Text>
+          </View>
+
+          {/* Single vs Multi Selector */}
+          <View style={styles.orderTypeRow}>
+            <TouchableOpacity
+              style={[
+                styles.orderTypeBtn,
+                orderType === "single" && styles.orderTypeBtnActive,
+              ]}
+              onPress={() => setOrderType("single")}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name="pricetag-outline"
+                size={18}
+                color={orderType === "single" ? "#059669" : "#64748B"}
+              />
+              <Text
+                style={[
+                  styles.orderTypeBtnText,
+                  orderType === "single" && styles.orderTypeBtnTextActive,
+                ]}
+              >
+                Single Material
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.orderTypeBtn,
+                orderType === "multi" && styles.orderTypeBtnActive,
+              ]}
+              onPress={() => setOrderType("multi")}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name="layers-outline"
+                size={18}
+                color={orderType === "multi" ? "#059669" : "#64748B"}
+              />
+              <Text
+                style={[
+                  styles.orderTypeBtnText,
+                  orderType === "multi" && styles.orderTypeBtnTextActive,
+                ]}
+              >
+                Multi-Material / Parchi
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Custom Material Requirement / Notes Textarea */}
+          <View style={{ marginTop: 14 }}>
+            <Text style={styles.inputLabel}>
+              Custom Requirement / Special Parchi Note (Optional)
+            </Text>
+            <TextInput
+              style={[styles.input, { height: 75, textAlignVertical: "top", paddingTop: 8 }]}
+              placeholder="e.g. 20 bori Ultratech cement, 1 truck sand, ya unloading floor instructions..."
+              placeholderTextColor="#94A3B8"
+              multiline
+              numberOfLines={3}
+              value={orderNotes}
+              onChangeText={setOrderNotes}
+            />
+          </View>
+        </View>
+
         {/* Payment Method Card */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionTitleRow}>
@@ -686,7 +761,7 @@ export default function CheckoutScreen() {
             <View style={styles.rzpAmountCard}>
               <View>
                 <Text style={styles.rzpAmountLabel}>Order Total</Text>
-                <Text style={styles.rzpMerchantText}>FreshMart Store</Text>
+                <Text style={styles.rzpMerchantText}>AkA Store</Text>
               </View>
               <Text style={styles.rzpAmountValue}>₹{grandTotal.toFixed(0)}</Text>
             </View>
@@ -1121,6 +1196,36 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "700",
     color: "#2563EB",
+  },
+  orderTypeRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 6,
+  },
+  orderTypeBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    backgroundColor: "#F8FAFC",
+  },
+  orderTypeBtnActive: {
+    borderColor: "#10B981",
+    backgroundColor: "#ECFDF5",
+  },
+  orderTypeBtnText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#64748B",
+  },
+  orderTypeBtnTextActive: {
+    color: "#065F46",
   },
 
   summaryItemRow: {

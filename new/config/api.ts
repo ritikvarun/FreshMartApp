@@ -40,6 +40,9 @@ export const ENDPOINTS = {
     DETAIL: (id: string) => `${API_BASE_URL}/api/shop/${id}`,
     REGISTER: `${API_BASE_URL}/api/shop/register`,
     LOGIN: `${API_BASE_URL}/api/shop/login`,
+    ADD_PRODUCT: `${API_BASE_URL}/api/shop/add-product`,
+    MY_PRODUCTS: (shopId: string) => `${API_BASE_URL}/api/shop/my-products/${shopId}`,
+    TOGGLE_OPEN: `${API_BASE_URL}/api/shop/toggle-open`,
   },
   DELIVERY: {
     REGISTER: `${API_BASE_URL}/api/delivery/register`,
@@ -48,6 +51,7 @@ export const ENDPOINTS = {
     AVAILABLE_ORDERS: `${API_BASE_URL}/api/delivery/available-orders`,
     ACCEPT_ORDER: `${API_BASE_URL}/api/delivery/accept-order`,
     UPDATE_STATUS: `${API_BASE_URL}/api/delivery/update-status`,
+    UPDATE_LOCATION: `${API_BASE_URL}/api/delivery/update-location`,
   },
 };
 

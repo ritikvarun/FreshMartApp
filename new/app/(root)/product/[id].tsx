@@ -188,7 +188,7 @@ export default function ProductDetailScreen() {
     const cleanNumber = phone.replace(/[^0-9]/g, "");
     const formatted = cleanNumber.startsWith("91") ? cleanNumber : `91${cleanNumber}`;
     const text = encodeURIComponent(
-      `Namaste! Mujhe FreshMart app par aapka item "${product?.name}" ke baare me inquiry karni hai (Price: ₹${product?.price}). Kya ye available hai?`
+      `Namaste! Mujhe AkA app par aapka item "${product?.name}" ke baare me inquiry karni hai (Price: ₹${product?.price}). Kya ye available hai?`
     );
     const url = `whatsapp://send?phone=${formatted}&text=${text}`;
 
@@ -499,7 +499,7 @@ export default function ProductDetailScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.supplierHeading}>Supplied & Sold By</Text>
-                <Text style={styles.supplierName}>{product.shopName || "FreshMart Partner Store"}</Text>
+                <Text style={styles.supplierName}>{product.shopName || "AkA Partner Store"}</Text>
               </View>
               <View style={styles.verifiedStoreBadge}>
                 <Ionicons name="shield-checkmark" size={12} color="#059669" />

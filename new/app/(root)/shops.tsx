@@ -92,7 +92,7 @@ export default function ShopsListScreen() {
     const cleanNumber = phone.replace(/[^0-9]/g, "");
     const formatted = cleanNumber.startsWith("91") ? cleanNumber : `91${cleanNumber}`;
     const text = encodeURIComponent(
-      `Namaste ${name}! Maine aapki shop FreshMart app par dekhi. Mujhe materials/products ke baare me inquiry karni hai.`
+      `Namaste ${name}! Maine aapki shop AkA app par dekhi. Mujhe materials/products ke baare me inquiry karni hai.`
     );
     const url = `whatsapp://send?phone=${formatted}&text=${text}`;
 
