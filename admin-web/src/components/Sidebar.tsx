@@ -99,14 +99,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Mobile Backdrop */}
       {isOpenMobile && (
         <div
-          className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs transition-opacity lg:hidden"
+          className="fixed inset-0 z-[90] bg-slate-900/60 backdrop-blur-xs transition-opacity lg:hidden"
           onClick={() => setIsOpenMobile(false)}
         />
       )}
 
-      {/* Sidebar Container */}
+      {/* Sidebar Container: Pinned to side with z-[99] so it never scrolls up */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 flex w-72 flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-[99] flex w-72 h-screen flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:sticky lg:top-0 lg:h-screen lg:shrink-0 lg:translate-x-0 ${
           isOpenMobile ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         }`}
       >

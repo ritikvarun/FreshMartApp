@@ -173,7 +173,7 @@ const AdminApp: React.FC = () => {
   ).length;
 
   return (
-    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-slate-50 text-slate-900 font-sans">
+    <div className="flex min-h-screen w-full max-w-full bg-slate-50 text-slate-900 font-sans">
       {/* Persistent Left Sidebar on lg+, Slide-over drawer on <lg */}
       <Sidebar
         currentTab={currentTab}
