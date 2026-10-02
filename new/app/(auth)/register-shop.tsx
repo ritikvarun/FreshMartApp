@@ -23,7 +23,7 @@ export default function RegisterShopScreen() {
   const [ownerName, setOwnerName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [category, setCategory] = useState("Building Material & Supplies");
+  const [category, setCategory] = useState("Kirana & Grocery");
   const [idType, setIdType] = useState<"gst" | "aadhaar">("aadhaar");
   const [idNumber, setIdNumber] = useState("");
   const [street, setStreet] = useState("");
@@ -110,7 +110,7 @@ export default function RegisterShopScreen() {
           <View style={{ flex: 1 }}>
             <Text style={styles.feeBannerTitle}>Register Your Shop / Store</Text>
             <Text style={styles.feeBannerSub}>
-              Sell building materials, hardware, paints or groceries to local customers.
+              Sell fresh veggies, fruits, daily milk & kirana groceries to local customers.
             </Text>
             <View style={styles.feeBadge}>
               <Ionicons name="cash-outline" size={14} color="#059669" />
@@ -125,7 +125,7 @@ export default function RegisterShopScreen() {
 
           <Text style={styles.label}>Shop / Business Name *</Text>
           <TextInput
-            placeholder="e.g. Shree Ram Building Materials"
+            placeholder="e.g. Gupta Daily Kirana Store"
             value={shopName}
             onChangeText={setShopName}
             style={styles.input}
@@ -159,7 +159,7 @@ export default function RegisterShopScreen() {
 
           <Text style={styles.label}>Business Category</Text>
           <View style={styles.categoryRow}>
-            {["Building Material", "Hardware & Paints", "Grocery", "General"].map((cat) => (
+            {["Kirana & Grocery", "Fruits & Vegetables", "Dairy & Bakery", "Supermarket"].map((cat) => (
               <TouchableOpacity
                 key={cat}
                 onPress={() => setCategory(cat)}

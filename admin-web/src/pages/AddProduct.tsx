@@ -15,23 +15,44 @@ import { ENDPOINTS } from "../config/api";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import { TabType } from "../components/Sidebar";
 
-const CATEGORIES = ["Men", "Women", "Kids", "Shoes", "Accessories", "Unisex", "Grocery", "Beauty"];
-const SUB_CATEGORIES = [
-  "TopWear",
-  "BottomWear",
-  "WinterWear",
-  "Shoes",
-  "Accessories",
-  "Organic",
-  "Fresh Fruits",
-  "Snacks & Drinks",
+const CATEGORIES = [
+  "Vegetables & Fruits",
+  "Dairy & Breakfast",
+  "Atta, Rice & Dal",
+  "Oils & Masalas",
+  "Snacks & Munchies",
+  "Cold Drinks & Juices",
+  "Instant & Frozen Food",
+  "Tea, Coffee & Drinks",
+  "Cleaning & Household",
   "Personal Care",
 ];
 
+const SUB_CATEGORIES = [
+  "Fresh Vegetables",
+  "Fresh Fruits",
+  "Milk & Curd",
+  "Paneer & Butter",
+  "Bread & Eggs",
+  "Atta & Flours",
+  "Rice & Grains",
+  "Dals & Pulses",
+  "Cooking Oils & Ghee",
+  "Spices & Masalas",
+  "Chips & Namkeen",
+  "Biscuits & Cookies",
+  "Cold Drinks & Sodas",
+  "Fruit Juices",
+  "Noodles & Pasta",
+  "Tea & Coffee",
+  "Detergents & Cleaners",
+  "Soaps & Body Wash",
+];
+
 const PRESET_SIZES: Record<string, string[]> = {
-  clothing: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
-  shoes: ["6", "7", "8", "9", "10", "11", "12"],
-  accessories: ["Free Size", "Standard", "One Size", "500g", "1kg"],
+  weight: ["100g", "250g", "500g", "1 kg", "2 kg", "5 kg", "10 kg"],
+  volume: ["100 ml", "200 ml", "500 ml", "750 ml", "1 L", "2 L", "5 L"],
+  packs: ["1 Pc", "Pack of 2", "Pack of 4", "Pack of 6", "Pack of 12", "Combo"],
 };
 
 interface AddProductProps {
@@ -46,10 +67,10 @@ export const AddProduct: React.FC<AddProductProps> = ({ onProductAdded, onNaviga
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("Men");
-  const [subCategory, setSubCategory] = useState("TopWear");
-  const [sizeType, setSizeType] = useState<"clothing" | "shoes" | "accessories">("clothing");
-  const [selectedSizes, setSelectedSizes] = useState<string[]>(["M", "L"]);
+  const [category, setCategory] = useState("Vegetables & Fruits");
+  const [subCategory, setSubCategory] = useState("Fresh Vegetables");
+  const [sizeType, setSizeType] = useState<"weight" | "volume" | "packs">("weight");
+  const [selectedSizes, setSelectedSizes] = useState<string[]>(["500g", "1 kg"]);
   const [customSize, setCustomSize] = useState("");
   const [bestseller, setBestseller] = useState(false);
 
@@ -462,7 +483,7 @@ export const AddProduct: React.FC<AddProductProps> = ({ onProductAdded, onNaviga
 
             {/* Size Type Tabs */}
             <div className="flex rounded-lg bg-slate-100 p-0.5">
-              {(["clothing", "shoes", "accessories"] as const).map((type) => (
+              {(["weight", "volume", "packs"] as const).map((type) => (
                 <button
                   key={type}
                   type="button"

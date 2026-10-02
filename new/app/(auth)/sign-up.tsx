@@ -10,7 +10,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -65,12 +64,6 @@ export default function SignUpScreen() {
     }
   };
 
-  const handleGoogleSignUp = () => {
-    Alert.alert(
-      "Google Sign-In",
-      "Google authentication integration will be added soon!"
-    );
-  };
 
   const handleBack = () => {
     if (router.canGoBack()) {
@@ -84,219 +77,206 @@ export default function SignUpScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
+      {/* Top Bar with Back Arrow */}
+      <View style={styles.topBar}>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={handleBack}
+          activeOpacity={0.7}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <Ionicons name="arrow-back" size={22} color="#111827" />
+        </TouchableOpacity>
+      </View>
+
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
+          keyboardShouldPersistTaps="always"
         >
-          {/* Top Bar with Back Arrow */}
-          <View style={styles.topBar}>
-            <TouchableOpacity
-              style={styles.backBtn}
-              onPress={handleBack}
-              activeOpacity={0.7}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            >
-              <Ionicons name="arrow-back" size={24} color="#111827" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Heading Section */}
-          <View style={styles.headerSection}>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>
-              Sign up to get started and enjoy shopping.
-            </Text>
-          </View>
-
-          {/* Form */}
-          <View style={styles.form}>
-            {errorMessage ? (
-              <View style={styles.errorBanner}>
-                <Ionicons name="alert-circle" size={18} color="#EF4444" />
-                <Text style={styles.errorText}>{errorMessage}</Text>
-              </View>
-            ) : null}
-
-            {/* Full Name */}
-            <View style={styles.inputWrapper}>
-              <Ionicons
-                name="person-outline"
-                size={20}
-                color="#9CA3AF"
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Full Name"
-                placeholderTextColor="#9CA3AF"
-                value={fullName}
-                onChangeText={(text) => {
-                  setFullName(text);
-                  if (errorMessage) setErrorMessage("");
-                }}
-                autoCapitalize="words"
-              />
-            </View>
-
-            {/* Email Address */}
-            <View style={styles.inputWrapper}>
-              <Ionicons
-                name="mail-outline"
-                size={20}
-                color="#9CA3AF"
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Email Address"
-                placeholderTextColor="#9CA3AF"
-                value={email}
-                onChangeText={(text) => {
-                  setEmail(text);
-                  if (errorMessage) setErrorMessage("");
-                }}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
-
-            {/* Password */}
-            <View style={styles.inputWrapper}>
-              <Ionicons
-                name="lock-closed-outline"
-                size={20}
-                color="#9CA3AF"
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Password (min 8 chars)"
-                placeholderTextColor="#9CA3AF"
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                  if (errorMessage) setErrorMessage("");
-                }}
-                secureTextEntry={!showPassword}
-              />
-              <TouchableOpacity
-                onPress={() => setShowPassword(!showPassword)}
-                style={styles.eyeIcon}
-                activeOpacity={0.7}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Ionicons
-                  name={showPassword ? "eye-off-outline" : "eye-outline"}
-                  size={20}
-                  color="#9CA3AF"
-                />
-              </TouchableOpacity>
-            </View>
-
-            {/* Confirm Password */}
-            <View style={styles.inputWrapper}>
-              <Ionicons
-                name="shield-checkmark-outline"
-                size={20}
-                color="#9CA3AF"
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Confirm Password"
-                placeholderTextColor="#9CA3AF"
-                value={confirmPassword}
-                onChangeText={(text) => {
-                  setConfirmPassword(text);
-                  if (errorMessage) setErrorMessage("");
-                }}
-                secureTextEntry={!showConfirmPassword}
-              />
-              <TouchableOpacity
-                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                style={styles.eyeIcon}
-                activeOpacity={0.7}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Ionicons
-                  name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
-                  size={20}
-                  color="#9CA3AF"
-                />
-              </TouchableOpacity>
-            </View>
-
-            {/* Terms and Conditions Checkbox */}
-            <TouchableOpacity
-              style={styles.termsRow}
-              onPress={() => setAgreedToTerms(!agreedToTerms)}
-              activeOpacity={0.8}
-            >
-              <View
-                style={[
-                  styles.checkbox,
-                  agreedToTerms && styles.checkboxActive,
-                ]}
-              >
-                {agreedToTerms && (
-                  <Ionicons name="checkmark" size={13} color="#FFFFFF" />
-                )}
-              </View>
-              <Text style={styles.termsText}>
-                I agree to the{" "}
-                <Text style={styles.termsLink}>Terms of Service</Text> and{" "}
-                <Text style={styles.termsLink}>Privacy Policy</Text>
+          {/* Centered Content */}
+          <View style={styles.centerContainer}>
+            {/* Heading Section */}
+            <View style={styles.headerSection}>
+              <Text style={styles.title}>Create Account</Text>
+              <Text style={styles.subtitle}>
+                Sign up to get started and enjoy shopping.
               </Text>
-            </TouchableOpacity>
+            </View>
 
-            {/* Primary Create Account Button */}
-            <TouchableOpacity
-              style={[styles.loginBtn, isSubmitting && { opacity: 0.75 }]}
-              onPress={handleSignUp}
-              disabled={isSubmitting}
-              activeOpacity={0.85}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color="#FFFFFF" size="small" />
-              ) : (
-                <Text style={styles.loginBtnText}>Create Account</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+            {/* Form */}
+            <View style={styles.form}>
+              {errorMessage ? (
+                <View style={styles.errorBanner}>
+                  <Ionicons name="alert-circle" size={18} color="#EF4444" />
+                  <Text style={styles.errorText}>{errorMessage}</Text>
+                </View>
+              ) : null}
 
-          {/* Divider */}
-          <View style={styles.dividerRow}>
-            <View style={styles.divider} />
-            <Text style={styles.dividerText}>or continue with</Text>
-            <View style={styles.divider} />
-          </View>
+              {/* Full Name */}
+              <View style={styles.inputWrapper}>
+                <Ionicons
+                  name="person-outline"
+                  size={20}
+                  color="#6B7280"
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Full Name"
+                  placeholderTextColor="#9CA3AF"
+                  value={fullName}
+                  onChangeText={(text) => {
+                    setFullName(text);
+                    if (errorMessage) setErrorMessage("");
+                  }}
+                  autoCapitalize="words"
+                />
+              </View>
 
-          {/* Social Login (Google only) */}
-          <View style={styles.socialRow}>
-            <TouchableOpacity
-              style={styles.socialBtn}
-              onPress={handleGoogleSignUp}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="logo-google" size={24} color="#EA4335" />
-            </TouchableOpacity>
-          </View>
+              {/* Email Address */}
+              <View style={styles.inputWrapper}>
+                <Ionicons
+                  name="mail-outline"
+                  size={20}
+                  color="#6B7280"
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email Address"
+                  placeholderTextColor="#9CA3AF"
+                  value={email}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    if (errorMessage) setErrorMessage("");
+                  }}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
 
-          {/* Bottom Sign In Link */}
-          <View style={styles.bottomLinkRow}>
-            <Text style={styles.bottomLinkText}>Already have an account? </Text>
-            <TouchableOpacity
-              onPress={() => router.push("/(auth)/sign-in" as any)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.signupLink}>Sign In</Text>
-            </TouchableOpacity>
+              {/* Password */}
+              <View style={styles.inputWrapper}>
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={20}
+                  color="#6B7280"
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password (min 8 chars)"
+                  placeholderTextColor="#9CA3AF"
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    if (errorMessage) setErrorMessage("");
+                  }}
+                  secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeIcon}
+                  activeOpacity={0.7}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    size={20}
+                    color="#9CA3AF"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Confirm Password */}
+              <View style={styles.inputWrapper}>
+                <Ionicons
+                  name="shield-checkmark-outline"
+                  size={20}
+                  color="#6B7280"
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Confirm Password"
+                  placeholderTextColor="#9CA3AF"
+                  value={confirmPassword}
+                  onChangeText={(text) => {
+                    setConfirmPassword(text);
+                    if (errorMessage) setErrorMessage("");
+                  }}
+                  secureTextEntry={!showConfirmPassword}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={styles.eyeIcon}
+                  activeOpacity={0.7}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Ionicons
+                    name={
+                      showConfirmPassword ? "eye-off-outline" : "eye-outline"
+                    }
+                    size={20}
+                    color="#9CA3AF"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Terms and Conditions Checkbox */}
+              <TouchableOpacity
+                style={styles.termsRow}
+                onPress={() => setAgreedToTerms(!agreedToTerms)}
+                activeOpacity={0.8}
+              >
+                <View
+                  style={[
+                    styles.checkbox,
+                    agreedToTerms && styles.checkboxActive,
+                  ]}
+                >
+                  {agreedToTerms && (
+                    <Ionicons name="checkmark" size={13} color="#FFFFFF" />
+                  )}
+                </View>
+                <Text style={styles.termsText}>
+                  I agree to the{" "}
+                  <Text style={styles.termsLink}>Terms of Service</Text> and{" "}
+                  <Text style={styles.termsLink}>Privacy Policy</Text>
+                </Text>
+              </TouchableOpacity>
+
+              {/* Primary Create Account Button */}
+              <TouchableOpacity
+                style={[styles.loginBtn, isSubmitting && { opacity: 0.75 }]}
+                onPress={handleSignUp}
+                disabled={isSubmitting}
+                activeOpacity={0.85}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <Text style={styles.loginBtnText}>Create Account</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* Bottom Sign In Link */}
+            <View style={styles.bottomLinkRow}>
+              <Text style={styles.bottomLinkText}>{"Already have an account? "}</Text>
+              <TouchableOpacity
+                onPress={() => router.push("/(auth)/sign-in" as any)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.signupLink}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -309,25 +289,29 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 40,
-    flexGrow: 1,
-  },
   topBar: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 4,
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 28,
-    marginTop: 4,
   },
   backBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-    marginLeft: -8,
+    backgroundColor: "#F3F4F6",
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    flexGrow: 1,
+    justifyContent: "center",
+  },
+  centerContainer: {
+    width: "100%",
   },
   headerSection: {
     marginBottom: 28,
@@ -371,9 +355,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 56,
     borderRadius: 16,
-    borderWidth: 1.2,
-    borderColor: "#E5E7EB",
-    backgroundColor: "#FAFAFA",
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    backgroundColor: "#F8FAFC",
     paddingHorizontal: 16,
     marginBottom: 16,
   },
@@ -437,48 +421,12 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 0.2,
   },
-  dividerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 28,
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#E5E7EB",
-  },
-  dividerText: {
-    fontSize: 12,
-    color: "#9CA3AF",
-    marginHorizontal: 16,
-    fontWeight: "500",
-  },
-  socialRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  socialBtn: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
-    borderWidth: 1.2,
-    borderColor: "#E5E7EB",
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 1,
-  },
   bottomLinkRow: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 8,
+    paddingVertical: 14,
+    marginTop: 20,
   },
   bottomLinkText: {
     fontSize: 14,

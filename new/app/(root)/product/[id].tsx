@@ -392,7 +392,7 @@ export default function ProductDetailScreen() {
           <View style={styles.categoryRow}>
             <View style={styles.categoryBadge}>
               <Text style={styles.categoryBadgeText}>
-                {product.category?.toUpperCase() || "FASHION"}
+                {product.category?.toUpperCase() || "GROCERY"}
                 {product.subCategory ? ` • ${product.subCategory.toUpperCase()}` : ""}
               </Text>
             </View>
@@ -415,7 +415,7 @@ export default function ProductDetailScreen() {
               <Text style={styles.starPillText}>{avgRating}</Text>
             </View>
             <Text style={styles.ratingCountText}>
-              ({totalReviews > 0 ? `${totalReviews} verified reviews` : "New Arrival"})
+              ({totalReviews > 0 ? `${totalReviews} verified reviews` : "Fresh Stock"})
             </Text>
           </View>
 
@@ -432,19 +432,11 @@ export default function ProductDetailScreen() {
           {/* Divider */}
           <View style={styles.divider} />
 
-          {/* Size Selector Section */}
+          {/* Pack / Weight Variant Selector */}
           {product.sizes && product.sizes.length > 0 && (
             <View style={styles.sectionContainer}>
               <View style={styles.sectionHeaderRow}>
-                <Text style={styles.sectionHeading}>
-                  {product.category?.toLowerCase() === "shoes" ||
-                  product.subCategory?.toLowerCase() === "shoes"
-                    ? "Select Shoe Size (UK/IND)"
-                    : "Select Size"}
-                </Text>
-                <TouchableOpacity activeOpacity={0.7}>
-                  <Text style={styles.sizeGuideLink}>Size Guide</Text>
-                </TouchableOpacity>
+                <Text style={styles.sectionHeading}>Select Pack / Weight</Text>
               </View>
 
               <View style={styles.sizesRow}>
