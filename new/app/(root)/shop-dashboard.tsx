@@ -44,8 +44,8 @@ export default function ShopDashboardScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [matName, setMatName] = useState("");
   const [matPrice, setMatPrice] = useState("");
-  const [matUnit, setMatUnit] = useState("1 kg");
-  const [matCategory, setMatCategory] = useState("Atta, Rice & Dal");
+  const [matUnit, setMatUnit] = useState("Per Bag (50kg)");
+  const [matCategory, setMatCategory] = useState("Building Material & Cement");
   const [matImage, setMatImage] = useState("");
   const [matDesc, setMatDesc] = useState("");
   const [isSavingMat, setIsSavingMat] = useState(false);
@@ -381,7 +381,7 @@ export default function ShopDashboardScreen() {
             activeOpacity={0.8}
           >
             <Ionicons name="add" size={20} color="#FFFFFF" />
-            <Text style={styles.addMaterialBtnText}>+ Add Grocery Item</Text>
+            <Text style={styles.addMaterialBtnText}>+ Add Material</Text>
           </TouchableOpacity>
         </View>
 
@@ -390,10 +390,10 @@ export default function ShopDashboardScreen() {
           <ActivityIndicator style={{ marginTop: 30 }} size="small" color="#059669" />
         ) : materials.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Ionicons name="basket-outline" size={48} color="#CBD5E1" />
-            <Text style={styles.emptyTitle}>No Grocery Items Listed Yet</Text>
+            <Ionicons name="cube-outline" size={48} color="#CBD5E1" />
+            <Text style={styles.emptyTitle}>No Materials Listed Yet</Text>
             <Text style={styles.emptySub}>
-              Tap the "+ Add Grocery Item" button to list your fresh vegetables, dairy, or packaged grocery items.
+              Tap the "+ Add Material" button to list your first cement, bricks, sand, or hardware item.
             </Text>
           </View>
         ) : (
@@ -431,17 +431,17 @@ export default function ShopDashboardScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalSheet}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>List New Grocery Item</Text>
+              <Text style={styles.modalTitle}>List New Material</Text>
               <TouchableOpacity onPress={() => setShowAddModal(false)}>
                 <Ionicons name="close" size={24} color="#64748B" />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 420 }}>
-              <Text style={styles.inputLabel}>Grocery Item / Product Name *</Text>
+              <Text style={styles.inputLabel}>Material / Product Name *</Text>
               <TextInput
                 style={styles.input}
-                placeholder="e.g. Aashirvaad Shudh Chakki Atta 5kg"
+                placeholder="e.g. Ultratech Super Cement (PPC)"
                 placeholderTextColor="#94A3B8"
                 value={matName}
                 onChangeText={setMatName}
@@ -450,17 +450,17 @@ export default function ShopDashboardScreen() {
               <Text style={[styles.inputLabel, { marginTop: 12 }]}>Price in ₹ (INR) *</Text>
               <TextInput
                 style={styles.input}
-                placeholder="e.g. 240"
+                placeholder="e.g. 380"
                 keyboardType="numeric"
                 placeholderTextColor="#94A3B8"
                 value={matPrice}
                 onChangeText={setMatPrice}
               />
 
-              <Text style={[styles.inputLabel, { marginTop: 12 }]}>Unit / Weight *</Text>
+              <Text style={[styles.inputLabel, { marginTop: 12 }]}>Unit / Packaging *</Text>
               <TextInput
                 style={styles.input}
-                placeholder="e.g. 500g, 1 kg, 5 kg, 1 Litre, Pack"
+                placeholder="e.g. Per 50kg Bag, Per Truck, Per Piece"
                 placeholderTextColor="#94A3B8"
                 value={matUnit}
                 onChangeText={setMatUnit}
@@ -469,7 +469,7 @@ export default function ShopDashboardScreen() {
               <Text style={[styles.inputLabel, { marginTop: 12 }]}>Category</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Atta & Dal, Dairy, Veggies, Snacks..."
+                placeholder="Building Material, Cement, Sand, Paints..."
                 placeholderTextColor="#94A3B8"
                 value={matCategory}
                 onChangeText={setMatCategory}

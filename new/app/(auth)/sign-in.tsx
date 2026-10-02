@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -45,6 +46,12 @@ export default function SignInScreen() {
     }
   };
 
+  const handleGoogleSignIn = () => {
+    Alert.alert(
+      "Google Sign-In",
+      "Google authentication integration will be added soon!"
+    );
+  };
 
   const handleBack = () => {
     if (router.canGoBack()) {
@@ -58,152 +65,167 @@ export default function SignInScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {/* Top Bar with Back Arrow */}
-      <View style={styles.topBar}>
-        <TouchableOpacity
-          style={styles.backBtn}
-          onPress={handleBack}
-          activeOpacity={0.7}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <Ionicons name="arrow-back" size={22} color="#111827" />
-        </TouchableOpacity>
-      </View>
-
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="always"
+          keyboardShouldPersistTaps="handled"
         >
-          {/* Centered Content */}
-          <View style={styles.centerContainer}>
-            {/* Heading Section */}
-            <View style={styles.headerSection}>
-              <Text style={styles.title}>Hello Again!</Text>
-              <Text style={styles.subtitle}>
-                {"Welcome back you've been missed."}
-              </Text>
+          {/* Top Bar with Back Arrow */}
+          <View style={styles.topBar}>
+            <TouchableOpacity
+              style={styles.backBtn}
+              onPress={handleBack}
+              activeOpacity={0.7}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Ionicons name="arrow-back" size={24} color="#111827" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Heading Section */}
+          <View style={styles.headerSection}>
+            <Text style={styles.title}>Hello Again!</Text>
+            <Text style={styles.subtitle}>
+              Welcome back you've been missed.
+            </Text>
+          </View>
+
+          {/* Form */}
+          <View style={styles.form}>
+            {errorMessage ? (
+              <View style={styles.errorBanner}>
+                <Ionicons name="alert-circle" size={18} color="#EF4444" />
+                <Text style={styles.errorText}>{errorMessage}</Text>
+              </View>
+            ) : null}
+
+            {/* Email Address */}
+            <View style={styles.inputWrapper}>
+              <Ionicons
+                name="person-outline"
+                size={20}
+                color="#9CA3AF"
+                style={styles.inputIcon}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Email Address"
+                placeholderTextColor="#9CA3AF"
+                value={email}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  if (errorMessage) setErrorMessage("");
+                }}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
             </View>
 
-            {/* Form */}
-            <View style={styles.form}>
-              {errorMessage ? (
-                <View style={styles.errorBanner}>
-                  <Ionicons name="alert-circle" size={18} color="#EF4444" />
-                  <Text style={styles.errorText}>{errorMessage}</Text>
-                </View>
-              ) : null}
-
-              {/* Email Address */}
-              <View style={styles.inputWrapper}>
-                <Ionicons
-                  name="person-outline"
-                  size={20}
-                  color="#6B7280"
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email Address"
-                  placeholderTextColor="#9CA3AF"
-                  value={email}
-                  onChangeText={(text) => {
-                    setEmail(text);
-                    if (errorMessage) setErrorMessage("");
-                  }}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-              </View>
-
-              {/* Password */}
-              <View style={styles.inputWrapper}>
-                <Ionicons
-                  name="lock-closed-outline"
-                  size={20}
-                  color="#6B7280"
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Password"
-                  placeholderTextColor="#9CA3AF"
-                  value={password}
-                  onChangeText={(text) => {
-                    setPassword(text);
-                    if (errorMessage) setErrorMessage("");
-                  }}
-                  secureTextEntry={!showPassword}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  style={styles.eyeIcon}
-                  activeOpacity={0.7}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <Ionicons
-                    name={showPassword ? "eye-off-outline" : "eye-outline"}
-                    size={20}
-                    color="#9CA3AF"
-                  />
-                </TouchableOpacity>
-              </View>
-
-              {/* Options: Remember Me & Forgot Password */}
-              <View style={styles.optionsRow}>
-                <TouchableOpacity
-                  style={styles.rememberRow}
-                  onPress={() => setRememberMe(!rememberMe)}
-                  activeOpacity={0.8}
-                >
-                  <View
-                    style={[
-                      styles.checkbox,
-                      rememberMe && styles.checkboxActive,
-                    ]}
-                  >
-                    {rememberMe && (
-                      <Ionicons name="checkmark" size={13} color="#FFFFFF" />
-                    )}
-                  </View>
-                  <Text style={styles.rememberText}>Remember me</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity activeOpacity={0.7}>
-                  <Text style={styles.forgotText}>Forgot Password?</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Primary Login Button */}
+            {/* Password */}
+            <View style={styles.inputWrapper}>
+              <Ionicons
+                name="lock-closed-outline"
+                size={20}
+                color="#9CA3AF"
+                style={styles.inputIcon}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                placeholderTextColor="#9CA3AF"
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (errorMessage) setErrorMessage("");
+                }}
+                secureTextEntry={!showPassword}
+              />
               <TouchableOpacity
-                style={[styles.loginBtn, isSubmitting && { opacity: 0.75 }]}
-                onPress={handleSignIn}
-                disabled={isSubmitting}
-                activeOpacity={0.85}
-              >
-                {isSubmitting ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text style={styles.loginBtnText}>Login</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-
-            {/* Bottom Sign Up Link */}
-            <View style={styles.bottomLinkRow}>
-              <Text style={styles.bottomLinkText}>{"Don't have an account? "}</Text>
-              <TouchableOpacity
-                onPress={() => router.push("/(auth)/sign-up" as any)}
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
                 activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <Text style={styles.signupLink}>Sign up</Text>
+                <Ionicons
+                  name={showPassword ? "eye-off-outline" : "eye-outline"}
+                  size={20}
+                  color="#9CA3AF"
+                />
               </TouchableOpacity>
             </View>
+
+            {/* Options: Remember Me & Forgot Password */}
+            <View style={styles.optionsRow}>
+              <TouchableOpacity
+                style={styles.rememberRow}
+                onPress={() => setRememberMe(!rememberMe)}
+                activeOpacity={0.8}
+              >
+                <View
+                  style={[
+                    styles.checkbox,
+                    rememberMe && styles.checkboxActive,
+                  ]}
+                >
+                  {rememberMe && (
+                    <Ionicons name="checkmark" size={13} color="#FFFFFF" />
+                  )}
+                </View>
+                <Text style={styles.rememberText}>Remember me</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity activeOpacity={0.7}>
+                <Text style={styles.forgotText}>Forgot Password?</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Primary Login Button */}
+            <TouchableOpacity
+              style={[styles.loginBtn, isSubmitting && { opacity: 0.75 }]}
+              onPress={handleSignIn}
+              disabled={isSubmitting}
+              activeOpacity={0.85}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <Text style={styles.loginBtnText}>Login</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Divider */}
+          <View style={styles.dividerRow}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>or continue with</Text>
+            <View style={styles.divider} />
+          </View>
+
+          {/* Social Login (Google only) */}
+          <View style={styles.socialRow}>
+            <TouchableOpacity
+              style={styles.socialBtn}
+              onPress={handleGoogleSignIn}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="logo-google" size={24} color="#EA4335" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Bottom Sign Up Link */}
+          <View style={styles.bottomLinkRow}>
+            <Text style={styles.bottomLinkText}>Don't have an account? </Text>
+            <TouchableOpacity
+              onPress={() => router.push("/(auth)/sign-up" as any)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.signupLink}>Sign up</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -216,32 +238,28 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
-  topBar: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 4,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#F3F4F6",
-  },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingVertical: 20,
+    paddingTop: 12,
+    paddingBottom: 40,
     flexGrow: 1,
-    justifyContent: "center",
   },
-  centerContainer: {
-    width: "100%",
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 32,
+    marginTop: 4,
+  },
+  backBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: -8,
   },
   headerSection: {
-    marginBottom: 32,
+    marginBottom: 36,
   },
   title: {
     fontSize: 32,
@@ -282,9 +300,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 56,
     borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: "#E2E8F0",
-    backgroundColor: "#F8FAFC",
+    borderWidth: 1.2,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#FAFAFA",
     paddingHorizontal: 16,
     marginBottom: 16,
   },
@@ -353,12 +371,48 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 0.2,
   },
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 32,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#E5E7EB",
+  },
+  dividerText: {
+    fontSize: 12,
+    color: "#9CA3AF",
+    marginHorizontal: 16,
+    fontWeight: "500",
+  },
+  socialRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 28,
+  },
+  socialBtn: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    borderWidth: 1.2,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 1,
+  },
   bottomLinkRow: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 14,
-    marginTop: 20,
+    marginTop: 8,
   },
   bottomLinkText: {
     fontSize: 14,

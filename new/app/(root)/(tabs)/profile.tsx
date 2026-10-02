@@ -282,18 +282,18 @@ export default function ProfileScreen() {
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-        <View style={styles.guestHeader}>
+        <View style={styles.header}>
           <Text style={styles.headerTitle}>Account</Text>
         </View>
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.guestScrollContent}
+          contentContainerStyle={styles.scrollContent}
         >
           {/* Guest CTA Hero Card */}
           <View style={styles.guestHeroCard}>
             <View style={styles.guestIconCircle}>
-              <Ionicons name="person-outline" size={34} color="#111827" />
+              <Ionicons name="person-outline" size={32} color="#111827" />
             </View>
 
             <Text style={styles.guestTitle}>Welcome to AkA</Text>
@@ -318,6 +318,41 @@ export default function ProfileScreen() {
             >
               <Text style={styles.signUpBtnText}>Create an Account</Text>
             </TouchableOpacity>
+          </View>
+
+          {/* Member Benefits Preview */}
+          <View style={styles.benefitsCard}>
+            <Text style={styles.benefitsTitle}>Member Benefits</Text>
+
+            <View style={styles.benefitRow}>
+              <View style={[styles.benefitIconCircle, { backgroundColor: "#F3F4F6" }]}>
+                <Ionicons name="rocket-outline" size={20} color="#111827" />
+              </View>
+              <View style={styles.benefitTextCol}>
+                <Text style={styles.benefitHeading}>Fast Nationwide Delivery</Text>
+                <Text style={styles.benefitDesc}>Express shipping straight to your doorstep</Text>
+              </View>
+            </View>
+
+            <View style={styles.benefitRow}>
+              <View style={[styles.benefitIconCircle, { backgroundColor: "#FEE2E2" }]}>
+                <Ionicons name="heart-outline" size={20} color="#EF4444" />
+              </View>
+              <View style={styles.benefitTextCol}>
+                <Text style={styles.benefitHeading}>Saved Items & Wishlist</Text>
+                <Text style={styles.benefitDesc}>Save your favorite styles in a single tap</Text>
+              </View>
+            </View>
+
+            <View style={styles.benefitRow}>
+              <View style={[styles.benefitIconCircle, { backgroundColor: "#DBEAFE" }]}>
+                <Ionicons name="shield-checkmark-outline" size={20} color="#2563EB" />
+              </View>
+              <View style={styles.benefitTextCol}>
+                <Text style={styles.benefitHeading}>Razorpay Secured Checkout</Text>
+                <Text style={styles.benefitDesc}>Instant UPI, Cards & NetBanking with 256-bit encryption</Text>
+              </View>
+            </View>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -506,7 +541,100 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Marketplace & Partner Programs (₹500 Registration) */}
+        <View style={styles.menuGroup}>
+          <Text style={styles.menuGroupTitle}>Marketplace & Partner Programs</Text>
 
+          {/* Browse Shops */}
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push("/(root)/shops" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.menuIconCircle, { backgroundColor: "#ECFDF5" }]}>
+              <Ionicons name="storefront-outline" size={20} color="#059669" />
+            </View>
+            <View style={styles.menuContent}>
+              <Text style={styles.menuTitle}>Verified Shops & Suppliers</Text>
+              <Text style={styles.menuSubtitle}>Find local shops, address, call & inquiry</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+          </TouchableOpacity>
+
+          {/* Register Shop */}
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push("/(auth)/register-shop" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.menuIconCircle, { backgroundColor: "#FEF3C7" }]}>
+              <Ionicons name="business-outline" size={20} color="#D97706" />
+            </View>
+            <View style={styles.menuContent}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <Text style={styles.menuTitle}>Register as Shop Partner</Text>
+                <View style={{ backgroundColor: "#FEF3C7", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                  <Text style={{ fontSize: 10, fontWeight: "800", color: "#D97706" }}>₹500 FEE</Text>
+                </View>
+              </View>
+              <Text style={styles.menuSubtitle}>Aadhaar/GST verification & sell materials</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+          </TouchableOpacity>
+
+          {/* Shopkeeper Console (Add Materials) */}
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push("/(root)/shop-dashboard" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.menuIconCircle, { backgroundColor: "#F0FDF4" }]}>
+              <Ionicons name="cube-outline" size={20} color="#16A34A" />
+            </View>
+            <View style={styles.menuContent}>
+              <Text style={styles.menuTitle}>Shopkeeper Console</Text>
+              <Text style={styles.menuSubtitle}>Add materials, manage catalog & withdraw earnings</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+          </TouchableOpacity>
+
+          {/* Register Delivery Partner */}
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push("/(auth)/register-delivery" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.menuIconCircle, { backgroundColor: "#EFF6FF" }]}>
+              <Ionicons name="bicycle-outline" size={20} color="#2563EB" />
+            </View>
+            <View style={styles.menuContent}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <Text style={styles.menuTitle}>Become a Delivery Partner</Text>
+                <View style={{ backgroundColor: "#EFF6FF", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                  <Text style={{ fontSize: 10, fontWeight: "800", color: "#2563EB" }}>₹500 FEE</Text>
+                </View>
+              </View>
+              <Text style={styles.menuSubtitle}>Deliver at any location & earn per order</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+          </TouchableOpacity>
+
+          {/* Delivery Partner Console (Duty & Orders) */}
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push("/(root)/delivery-dashboard" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.menuIconCircle, { backgroundColor: "#EEF2FF" }]}>
+              <Ionicons name="speedometer-outline" size={20} color="#4F46E5" />
+            </View>
+            <View style={styles.menuContent}>
+              <Text style={styles.menuTitle}>Delivery Partner Console</Text>
+              <Text style={styles.menuSubtitle}>Toggle Duty ON/OFF, accept orders & view earnings</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+          </TouchableOpacity>
+        </View>
 
         {/* Support & Logout */}
         <View style={styles.menuGroup}>
@@ -865,7 +993,7 @@ export default function ProfileScreen() {
               <View style={styles.faqItem}>
                 <Text style={styles.faqQuestion}>• How do I track my order?</Text>
                 <Text style={styles.faqAnswer}>
-                  {'Go to "My Orders" tab from your profile to track live shipment status.'}
+                  Go to "My Orders" tab from your profile to track live shipment status.
                 </Text>
               </View>
 
@@ -947,36 +1075,19 @@ const styles = StyleSheet.create({
   },
 
   // GUEST VIEW STYLES
-  guestHeader: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 14,
-    backgroundColor: "#FFFFFF",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E2E8F0",
-  },
-  guestScrollContent: {
-    flexGrow: 1,
-    justifyContent: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-  },
   guestHeroCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 24,
-    padding: 28,
+    padding: 24,
     alignItems: "center",
     borderWidth: 1.2,
     borderColor: "#E2E8F0",
+    marginBottom: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
     elevation: 2,
-    width: "100%",
   },
   guestIconCircle: {
     width: 68,
@@ -1038,6 +1149,48 @@ const styles = StyleSheet.create({
     color: "#0F172A",
     fontSize: 15,
     fontWeight: "700",
+  },
+
+  benefitsCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1.2,
+    borderColor: "#E2E8F0",
+  },
+  benefitsTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#0F172A",
+    marginBottom: 16,
+    letterSpacing: -0.3,
+  },
+  benefitRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  benefitIconCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 14,
+  },
+  benefitTextCol: {
+    flex: 1,
+  },
+  benefitHeading: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#0F172A",
+    marginBottom: 2,
+  },
+  benefitDesc: {
+    fontSize: 12,
+    color: "#64748B",
+    lineHeight: 16,
   },
 
   // AUTHENTICATED VIEW STYLES

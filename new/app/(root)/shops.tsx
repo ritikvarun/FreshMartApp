@@ -37,11 +37,10 @@ interface ShopItem {
 
 const CATEGORIES = [
   "All",
-  "Daily Kirana & Staples",
-  "Fruits & Vegetables",
-  "Dairy & Bakery",
-  "Snacks & Munchies",
-  "Organic & Supermarket",
+  "Building Material",
+  "Hardware & Paints",
+  "Grocery & Agro Supplies",
+  "General",
 ];
 
 export default function ShopsListScreen() {
@@ -199,7 +198,7 @@ export default function ShopsListScreen() {
               onPress={() => router.push(`/(root)/shop/${item._id}` as any)}
               activeOpacity={0.8}
             >
-              <Text style={styles.viewMaterialsText}>Products</Text>
+              <Text style={styles.viewMaterialsText}>Materials</Text>
               <Ionicons name="chevron-forward" size={14} color="#111827" />
             </TouchableOpacity>
           </View>
@@ -218,8 +217,8 @@ export default function ShopsListScreen() {
           <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
         <View style={styles.headerTitleWrap}>
-          <Text style={styles.headerTitle}>Nearby Grocery Stores</Text>
-          <Text style={styles.headerSub}>Find local kirana & fresh stores, call or order</Text>
+          <Text style={styles.headerTitle}>Verified Shops & Suppliers</Text>
+          <Text style={styles.headerSub}>Find local materials, call directly or order</Text>
         </View>
       </View>
 
@@ -227,7 +226,7 @@ export default function ShopsListScreen() {
       <View style={styles.searchContainer}>
         <Ionicons name="search" size={18} color="#9CA3AF" style={{ marginRight: 8 }} />
         <TextInput
-          placeholder="Search by store name, address or item..."
+          placeholder="Search by shop name, address or material..."
           placeholderTextColor="#9CA3AF"
           value={searchQuery}
           onChangeText={setSearchQuery}

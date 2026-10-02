@@ -14,18 +14,7 @@ import { BannerSlot } from "../types";
 import { ENDPOINTS } from "../config/api";
 import { useAdminAuth } from "../context/AdminAuthContext";
 
-const CATEGORIES = [
-  "All",
-  "Vegetables & Fruits",
-  "Dairy & Breakfast",
-  "Atta, Rice & Dal",
-  "Oils & Masalas",
-  "Snacks & Munchies",
-  "Cold Drinks & Juices",
-  "Instant & Frozen Food",
-  "Cleaning & Household",
-  "Personal Care",
-];
+const CATEGORIES = ["All", "Men", "Women", "Kids", "Shoes", "Accessories", "Grocery", "Beauty"];
 
 export const Banners: React.FC = () => {
   const { adminToken } = useAdminAuth();

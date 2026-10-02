@@ -31,7 +31,7 @@ const TAB_TITLES: Record<TabType, { title: string; subtitle: string }> = {
   },
   "add-product": {
     title: "Add New Product",
-    subtitle: "Upload product photos, set grocery weights/pack sizes, pricing, and discounts",
+    subtitle: "Upload up to 5 photos, set sizes, category pricing, and discounts",
   },
   banners: {
     title: "Promotional Banners",
