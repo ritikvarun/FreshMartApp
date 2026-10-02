@@ -8,24 +8,25 @@ import {
   LayoutGrid,
   List,
   Filter,
+  AlertTriangle,
 } from "lucide-react";
 import type { Product } from "../types";
 import { ENDPOINTS } from "../config/api";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import type { TabType } from "../components/Sidebar";
 
-const PRESET_CATEGORIES = [
+export const GROCERY_CATEGORIES = [
   "All",
-  "Men",
-  "Women",
-  "Kids",
-  "Shoes",
-  "Accessories",
-  "Unisex",
-  "Grocery",
-  "Beauty",
-  "Building Material",
-  "Hardware & Paints",
+  "Vegetables & Fruits",
+  "Dairy & Breakfast",
+  "Atta, Rice & Dal",
+  "Oils & Masalas",
+  "Snacks & Munchies",
+  "Cold Drinks & Juices",
+  "Instant & Frozen Food",
+  "Tea, Coffee & Drinks",
+  "Cleaning & Household",
+  "Personal Care",
 ];
 
 interface ProductsProps {
@@ -50,16 +51,40 @@ export const Products: React.FC<ProductsProps> = ({
   // Auto-detect: default to 'cards' on mobile (< 1024px), 'table' on desktop
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
-  // Collect unique categories
+  // Collect unique categories:
+  // 1. "All" (always first)
+  // 2. Standard grocery categories
+  // 3. Only non-grocery categories that actually exist in the DB (count > 0) so admin can filter & delete them
   const categories = useMemo(() => {
-    const set = new Set<string>(PRESET_CATEGORIES);
-    products.forEach((p) => {
-      if (p.category && p.category.trim()) {
-        const norm = p.category.trim().charAt(0).toUpperCase() + p.category.trim().slice(1);
-        set.add(norm);
+    const list: string[] = ["All"];
+
+    // Add standard grocery categories
+    GROCERY_CATEGORIES.forEach((cat) => {
+      if (cat !== "All" && !list.includes(cat)) {
+        list.push(cat);
       }
     });
-    return Array.from(set);
+
+    // Add any legacy categories only if they have actual products in DB (count > 0)
+    products.forEach((p) => {
+      if (p.category && p.category.trim()) {
+        const catName = p.category.trim();
+        const exists = list.some((c) => c.toLowerCase() === catName.toLowerCase());
+        if (!exists) {
+          list.push(catName);
+        }
+      }
+    });
+
+    return list;
+  }, [products]);
+
+  // Legacy non-grocery product count detection
+  const legacyCount = useMemo(() => {
+    return products.filter((p) => {
+      const cat = (p.category || "").trim().toLowerCase();
+      return !GROCERY_CATEGORIES.some((gc) => gc.toLowerCase() === cat);
+    }).length;
   }, [products]);
 
   // Product counts
@@ -127,7 +152,7 @@ export const Products: React.FC<ProductsProps> = ({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search products by title, category, or subcategory..."
+            placeholder="Search grocery products by title, category, or subcategory..."
             className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pr-4 pl-10 text-xs sm:text-sm font-medium text-slate-900 placeholder-slate-400 outline-none transition focus:border-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900"
           />
         </div>
@@ -173,11 +198,27 @@ export const Products: React.FC<ProductsProps> = ({
         </div>
       </div>
 
+      {/* Legacy Non-Grocery Items Alert (if any exist in database) */}
+      {legacyCount > 0 && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 rounded-xl border border-amber-200 bg-amber-50/90 p-3 sm:px-4 text-xs text-amber-900 shadow-2xs">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+            <span>
+              <strong>Catalog Alert:</strong> {legacyCount} non-grocery test product(s) (e.g. clothing or hardware) detected. Click the amber pills marked <em>[Old]</em> to filter and delete them.
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Category Chips Bar (Horizontally scrollable with touch) */}
       <div className="flex w-full items-center gap-2 overflow-x-auto pb-1.5 scrollbar-thin">
         {categories.map((cat) => {
           const isSelected = activeCategory.toLowerCase() === cat.toLowerCase();
           const count = getCategoryCount(cat);
+          const isGrocery =
+            cat === "All" ||
+            GROCERY_CATEGORIES.some((g) => g.toLowerCase() === cat.toLowerCase());
+
           return (
             <button
               key={cat}
@@ -185,13 +226,24 @@ export const Products: React.FC<ProductsProps> = ({
               className={`flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition cursor-pointer ${
                 isSelected
                   ? "bg-slate-900 text-white shadow-xs"
+                  : !isGrocery
+                  ? "bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100"
                   : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
               }`}
             >
               <span>{cat}</span>
+              {!isGrocery && (
+                <span className="text-[9px] font-semibold text-amber-700 bg-amber-100/90 px-1 py-0.2 rounded border border-amber-200">
+                  Old
+                </span>
+              )}
               <span
                 className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
-                  isSelected ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                  isSelected
+                    ? "bg-white/20 text-white"
+                    : !isGrocery
+                    ? "bg-amber-200 text-amber-900"
+                    : "bg-slate-100 text-slate-600"
                 }`}
               >
                 {count}
@@ -270,7 +322,7 @@ export const Products: React.FC<ProductsProps> = ({
                   {/* Available Sizes Pills */}
                   <div className="pt-1">
                     <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
-                      Sizes:
+                      Pack / Weight:
                     </span>
                     <div className="flex flex-wrap gap-1 max-h-12 overflow-hidden">
                       {Array.isArray(item.sizes) && item.sizes.length > 0 ? (
@@ -321,7 +373,7 @@ export const Products: React.FC<ProductsProps> = ({
                   <th className="py-3 px-5">Product Item</th>
                   <th className="py-3 px-5">Category & Subcategory</th>
                   <th className="py-3 px-5">Price</th>
-                  <th className="py-3 px-5">Available Sizes</th>
+                  <th className="py-3 px-5">Pack / Weight</th>
                   <th className="py-3 px-5">Status / Tags</th>
                   <th className="py-3 px-5 text-right">Delete</th>
                 </tr>
