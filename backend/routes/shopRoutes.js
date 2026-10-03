@@ -11,6 +11,7 @@ import {
   toggleShopOpen,
 } from "../controller/shopController.js";
 import adminAuth from "../middleware/adminAuth.js";
+import shopAuth from "../middleware/shopAuth.js";
 
 const shopRoutes = express.Router();
 
@@ -21,9 +22,9 @@ shopRoutes.get("/:id", getShopWithProducts);
 // Shop Partner Auth & Management routes
 shopRoutes.post("/register", registerShop);
 shopRoutes.post("/login", loginShop);
-shopRoutes.post("/add-product", addShopProduct);
-shopRoutes.get("/my-products/:shopId", getMyShopProducts);
-shopRoutes.post("/toggle-open", toggleShopOpen);
+shopRoutes.post("/add-product", shopAuth, addShopProduct);
+shopRoutes.get("/my-products/:shopId", shopAuth, getMyShopProducts);
+shopRoutes.post("/toggle-open", shopAuth, toggleShopOpen);
 
 // Admin routes
 shopRoutes.get("/admin/all", adminAuth, adminGetAllShops);

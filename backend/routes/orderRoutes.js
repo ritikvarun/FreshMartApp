@@ -1,24 +1,34 @@
-import express from 'express'
-import isAuth from '../middleware/isAuth.js'
-import { allOrders, placeOrder, placeOrderRazorpay, updateStatus, userOrders, verifyRazorpay, getOrderSplitsSummary, assignDeliveryPartner } from '../controller/orderController.js'
-import { downloadInvoice } from '../controller/invoiceController.js'
-import adminAuth from '../middleware/adminAuth.js'
+import express from "express";
+import isAuth from "../middleware/isAuth.js";
+import {
+  allOrders,
+  placeOrder,
+  placeOrderRazorpay,
+  updateStatus,
+  userOrders,
+  verifyRazorpay,
+  getOrderSplitsSummary,
+  assignDeliveryPartner,
+} from "../controller/orderController.js";
+import { downloadInvoice } from "../controller/invoiceController.js";
+import adminAuth from "../middleware/adminAuth.js";
+import invoiceAuth from "../middleware/invoiceAuth.js";
 
-const orderRoutes = express.Router()
+const orderRoutes = express.Router();
 
 //for User
-orderRoutes.post("/placeorder",isAuth,placeOrder)
-orderRoutes.post("/razorpay",isAuth,placeOrderRazorpay)
-orderRoutes.post("/userorder",isAuth,userOrders)
-orderRoutes.post("/verifyrazorpay",isAuth,verifyRazorpay)
- 
+orderRoutes.post("/placeorder", isAuth, placeOrder);
+orderRoutes.post("/razorpay", isAuth, placeOrderRazorpay);
+orderRoutes.post("/userorder", isAuth, userOrders);
+orderRoutes.post("/verifyrazorpay", isAuth, verifyRazorpay);
+
 //for Admin
-orderRoutes.post("/list",adminAuth,allOrders)
-orderRoutes.post("/status",adminAuth,updateStatus)
-orderRoutes.get("/splits-summary",adminAuth,getOrderSplitsSummary)
-orderRoutes.post("/assign-delivery",adminAuth,assignDeliveryPartner)
+orderRoutes.post("/list", adminAuth, allOrders);
+orderRoutes.post("/status", adminAuth, updateStatus);
+orderRoutes.get("/splits-summary", adminAuth, getOrderSplitsSummary);
+orderRoutes.post("/assign-delivery", adminAuth, assignDeliveryPartner);
 
 // Invoice Download (We leave it open or add isAuth, leaving open for easy testing)
-orderRoutes.get("/invoice/:orderId", downloadInvoice)
+orderRoutes.get("/invoice/:orderId", invoiceAuth, downloadInvoice);
 
-export default orderRoutes
+export default orderRoutes;

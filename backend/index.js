@@ -25,14 +25,14 @@ let port = process.env.PORT || 6000;
 let app = express();
 
 const localOrigins = [
-  "https://shopx-50ym.onrender.com", 
+  "https://shopx-50ym.onrender.com",
   "https://shopx-admin-ktdc.onrender.com",
   "https://shopx-6u3e.onrender.com",
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:3000",
   "http://localhost:8081",
-  "http://localhost:8082"
+  "http://localhost:8082",
 ];
 const productionOrigins = [
   process.env.FRONTEND_URL,
@@ -43,10 +43,10 @@ const productionOrigins = [
   "https://shop-x-teal.vercel.app",
 ].filter(Boolean);
 const normalizeOrigin = (value) => value.replace(/\/$/, "").toLowerCase();
-const allowedOrigins = [...localOrigins, ...productionOrigins].map(normalizeOrigin);
+const allowedOrigins = [...localOrigins, ...productionOrigins].map(
+  normalizeOrigin,
+);
 const uniqueAllowedOrigins = [...new Set(allowedOrigins)];
-const strictCors = process.env.CORS_STRICT === "true";
-
 const corsOptions = {
   origin: (origin, callback) => {
     // Allow server-to-server/no-origin requests.
@@ -54,11 +54,6 @@ const corsOptions = {
 
     const normalized = normalizeOrigin(origin);
     if (uniqueAllowedOrigins.includes(normalized)) {
-      return callback(null, true);
-    }
-
-    // Keep production stable even if env allow-list is misconfigured.
-    if (!strictCors) {
       return callback(null, true);
     }
 
@@ -78,42 +73,6 @@ app.options(/.*/, cors(corsOptions));
 
 app.get("/", (req, res) => {
   res.status(200).send("Server is running");
-});
-
-app.get("/api/test-order-alert", async (req, res) => {
-  try {
-    const { sendAdminOrderAlert } = await import("./utils/mailer.js");
-    const result = await sendAdminOrderAlert({
-      userName: "Ritik Varun",
-      userEmail: "ritikvarun64@gmail.com",
-      items: [{ name: "Test Shirt", size: "L", quantity: 1, price: 499 }],
-      amount: 499,
-      address: { street: "FreshMart Market", city: "Delhi", pinCode: "110001", phone: "9876543210" },
-      paymentMethod: "COD",
-      orderId: "TEST-" + Date.now()
-    });
-    return res.status(200).json({
-      status: "success",
-      message: "Order alert email triggered to ritikvarun64@gmail.com!",
-      result
-    });
-  } catch (err) {
-    return res.status(500).json({ status: "error", error: err.message });
-  }
-});
-
-app.get("/api/test-cloudinary", async (req, res) => {
-  try {
-    const { pingCloudinary, configureCloudinary } = await import("./config/cloudinary.js");
-    const configStatus = configureCloudinary();
-    const pingResult = await pingCloudinary();
-    return res.status(200).json({
-      configStatus,
-      pingResult
-    });
-  } catch (err) {
-    return res.status(500).json({ status: "error", error: err.message });
-  }
 });
 
 app.use("/api/auth", authRoutes);

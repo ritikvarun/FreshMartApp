@@ -78,7 +78,10 @@ export default function ShopDashboardScreen() {
 
   const handleLogin = async () => {
     if (!loginIdentifier.trim() || !loginPassword.trim()) {
-      Alert.alert("Missing Input", "Please enter Phone / Aadhaar / GST Number and Password.");
+      Alert.alert(
+        "Missing Input",
+        "Please enter Phone / Aadhaar / GST Number and Password.",
+      );
       return;
     }
 
@@ -110,25 +113,31 @@ export default function ShopDashboardScreen() {
   };
 
   const handleLogout = async () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out from your Shopkeeper portal?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Sign Out",
-        style: "destructive",
-        onPress: async () => {
-          await SecureStore.deleteItemAsync(SHOP_SESSION_KEY);
-          setShop(null);
-          setShopToken("");
-          setMaterials([]);
+    Alert.alert(
+      "Sign Out",
+      "Are you sure you want to sign out from your Shopkeeper portal?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Sign Out",
+          style: "destructive",
+          onPress: async () => {
+            await SecureStore.deleteItemAsync(SHOP_SESSION_KEY);
+            setShop(null);
+            setShopToken("");
+            setMaterials([]);
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   const fetchShopMaterials = async (shopId: string) => {
     setFetchingMaterials(true);
     try {
-      const res = await fetch(ENDPOINTS.SHOPS.MY_PRODUCTS(shopId));
+      const res = await fetch(ENDPOINTS.SHOPS.MY_PRODUCTS(shopId), {
+        headers: { Authorization: `Bearer ${shopToken}` },
+      });
       if (res.ok) {
         const data = await res.json();
         setMaterials(data.products || []);
@@ -147,7 +156,10 @@ export default function ShopDashboardScreen() {
     try {
       const res = await fetch(ENDPOINTS.SHOPS.TOGGLE_OPEN, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${shopToken}`,
+        },
         body: JSON.stringify({ shopId: shop._id, isOpen: newVal }),
       });
       if (!res.ok) {
@@ -181,13 +193,19 @@ export default function ShopDashboardScreen() {
 
       const res = await fetch(ENDPOINTS.SHOPS.ADD_PRODUCT, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${shopToken}`,
+        },
         body: JSON.stringify(payload),
       });
 
       const data = await res.json();
       if (res.ok) {
-        Alert.alert("Material Listed! 📦", `${matName} is now live in your store catalog.`);
+        Alert.alert(
+          "Material Listed! 📦",
+          `${matName} is now live in your store catalog.`,
+        );
         setShowAddModal(false);
         setMatName("");
         setMatPrice("");
@@ -206,12 +224,15 @@ export default function ShopDashboardScreen() {
 
   const handleRequestPayout = () => {
     if (!payoutUpi.trim()) {
-      Alert.alert("Missing UPI", "Please enter your UPI ID (e.g. yourname@okaxis).");
+      Alert.alert(
+        "Missing UPI",
+        "Please enter your UPI ID (e.g. yourname@okaxis).",
+      );
       return;
     }
     Alert.alert(
       "Payout Request Submitted! 💰",
-      `Your withdrawal request of ₹${payoutAmount || shop?.walletBalance || 0} has been sent to Admin for UPI: ${payoutUpi}. Funds will be transferred within 2 hours.`
+      `Your withdrawal request of ₹${payoutAmount || shop?.walletBalance || 0} has been sent to Admin for UPI: ${payoutUpi}. Funds will be transferred within 2 hours.`,
     );
     setShowPayoutModal(false);
     setPayoutUpi("");
@@ -232,13 +253,19 @@ export default function ShopDashboardScreen() {
       <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backBtn}
+          >
             <Ionicons name="arrow-back" size={24} color="#111827" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Shopkeeper Partner Login</Text>
         </View>
 
-        <ScrollView contentContainerStyle={styles.loginContent} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.loginContent}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.loginBanner}>
             <View style={styles.loginBannerIcon}>
               <Ionicons name="storefront" size={36} color="#059669" />
@@ -287,9 +314,15 @@ export default function ShopDashboardScreen() {
             </TouchableOpacity>
 
             <View style={styles.registerPromptRow}>
-              <Text style={styles.registerPromptText}>Don't have a shop registered?</Text>
-              <TouchableOpacity onPress={() => router.push("/(auth)/register-shop" as any)}>
-                <Text style={styles.registerLink}>Register Shop (₹500 Fee) →</Text>
+              <Text style={styles.registerPromptText}>
+                Don't have a shop registered?
+              </Text>
+              <TouchableOpacity
+                onPress={() => router.push("/(auth)/register-shop" as any)}
+              >
+                <Text style={styles.registerLink}>
+                  Register Shop (₹500 Fee) →
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -312,14 +345,19 @@ export default function ShopDashboardScreen() {
           <Text style={styles.headerTitle} numberOfLines={1}>
             {shop.name}
           </Text>
-          <Text style={styles.headerSubtitle}>AkA Verified Merchant Console</Text>
+          <Text style={styles.headerSubtitle}>
+            AkA Verified Merchant Console
+          </Text>
         </View>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
           <Ionicons name="log-out-outline" size={20} color="#DC2626" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.dashboardContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.dashboardContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Status & Wallet Card */}
         <View style={styles.profileCard}>
           <View style={styles.profileTopRow}>
@@ -328,9 +366,13 @@ export default function ShopDashboardScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.shopNameText}>{shop.name}</Text>
-              <Text style={styles.shopCategoryText}>{shop.category || "Building Materials"}</Text>
+              <Text style={styles.shopCategoryText}>
+                {shop.category || "Building Materials"}
+              </Text>
               <Text style={styles.shopAddressText} numberOfLines={1}>
-                {shop.address?.street ? `${shop.address.street}, ${shop.address.city || ""}` : "Address verified"}
+                {shop.address?.street
+                  ? `${shop.address.street}, ${shop.address.city || ""}`
+                  : "Address verified"}
               </Text>
             </View>
           </View>
@@ -339,14 +381,26 @@ export default function ShopDashboardScreen() {
           <View style={styles.dutyWalletRow}>
             <View style={styles.dutyBox}>
               <Text style={styles.dutyLabel}>Store Status</Text>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                  marginTop: 4,
+                }}
+              >
                 <Switch
                   value={shop.isOpen}
                   onValueChange={handleToggleShopOpen}
                   trackColor={{ false: "#CBD5E1", true: "#A7F3D0" }}
                   thumbColor={shop.isOpen ? "#059669" : "#94A3B8"}
                 />
-                <Text style={[styles.dutyStatusText, { color: shop.isOpen ? "#059669" : "#64748B" }]}>
+                <Text
+                  style={[
+                    styles.dutyStatusText,
+                    { color: shop.isOpen ? "#059669" : "#64748B" },
+                  ]}
+                >
                   {shop.isOpen ? "OPEN" : "CLOSED"}
                 </Text>
               </View>
@@ -354,7 +408,9 @@ export default function ShopDashboardScreen() {
 
             <View style={styles.walletBox}>
               <Text style={styles.dutyLabel}>Wallet Balance</Text>
-              <Text style={styles.walletAmount}>₹{Number(shop.walletBalance || 0).toFixed(0)}</Text>
+              <Text style={styles.walletAmount}>
+                ₹{Number(shop.walletBalance || 0).toFixed(0)}
+              </Text>
               <TouchableOpacity
                 style={styles.withdrawBtn}
                 onPress={() => {
@@ -372,7 +428,9 @@ export default function ShopDashboardScreen() {
         <View style={styles.catalogHeader}>
           <View>
             <Text style={styles.catalogTitle}>My Materials Catalog</Text>
-            <Text style={styles.catalogSub}>{materials.length} items currently listed</Text>
+            <Text style={styles.catalogSub}>
+              {materials.length} items currently listed
+            </Text>
           </View>
 
           <TouchableOpacity
@@ -387,13 +445,18 @@ export default function ShopDashboardScreen() {
 
         {/* Materials List */}
         {fetchingMaterials ? (
-          <ActivityIndicator style={{ marginTop: 30 }} size="small" color="#059669" />
+          <ActivityIndicator
+            style={{ marginTop: 30 }}
+            size="small"
+            color="#059669"
+          />
         ) : materials.length === 0 ? (
           <View style={styles.emptyCard}>
             <Ionicons name="cube-outline" size={48} color="#CBD5E1" />
             <Text style={styles.emptyTitle}>No Materials Listed Yet</Text>
             <Text style={styles.emptySub}>
-              Tap the "+ Add Material" button to list your first cement, bricks, sand, or hardware item.
+              Tap the "+ Add Material" button to list your first cement, bricks,
+              sand, or hardware item.
             </Text>
           </View>
         ) : (
@@ -412,7 +475,9 @@ export default function ShopDashboardScreen() {
                   <Text style={styles.materialName} numberOfLines={2}>
                     {item.name}
                   </Text>
-                  <Text style={styles.materialUnit}>{item.sizes?.[0] || "Standard"}</Text>
+                  <Text style={styles.materialUnit}>
+                    {item.sizes?.[0] || "Standard"}
+                  </Text>
                   <View style={styles.materialPriceRow}>
                     <Text style={styles.materialPrice}>₹{item.price}</Text>
                     <View style={styles.inStockBadge}>
@@ -437,7 +502,10 @@ export default function ShopDashboardScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 420 }}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={{ maxHeight: 420 }}
+            >
               <Text style={styles.inputLabel}>Material / Product Name *</Text>
               <TextInput
                 style={styles.input}
@@ -447,7 +515,9 @@ export default function ShopDashboardScreen() {
                 onChangeText={setMatName}
               />
 
-              <Text style={[styles.inputLabel, { marginTop: 12 }]}>Price in ₹ (INR) *</Text>
+              <Text style={[styles.inputLabel, { marginTop: 12 }]}>
+                Price in ₹ (INR) *
+              </Text>
               <TextInput
                 style={styles.input}
                 placeholder="e.g. 380"
@@ -457,7 +527,9 @@ export default function ShopDashboardScreen() {
                 onChangeText={setMatPrice}
               />
 
-              <Text style={[styles.inputLabel, { marginTop: 12 }]}>Unit / Packaging *</Text>
+              <Text style={[styles.inputLabel, { marginTop: 12 }]}>
+                Unit / Packaging *
+              </Text>
               <TextInput
                 style={styles.input}
                 placeholder="e.g. Per 50kg Bag, Per Truck, Per Piece"
@@ -466,7 +538,9 @@ export default function ShopDashboardScreen() {
                 onChangeText={setMatUnit}
               />
 
-              <Text style={[styles.inputLabel, { marginTop: 12 }]}>Category</Text>
+              <Text style={[styles.inputLabel, { marginTop: 12 }]}>
+                Category
+              </Text>
               <TextInput
                 style={styles.input}
                 placeholder="Building Material, Cement, Sand, Paints..."
@@ -475,7 +549,9 @@ export default function ShopDashboardScreen() {
                 onChangeText={setMatCategory}
               />
 
-              <Text style={[styles.inputLabel, { marginTop: 12 }]}>Image URL (Optional)</Text>
+              <Text style={[styles.inputLabel, { marginTop: 12 }]}>
+                Image URL (Optional)
+              </Text>
               <TextInput
                 style={styles.input}
                 placeholder="https://... (Leave blank for default material photo)"
@@ -484,9 +560,14 @@ export default function ShopDashboardScreen() {
                 onChangeText={setMatImage}
               />
 
-              <Text style={[styles.inputLabel, { marginTop: 12 }]}>Short Details / Specification</Text>
+              <Text style={[styles.inputLabel, { marginTop: 12 }]}>
+                Short Details / Specification
+              </Text>
               <TextInput
-                style={[styles.input, { height: 60, textAlignVertical: "top", paddingTop: 8 }]}
+                style={[
+                  styles.input,
+                  { height: 60, textAlignVertical: "top", paddingTop: 8 },
+                ]}
                 placeholder="Quality grade, weight, freshness guarantee..."
                 placeholderTextColor="#94A3B8"
                 multiline
@@ -502,7 +583,9 @@ export default function ShopDashboardScreen() {
                 {isSavingMat ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
-                  <Text style={styles.submitBtnText}>Save & List Material Live</Text>
+                  <Text style={styles.submitBtnText}>
+                    Save & List Material Live
+                  </Text>
                 )}
               </TouchableOpacity>
             </ScrollView>
@@ -522,7 +605,14 @@ export default function ShopDashboardScreen() {
             </View>
 
             <Text style={styles.inputLabel}>Available Balance</Text>
-            <Text style={{ fontSize: 24, fontWeight: "900", color: "#059669", marginBottom: 12 }}>
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: "900",
+                color: "#059669",
+                marginBottom: 12,
+              }}
+            >
               ₹{shop.walletBalance || 0}
             </Text>
 
@@ -536,7 +626,10 @@ export default function ShopDashboardScreen() {
               autoCapitalize="none"
             />
 
-            <TouchableOpacity style={[styles.submitBtn, { marginTop: 18 }]} onPress={handleRequestPayout}>
+            <TouchableOpacity
+              style={[styles.submitBtn, { marginTop: 18 }]}
+              onPress={handleRequestPayout}
+            >
               <Text style={styles.submitBtnText}>Submit Payout Request</Text>
             </TouchableOpacity>
           </View>

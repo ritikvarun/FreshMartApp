@@ -8,7 +8,7 @@ const genDeliveryToken = (id) => {
   return jwt.sign(
     { deliveryId: id, role: "delivery" },
     process.env.JWT_SECRET || "freshmart_secret_key",
-    { expiresIn: "30d" }
+    { expiresIn: "30d" },
   );
 };
 
@@ -28,16 +28,23 @@ export const registerDeliveryPartner = async (req, res) => {
     } = req.body;
 
     if (!name || !phone || !password) {
-      return res.status(400).json({ message: "Name, Phone and Password are required" });
+      return res
+        .status(400)
+        .json({ message: "Name, Phone and Password are required" });
     }
 
     if (!aadhaarNumber && !drivingLicenseNumber) {
-      return res.status(400).json({ message: "Aadhaar number or Driving License is mandatory for verification" });
+      return res.status(400).json({
+        message:
+          "Aadhaar number or Driving License is mandatory for verification",
+      });
     }
 
     const existing = await DeliveryPartner.findOne({ phone });
     if (existing) {
-      return res.status(400).json({ message: "A delivery partner with this phone number already exists" });
+      return res.status(400).json({
+        message: "A delivery partner with this phone number already exists",
+      });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -51,10 +58,10 @@ export const registerDeliveryPartner = async (req, res) => {
       drivingLicenseNumber: drivingLicenseNumber || "",
       vehicleType: vehicleType || "Bike",
       vehicleNumber: vehicleNumber || "",
-      registrationFeePaid: registrationFeePaid !== undefined ? registrationFeePaid : true,
+      registrationFeePaid: false,
       registrationFeeAmount: 500,
       registrationTxnId: registrationTxnId || `REG_DL_${Date.now()}`,
-      status: "Approved", // Auto-approved for easy testing & freelance onboarding
+      status: "Pending",
       isOnline: true,
       walletBalance: 0,
     });
@@ -66,13 +73,16 @@ export const registerDeliveryPartner = async (req, res) => {
     delete partnerObj.password;
 
     return res.status(201).json({
-      message: "Delivery partner registered successfully! Registration Fee ₹500 recorded.",
+      message:
+        "Delivery partner registered successfully! Registration Fee ₹500 recorded.",
       partner: partnerObj,
       token,
     });
   } catch (error) {
     console.error("registerDeliveryPartner error:", error);
-    return res.status(500).json({ message: "Registration error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "Registration error: " + error.message });
   }
 };
 
@@ -81,12 +91,20 @@ export const loginDeliveryPartner = async (req, res) => {
   try {
     const { phone, password } = req.body;
     if (!phone || !password) {
-      return res.status(400).json({ message: "Phone and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Phone and password are required" });
     }
 
     const partner = await DeliveryPartner.findOne({ phone });
     if (!partner) {
       return res.status(404).json({ message: "Delivery partner not found" });
+    }
+
+    if (partner.status !== "Approved") {
+      return res
+        .status(403)
+        .json({ message: "Delivery partner is not approved" });
     }
 
     const isMatch = await bcrypt.compare(password, partner.password);
@@ -104,18 +122,23 @@ export const loginDeliveryPartner = async (req, res) => {
       token,
     });
   } catch (error) {
-    return res.status(500).json({ message: "Delivery login error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "Delivery login error: " + error.message });
   }
 };
 
 // ── Toggle Online / Offline Status ───────────────────────────
 export const toggleOnlineStatus = async (req, res) => {
   try {
-    const { partnerId, isOnline } = req.body;
+    const { isOnline } = req.body;
+    if (typeof isOnline !== "boolean") {
+      return res.status(400).json({ message: "isOnline must be boolean" });
+    }
     const partner = await DeliveryPartner.findByIdAndUpdate(
-      partnerId,
+      req.deliveryId,
       { isOnline },
-      { new: true }
+      { new: true },
     ).select("-password");
 
     return res.status(200).json({
@@ -123,30 +146,42 @@ export const toggleOnlineStatus = async (req, res) => {
       partner,
     });
   } catch (error) {
-    return res.status(500).json({ message: "Toggle online error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "Toggle online error: " + error.message });
   }
 };
 
 // ── Update Live Location ─────────────────────────────────────
 export const updateLocation = async (req, res) => {
   try {
-    const { partnerId, latitude, longitude, address } = req.body;
+    const { latitude, longitude, address } = req.body;
+    if (
+      !Number.isFinite(Number(latitude)) ||
+      !Number.isFinite(Number(longitude))
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Valid latitude and longitude are required" });
+    }
     const partner = await DeliveryPartner.findByIdAndUpdate(
-      partnerId,
+      req.deliveryId,
       {
         currentLocation: {
-          latitude: Number(latitude) || 0,
-          longitude: Number(longitude) || 0,
+          latitude: Number(latitude),
+          longitude: Number(longitude),
           address: address || "",
           lastUpdated: Date.now(),
         },
       },
-      { new: true }
+      { new: true },
     ).select("-password");
 
     return res.status(200).json({ message: "Location updated", partner });
   } catch (error) {
-    return res.status(500).json({ message: "Update location error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "Update location error: " + error.message });
   }
 };
 
@@ -160,15 +195,17 @@ export const getAvailableOrders = async (req, res) => {
 
     return res.status(200).json({ count: orders.length, orders });
   } catch (error) {
-    return res.status(500).json({ message: "getAvailableOrders error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "getAvailableOrders error: " + error.message });
   }
 };
 
 // ── Accept Order ─────────────────────────────────────────────
 export const acceptOrder = async (req, res) => {
   try {
-    const { orderId, partnerId } = req.body;
-    const partner = await DeliveryPartner.findById(partnerId);
+    const { orderId } = req.body;
+    const partner = await DeliveryPartner.findById(req.deliveryId);
     if (!partner) {
       return res.status(404).json({ message: "Delivery partner not found" });
     }
@@ -178,8 +215,23 @@ export const acceptOrder = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (order.deliveryBoyId && order.deliveryBoyId.toString() !== partnerId) {
-      return res.status(400).json({ message: "This order was already accepted by another partner" });
+    if (
+      order.deliveryStatus !== "Unassigned" ||
+      order.status === "Cancelled" ||
+      order.status === "Delivered"
+    ) {
+      return res
+        .status(409)
+        .json({ message: "Order is not available for acceptance" });
+    }
+
+    if (
+      order.deliveryBoyId &&
+      order.deliveryBoyId.toString() !== req.deliveryId
+    ) {
+      return res.status(400).json({
+        message: "This order was already accepted by another partner",
+      });
     }
 
     order.deliveryBoyId = partner._id;
@@ -191,19 +243,45 @@ export const acceptOrder = async (req, res) => {
     partner.activeOrderId = order._id;
     await partner.save();
 
-    return res.status(200).json({ message: "Order accepted successfully", order });
+    return res
+      .status(200)
+      .json({ message: "Order accepted successfully", order });
   } catch (error) {
-    return res.status(500).json({ message: "acceptOrder error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "acceptOrder error: " + error.message });
   }
 };
 
 // ── Update Delivery Status (PickedUp / Delivered) ────────────
 export const updateDeliveryStatus = async (req, res) => {
   try {
-    const { orderId, partnerId, status } = req.body; // status: "PickedUp" | "Delivered"
+    const { orderId, status } = req.body;
+    if (!["PickedUp", "Delivered"].includes(status)) {
+      return res.status(400).json({ message: "Invalid delivery status" });
+    }
     const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (
+      !order.deliveryBoyId ||
+      order.deliveryBoyId.toString() !== req.deliveryId
+    ) {
+      return res
+        .status(403)
+        .json({ message: "This order is not assigned to you" });
+    }
+    if (status === "PickedUp" && order.deliveryStatus !== "Assigned") {
+      return res
+        .status(409)
+        .json({ message: "Order must be assigned before pickup" });
+    }
+    if (status === "Delivered" && order.deliveryStatus !== "PickedUp") {
+      return res
+        .status(409)
+        .json({ message: "Order must be picked up before delivery" });
     }
 
     order.deliveryStatus = status;
@@ -213,14 +291,15 @@ export const updateDeliveryStatus = async (req, res) => {
 
       // Credit delivery earnings to partner's wallet
       const payout = order.deliveryBoyPayout || 50;
-      await DeliveryPartner.findByIdAndUpdate(partnerId, {
+      await DeliveryPartner.findByIdAndUpdate(req.deliveryId, {
         $inc: { walletBalance: payout, totalDeliveries: 1 },
         $set: { activeOrderId: null },
       });
 
       // Credit material sales to shop's wallet
       if (order.shopId) {
-        const shopAmount = order.shopPayout || Math.max(0, (order.amount || 0) - payout - 50);
+        const shopAmount =
+          order.shopPayout || Math.max(0, (order.amount || 0) - payout - 50);
         await Shop.findByIdAndUpdate(order.shopId, {
           $inc: { walletBalance: shopAmount, totalOrders: 1 },
         });
@@ -228,19 +307,27 @@ export const updateDeliveryStatus = async (req, res) => {
     }
 
     await order.save();
-    return res.status(200).json({ message: `Order marked as ${status}`, order });
+    return res
+      .status(200)
+      .json({ message: `Order marked as ${status}`, order });
   } catch (error) {
-    return res.status(500).json({ message: "updateDeliveryStatus error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "updateDeliveryStatus error: " + error.message });
   }
 };
 
 // ── Admin: List All Delivery Partners ────────────────────────
 export const adminGetAllDeliveryPartners = async (req, res) => {
   try {
-    const partners = await DeliveryPartner.find({}).select("-password").sort({ createdAt: -1 });
+    const partners = await DeliveryPartner.find({})
+      .select("-password")
+      .sort({ createdAt: -1 });
     return res.status(200).json(partners);
   } catch (error) {
-    return res.status(500).json({ message: "adminGetAllDeliveryPartners error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "adminGetAllDeliveryPartners error: " + error.message });
   }
 };
 
@@ -251,11 +338,16 @@ export const adminApproveDeliveryPartner = async (req, res) => {
     const updated = await DeliveryPartner.findByIdAndUpdate(
       partnerId,
       { status },
-      { new: true }
+      { new: true },
     ).select("-password");
 
-    return res.status(200).json({ message: `Delivery partner ${status} successfully`, partner: updated });
+    return res.status(200).json({
+      message: `Delivery partner ${status} successfully`,
+      partner: updated,
+    });
   } catch (error) {
-    return res.status(500).json({ message: "adminApproveDeliveryPartner error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "adminApproveDeliveryPartner error: " + error.message });
   }
 };

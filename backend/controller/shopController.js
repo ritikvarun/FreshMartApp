@@ -5,9 +5,13 @@ import jwt from "jsonwebtoken";
 
 // Helper token generator for shop
 const genShopToken = (id) => {
-  return jwt.sign({ shopId: id, role: "shop" }, process.env.JWT_SECRET || "freshmart_secret_key", {
-    expiresIn: "30d",
-  });
+  return jwt.sign(
+    { shopId: id, role: "shop" },
+    process.env.JWT_SECRET || "freshmart_secret_key",
+    {
+      expiresIn: "30d",
+    },
+  );
 };
 
 // ── Register New Shop (with ₹500 fee status) ────────────────
@@ -30,16 +34,23 @@ export const registerShop = async (req, res) => {
     } = req.body;
 
     if (!name || !ownerName || !phone || !password) {
-      return res.status(400).json({ message: "Name, Owner Name, Phone and Password are required" });
+      return res
+        .status(400)
+        .json({ message: "Name, Owner Name, Phone and Password are required" });
     }
 
     if (!gstNumber && !aadhaarNumber) {
-      return res.status(400).json({ message: "Either GST Number or Aadhaar Number is mandatory for shop onboarding" });
+      return res.status(400).json({
+        message:
+          "Either GST Number or Aadhaar Number is mandatory for shop onboarding",
+      });
     }
 
     const existingShop = await Shop.findOne({ phone });
     if (existingShop) {
-      return res.status(400).json({ message: "A shop with this phone number already exists" });
+      return res
+        .status(400)
+        .json({ message: "A shop with this phone number already exists" });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -54,14 +65,17 @@ export const registerShop = async (req, res) => {
       gstNumber: gstNumber || "",
       aadhaarNumber: aadhaarNumber || "",
       aadhaarImage: aadhaarImage || "",
-      address: typeof address === "object" ? address : { street: address || "" },
+      address:
+        typeof address === "object" ? address : { street: address || "" },
       category: category || "Building & General Materials",
-      registrationFeePaid: registrationFeePaid !== undefined ? registrationFeePaid : true, // default true in testing/mock or passed
+      registrationFeePaid: false,
       registrationFeeAmount: 500,
       registrationTxnId: registrationTxnId || `REG_SH_${Date.now()}`,
-      status: "Approved", // Auto-approved for fast test/demo, or "Pending" if strict
+      status: "Pending",
       isOpen: true,
-      image: image || "https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=800&auto=format&fit=crop&q=80",
+      image:
+        image ||
+        "https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=800&auto=format&fit=crop&q=80",
     });
 
     await newShop.save();
@@ -77,7 +91,9 @@ export const registerShop = async (req, res) => {
     });
   } catch (error) {
     console.error("registerShop error:", error);
-    return res.status(500).json({ message: "Registration error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "Registration error: " + error.message });
   }
 };
 
@@ -87,7 +103,9 @@ export const loginShop = async (req, res) => {
     const { identifier, phone, password } = req.body;
     const loginKey = (identifier || phone || "").trim();
     if (!loginKey || !password) {
-      return res.status(400).json({ message: "Phone / Aadhaar / GST and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Phone / Aadhaar / GST and password are required" });
     }
 
     const shop = await Shop.findOne({
@@ -99,7 +117,13 @@ export const loginShop = async (req, res) => {
     });
 
     if (!shop) {
-      return res.status(404).json({ message: "Shop not found with provided Phone, Aadhaar, or GST Number" });
+      return res.status(404).json({
+        message: "Shop not found with provided Phone, Aadhaar, or GST Number",
+      });
+    }
+
+    if (shop.status !== "Approved") {
+      return res.status(403).json({ message: "Shop is not approved" });
     }
 
     const isMatch = await bcrypt.compare(password, shop.password);
@@ -117,7 +141,9 @@ export const loginShop = async (req, res) => {
       token,
     });
   } catch (error) {
-    return res.status(500).json({ message: "Shop login error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "Shop login error: " + error.message });
   }
 };
 
@@ -138,8 +164,18 @@ export const addShopProduct = async (req, res) => {
       bestseller,
     } = req.body;
 
-    if (!shopId || !name || !price) {
-      return res.status(400).json({ message: "Shop ID, product name, and price are required" });
+    if (!shopId || shopId.toString() !== req.shopId || !name || !price) {
+      return res
+        .status(403)
+        .json({
+          message: "Shop ownership or required product fields are invalid",
+        });
+    }
+
+    if (!Number.isFinite(Number(price)) || Number(price) <= 0) {
+      return res
+        .status(400)
+        .json({ message: "Product price must be positive" });
     }
 
     const shop = await Shop.findById(shopId);
@@ -161,7 +197,10 @@ export const addShopProduct = async (req, res) => {
       category: category || shop.category || "Building Materials",
       subCategory: subCategory || "Supplies",
       sizes: parsedSizes.length > 0 ? parsedSizes : ["Standard"],
-      image1: image1 || shop.image || "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&auto=format&fit=crop&q=80",
+      image1:
+        image1 ||
+        shop.image ||
+        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&auto=format&fit=crop&q=80",
       image2: image2 || "",
       image3: image3 || "",
       image4: "",
@@ -171,14 +210,20 @@ export const addShopProduct = async (req, res) => {
       shopId: shop._id,
       shopName: shop.name,
       shopPhone: shop.phone,
-      shopAddress: shop.address?.street ? `${shop.address.street}, ${shop.address.city || ""}` : "",
+      shopAddress: shop.address?.street
+        ? `${shop.address.street}, ${shop.address.city || ""}`
+        : "",
       isAvailable: true,
     });
 
     await product.save();
-    return res.status(201).json({ message: "Material listed successfully!", product });
+    return res
+      .status(201)
+      .json({ message: "Material listed successfully!", product });
   } catch (error) {
-    return res.status(500).json({ message: "addShopProduct error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "addShopProduct error: " + error.message });
   }
 };
 
@@ -186,10 +231,17 @@ export const addShopProduct = async (req, res) => {
 export const getMyShopProducts = async (req, res) => {
   try {
     const { shopId } = req.params;
+    if (shopId !== req.shopId) {
+      return res
+        .status(403)
+        .json({ message: "You can only view your own products" });
+    }
     const products = await Product.find({ shopId }).sort({ createdAt: -1 });
     return res.status(200).json({ count: products.length, products });
   } catch (error) {
-    return res.status(500).json({ message: "getMyShopProducts error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "getMyShopProducts error: " + error.message });
   }
 };
 
@@ -197,10 +249,23 @@ export const getMyShopProducts = async (req, res) => {
 export const toggleShopOpen = async (req, res) => {
   try {
     const { shopId, isOpen } = req.body;
-    const shop = await Shop.findByIdAndUpdate(shopId, { isOpen }, { new: true }).select("-password");
-    return res.status(200).json({ message: `Shop is now ${isOpen ? "Open" : "Closed"}`, shop });
+    if (shopId?.toString() !== req.shopId || typeof isOpen !== "boolean") {
+      return res
+        .status(403)
+        .json({ message: "Invalid shop ownership or status" });
+    }
+    const shop = await Shop.findByIdAndUpdate(
+      shopId,
+      { isOpen },
+      { new: true },
+    ).select("-password");
+    return res
+      .status(200)
+      .json({ message: `Shop is now ${isOpen ? "Open" : "Closed"}`, shop });
   } catch (error) {
-    return res.status(500).json({ message: "toggleShopOpen error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "toggleShopOpen error: " + error.message });
   }
 };
 
@@ -223,10 +288,14 @@ export const getActiveShops = async (req, res) => {
       ];
     }
 
-    const shops = await Shop.find(filter).select("-password").sort({ createdAt: -1 });
+    const shops = await Shop.find(filter)
+      .select("-password")
+      .sort({ createdAt: -1 });
     return res.status(200).json({ count: shops.length, shops });
   } catch (error) {
-    return res.status(500).json({ message: "getActiveShops error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "getActiveShops error: " + error.message });
   }
 };
 
@@ -252,17 +321,23 @@ export const getShopWithProducts = async (req, res) => {
       products,
     });
   } catch (error) {
-    return res.status(500).json({ message: "getShopWithProducts error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "getShopWithProducts error: " + error.message });
   }
 };
 
 // ── Admin: List All Registered Shops ────────────────────────
 export const adminGetAllShops = async (req, res) => {
   try {
-    const shops = await Shop.find({}).select("-password").sort({ createdAt: -1 });
+    const shops = await Shop.find({})
+      .select("-password")
+      .sort({ createdAt: -1 });
     return res.status(200).json(shops);
   } catch (error) {
-    return res.status(500).json({ message: "adminGetAllShops error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "adminGetAllShops error: " + error.message });
   }
 };
 
@@ -274,9 +349,17 @@ export const adminApproveShop = async (req, res) => {
       return res.status(400).json({ message: "Invalid status" });
     }
 
-    const updated = await Shop.findByIdAndUpdate(shopId, { status }, { new: true }).select("-password");
-    return res.status(200).json({ message: `Shop ${status} successfully`, shop: updated });
+    const updated = await Shop.findByIdAndUpdate(
+      shopId,
+      { status },
+      { new: true },
+    ).select("-password");
+    return res
+      .status(200)
+      .json({ message: `Shop ${status} successfully`, shop: updated });
   } catch (error) {
-    return res.status(500).json({ message: "adminApproveShop error: " + error.message });
+    return res
+      .status(500)
+      .json({ message: "adminApproveShop error: " + error.message });
   }
 };

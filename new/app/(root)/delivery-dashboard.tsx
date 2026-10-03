@@ -59,7 +59,7 @@ export default function DeliveryDashboardScreen() {
         setPartner(parsed.partner);
         setPartnerToken(parsed.token);
         setIsOnline(Boolean(parsed.partner?.isOnline));
-        fetchOrders(parsed.partner._id);
+        fetchOrders(parsed.partner._id, parsed.token);
       }
     } catch (e) {
       console.warn("Error reading delivery session", e);
@@ -70,7 +70,10 @@ export default function DeliveryDashboardScreen() {
 
   const handleLogin = async () => {
     if (!phone.trim() || !password.trim()) {
-      Alert.alert("Missing Details", "Please enter your Phone number and Password.");
+      Alert.alert(
+        "Missing Details",
+        "Please enter your Phone number and Password.",
+      );
       return;
     }
 
@@ -87,10 +90,16 @@ export default function DeliveryDashboardScreen() {
         setPartner(data.partner);
         setPartnerToken(data.token);
         setIsOnline(Boolean(data.partner?.isOnline));
-        await SecureStore.setItemAsync(DELIVERY_SESSION_KEY, JSON.stringify(data));
-        fetchOrders(data.partner._id);
+        await SecureStore.setItemAsync(
+          DELIVERY_SESSION_KEY,
+          JSON.stringify(data),
+        );
+        fetchOrders(data.partner._id, data.token);
       } else {
-        Alert.alert("Login Notice", data.message || "Invalid phone or password.");
+        Alert.alert(
+          "Login Notice",
+          data.message || "Invalid phone or password.",
+        );
       }
     } catch (e: any) {
       Alert.alert("Connection Error", e.message || "Could not reach server.");
@@ -100,26 +109,32 @@ export default function DeliveryDashboardScreen() {
   };
 
   const handleLogout = async () => {
-    Alert.alert("Sign Out", "Are you sure you want to log out from Delivery Partner mode?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Sign Out",
-        style: "destructive",
-        onPress: async () => {
-          await SecureStore.deleteItemAsync(DELIVERY_SESSION_KEY);
-          setPartner(null);
-          setPartnerToken("");
-          setAvailableOrders([]);
-          setActiveOrder(null);
+    Alert.alert(
+      "Sign Out",
+      "Are you sure you want to log out from Delivery Partner mode?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Sign Out",
+          style: "destructive",
+          onPress: async () => {
+            await SecureStore.deleteItemAsync(DELIVERY_SESSION_KEY);
+            setPartner(null);
+            setPartnerToken("");
+            setAvailableOrders([]);
+            setActiveOrder(null);
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
-  const fetchOrders = async (partnerId: string) => {
+  const fetchOrders = async (partnerId: string, token = partnerToken) => {
     setFetchingOrders(true);
     try {
-      const res = await fetch(ENDPOINTS.DELIVERY.AVAILABLE_ORDERS);
+      const res = await fetch(ENDPOINTS.DELIVERY.AVAILABLE_ORDERS, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (res.ok) {
         const data = await res.json();
         const orders = data.orders || [];
@@ -129,7 +144,7 @@ export default function DeliveryDashboardScreen() {
           (o: any) =>
             o.deliveryBoyId &&
             String(o.deliveryBoyId) === String(partnerId) &&
-            o.deliveryStatus !== "Delivered"
+            o.deliveryStatus !== "Delivered",
         );
 
         if (myActive) {
@@ -140,7 +155,7 @@ export default function DeliveryDashboardScreen() {
 
         // Available orders (Unassigned)
         const unassigned = orders.filter(
-          (o: any) => !o.deliveryBoyId || o.deliveryStatus === "Unassigned"
+          (o: any) => !o.deliveryBoyId || o.deliveryStatus === "Unassigned",
         );
         setAvailableOrders(unassigned);
       }
@@ -157,11 +172,14 @@ export default function DeliveryDashboardScreen() {
     try {
       await fetch(ENDPOINTS.DELIVERY.TOGGLE_ONLINE, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${partnerToken}`,
+        },
         body: JSON.stringify({ partnerId: partner._id, isOnline: val }),
       });
       if (val) {
-        fetchOrders(partner._id);
+        fetchOrders(partner._id, partnerToken);
       }
     } catch (e) {
       console.warn("Error toggling duty", e);
@@ -174,15 +192,21 @@ export default function DeliveryDashboardScreen() {
     try {
       const res = await fetch(ENDPOINTS.DELIVERY.ACCEPT_ORDER, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${partnerToken}`,
+        },
         body: JSON.stringify({ orderId, partnerId: partner._id }),
       });
 
       const data = await res.json();
       if (res.ok && data.order) {
-        Alert.alert("Order Accepted! 🛵", "Please proceed to the shop to pick up the materials.");
+        Alert.alert(
+          "Order Accepted! 🛵",
+          "Please proceed to the shop to pick up the materials.",
+        );
         setActiveOrder(data.order);
-        fetchOrders(partner._id);
+        fetchOrders(partner._id, partnerToken);
       } else {
         Alert.alert("Notice", data.message || "Could not accept order.");
       }
@@ -193,13 +217,19 @@ export default function DeliveryDashboardScreen() {
     }
   };
 
-  const handleUpdateStatus = async (orderId: string, status: "PickedUp" | "Delivered") => {
+  const handleUpdateStatus = async (
+    orderId: string,
+    status: "PickedUp" | "Delivered",
+  ) => {
     if (!partner) return;
     setActionLoading(true);
     try {
       const res = await fetch(ENDPOINTS.DELIVERY.UPDATE_STATUS, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${partnerToken}`,
+        },
         body: JSON.stringify({ orderId, partnerId: partner._id, status }),
       });
 
@@ -208,7 +238,7 @@ export default function DeliveryDashboardScreen() {
         if (status === "Delivered") {
           Alert.alert(
             "Delivery Completed! 🎉",
-            "Great job! ₹50 delivery earning has been credited to your AkA Wallet."
+            "Great job! ₹50 delivery earning has been credited to your AkA Wallet.",
           );
           setActiveOrder(null);
           setPartner((prev: any) => ({
@@ -217,10 +247,16 @@ export default function DeliveryDashboardScreen() {
             totalDeliveries: (prev?.totalDeliveries || 0) + 1,
           }));
         } else {
-          Alert.alert("Picked Up! 📦", "Deliver materials to customer's address.");
-          setActiveOrder((prev: any) => ({ ...prev, deliveryStatus: "PickedUp" }));
+          Alert.alert(
+            "Picked Up! 📦",
+            "Deliver materials to customer's address.",
+          );
+          setActiveOrder((prev: any) => ({
+            ...prev,
+            deliveryStatus: "PickedUp",
+          }));
         }
-        fetchOrders(partner._id);
+        fetchOrders(partner._id, partnerToken);
       } else {
         Alert.alert("Notice", data.message || "Could not update status.");
       }
@@ -238,12 +274,15 @@ export default function DeliveryDashboardScreen() {
 
   const handleRequestPayout = () => {
     if (!payoutUpi.trim()) {
-      Alert.alert("Missing UPI", "Please enter your UPI ID (e.g. 9876543210@paytm).");
+      Alert.alert(
+        "Missing UPI",
+        "Please enter your UPI ID (e.g. 9876543210@paytm).",
+      );
       return;
     }
     Alert.alert(
       "Payout Request Submitted! 💰",
-      `Your payout request of ₹${partner?.walletBalance || 0} has been sent to Admin for UPI: ${payoutUpi}. Payment will be disbursed today.`
+      `Your payout request of ₹${partner?.walletBalance || 0} has been sent to Admin for UPI: ${payoutUpi}. Payment will be disbursed today.`,
     );
     setShowPayoutModal(false);
     setPayoutUpi("");
@@ -264,20 +303,27 @@ export default function DeliveryDashboardScreen() {
       <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backBtn}
+          >
             <Ionicons name="arrow-back" size={24} color="#111827" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Delivery Partner Login</Text>
         </View>
 
-        <ScrollView contentContainerStyle={styles.loginContent} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.loginContent}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.loginBanner}>
             <View style={styles.loginBannerIcon}>
               <Ionicons name="bicycle" size={36} color="#2563EB" />
             </View>
             <Text style={styles.loginBannerTitle}>AkA Delivery Fleet</Text>
             <Text style={styles.loginBannerSub}>
-              Accept nearby orders, deliver materials, and earn ₹50+ per delivery across any location.
+              Accept nearby orders, deliver materials, and earn ₹50+ per
+              delivery across any location.
             </Text>
           </View>
 
@@ -319,9 +365,15 @@ export default function DeliveryDashboardScreen() {
             </TouchableOpacity>
 
             <View style={styles.registerPromptRow}>
-              <Text style={styles.registerPromptText}>Want to deliver for AkA?</Text>
-              <TouchableOpacity onPress={() => router.push("/(auth)/register-delivery" as any)}>
-                <Text style={styles.registerLink}>Register Partner (₹500 Fee) →</Text>
+              <Text style={styles.registerPromptText}>
+                Want to deliver for AkA?
+              </Text>
+              <TouchableOpacity
+                onPress={() => router.push("/(auth)/register-delivery" as any)}
+              >
+                <Text style={styles.registerLink}>
+                  Register Partner (₹500 Fee) →
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -345,7 +397,8 @@ export default function DeliveryDashboardScreen() {
             {partner.name}
           </Text>
           <Text style={styles.headerSubtitle}>
-            {partner.vehicleType || "Bike"} • {partner.vehicleNumber || "Verified Rider"}
+            {partner.vehicleType || "Bike"} •{" "}
+            {partner.vehicleNumber || "Verified Rider"}
           </Text>
         </View>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
@@ -353,17 +406,27 @@ export default function DeliveryDashboardScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.dashboardContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.dashboardContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Duty ON/OFF & Wallet Card */}
         <View style={styles.dutyCard}>
           <View style={styles.dutyRow}>
             <View style={{ flex: 1 }}>
               <Text style={styles.dutyStatusLabel}>Duty Status</Text>
-              <Text style={[styles.dutyStatusValue, { color: isOnline ? "#059669" : "#64748B" }]}>
+              <Text
+                style={[
+                  styles.dutyStatusValue,
+                  { color: isOnline ? "#059669" : "#64748B" },
+                ]}
+              >
                 {isOnline ? "🟢 ONLINE (Ready for Orders)" : "🔴 OFFLINE"}
               </Text>
               <Text style={styles.dutyHint}>
-                {isOnline ? "Searching nearby customer orders..." : "Turn ON duty to receive delivery orders."}
+                {isOnline
+                  ? "Searching nearby customer orders..."
+                  : "Turn ON duty to receive delivery orders."}
               </Text>
             </View>
             <Switch
@@ -378,12 +441,17 @@ export default function DeliveryDashboardScreen() {
           <View style={styles.walletBar}>
             <View>
               <Text style={styles.walletLabel}>My Delivery Wallet</Text>
-              <Text style={styles.walletAmount}>₹{partner.walletBalance || 0}</Text>
+              <Text style={styles.walletAmount}>
+                ₹{partner.walletBalance || 0}
+              </Text>
               <Text style={styles.walletDeliveries}>
                 {partner.totalDeliveries || 0} deliveries completed
               </Text>
             </View>
-            <TouchableOpacity style={styles.withdrawBtn} onPress={() => setShowPayoutModal(true)}>
+            <TouchableOpacity
+              style={styles.withdrawBtn}
+              onPress={() => setShowPayoutModal(true)}
+            >
               <Text style={styles.withdrawBtnText}>Withdraw UPI</Text>
             </TouchableOpacity>
           </View>
@@ -395,9 +463,13 @@ export default function DeliveryDashboardScreen() {
             <View style={styles.activeOrderHeader}>
               <View style={styles.activeOrderPill}>
                 <Ionicons name="flash" size={14} color="#EA580C" />
-                <Text style={styles.activeOrderPillText}>ACTIVE DELIVERY TASK</Text>
+                <Text style={styles.activeOrderPillText}>
+                  ACTIVE DELIVERY TASK
+                </Text>
               </View>
-              <Text style={styles.activeOrderId}>#{activeOrder._id.slice(-6).toUpperCase()}</Text>
+              <Text style={styles.activeOrderId}>
+                #{activeOrder._id.slice(-6).toUpperCase()}
+              </Text>
             </View>
 
             {/* Shop Pickup Point */}
@@ -405,15 +477,23 @@ export default function DeliveryDashboardScreen() {
               <View style={styles.stepDotGreen} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.stepLabel}>PICKUP FROM SHOP</Text>
-                <Text style={styles.stepName}>{activeOrder.shopName || "AkA Partner Store"}</Text>
-                <Text style={styles.stepAddress}>{activeOrder.shopAddress || "Local merchant hub"}</Text>
+                <Text style={styles.stepName}>
+                  {activeOrder.shopName || "AkA Partner Store"}
+                </Text>
+                <Text style={styles.stepAddress}>
+                  {activeOrder.shopAddress || "Local merchant hub"}
+                </Text>
                 {activeOrder.shopPhone && (
                   <TouchableOpacity
                     style={styles.callSmallBtn}
-                    onPress={() => Linking.openURL(`tel:${activeOrder.shopPhone}`)}
+                    onPress={() =>
+                      Linking.openURL(`tel:${activeOrder.shopPhone}`)
+                    }
                   >
                     <Ionicons name="call" size={12} color="#059669" />
-                    <Text style={styles.callSmallBtnText}>Call Shop: {activeOrder.shopPhone}</Text>
+                    <Text style={styles.callSmallBtnText}>
+                      Call Shop: {activeOrder.shopPhone}
+                    </Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -425,18 +505,24 @@ export default function DeliveryDashboardScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.stepLabel}>DELIVER TO CUSTOMER</Text>
                 <Text style={styles.stepName}>
-                  {activeOrder.address?.firstName} {activeOrder.address?.lastName}
+                  {activeOrder.address?.firstName}{" "}
+                  {activeOrder.address?.lastName}
                 </Text>
                 <Text style={styles.stepAddress}>
-                  {activeOrder.address?.street}, {activeOrder.address?.city} ({activeOrder.address?.pinCode})
+                  {activeOrder.address?.street}, {activeOrder.address?.city} (
+                  {activeOrder.address?.pinCode})
                 </Text>
                 {activeOrder.address?.phone && (
                   <TouchableOpacity
                     style={styles.callSmallBtn}
-                    onPress={() => Linking.openURL(`tel:${activeOrder.address?.phone}`)}
+                    onPress={() =>
+                      Linking.openURL(`tel:${activeOrder.address?.phone}`)
+                    }
                   >
                     <Ionicons name="call" size={12} color="#2563EB" />
-                    <Text style={[styles.callSmallBtnText, { color: "#2563EB" }]}>
+                    <Text
+                      style={[styles.callSmallBtnText, { color: "#2563EB" }]}
+                    >
                       Call Customer: {activeOrder.address?.phone}
                     </Text>
                   </TouchableOpacity>
@@ -452,7 +538,7 @@ export default function DeliveryDashboardScreen() {
                   openMaps(
                     activeOrder.deliveryStatus === "PickedUp"
                       ? `${activeOrder.address?.street}, ${activeOrder.address?.city}`
-                      : activeOrder.shopName
+                      : activeOrder.shopName,
                   )
                 }
               >
@@ -462,19 +548,33 @@ export default function DeliveryDashboardScreen() {
 
               {activeOrder.deliveryStatus !== "PickedUp" ? (
                 <TouchableOpacity
-                  style={[styles.primaryActionBtn, { backgroundColor: "#F59E0B" }]}
+                  style={[
+                    styles.primaryActionBtn,
+                    { backgroundColor: "#F59E0B" },
+                  ]}
                   disabled={actionLoading}
-                  onPress={() => handleUpdateStatus(activeOrder._id, "PickedUp")}
+                  onPress={() =>
+                    handleUpdateStatus(activeOrder._id, "PickedUp")
+                  }
                 >
-                  <Text style={styles.primaryActionBtnText}>Mark Picked Up</Text>
+                  <Text style={styles.primaryActionBtnText}>
+                    Mark Picked Up
+                  </Text>
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
-                  style={[styles.primaryActionBtn, { backgroundColor: "#059669" }]}
+                  style={[
+                    styles.primaryActionBtn,
+                    { backgroundColor: "#059669" },
+                  ]}
                   disabled={actionLoading}
-                  onPress={() => handleUpdateStatus(activeOrder._id, "Delivered")}
+                  onPress={() =>
+                    handleUpdateStatus(activeOrder._id, "Delivered")
+                  }
                 >
-                  <Text style={styles.primaryActionBtnText}>Mark Delivered</Text>
+                  <Text style={styles.primaryActionBtnText}>
+                    Mark Delivered
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -484,8 +584,12 @@ export default function DeliveryDashboardScreen() {
         {/* ── SECTION: AVAILABLE ORDERS LIST ──────────────────── */}
         <View style={styles.availableSection}>
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionHeaderTitle}>Available Orders Nearby</Text>
-            <TouchableOpacity onPress={() => partner && fetchOrders(partner._id)}>
+            <Text style={styles.sectionHeaderTitle}>
+              Available Orders Nearby
+            </Text>
+            <TouchableOpacity
+              onPress={() => partner && fetchOrders(partner._id)}
+            >
               <Ionicons name="refresh" size={18} color="#2563EB" />
             </TouchableOpacity>
           </View>
@@ -495,17 +599,27 @@ export default function DeliveryDashboardScreen() {
               <Ionicons name="moon-outline" size={40} color="#94A3B8" />
               <Text style={styles.emptyTitle}>You Are Currently Offline</Text>
               <Text style={styles.emptySub}>
-                Switch on your Duty Status above to start seeing available deliveries in your area.
+                Switch on your Duty Status above to start seeing available
+                deliveries in your area.
               </Text>
             </View>
           ) : fetchingOrders ? (
-            <ActivityIndicator style={{ marginTop: 20 }} size="small" color="#2563EB" />
+            <ActivityIndicator
+              style={{ marginTop: 20 }}
+              size="small"
+              color="#2563EB"
+            />
           ) : availableOrders.length === 0 ? (
             <View style={styles.emptyCard}>
-              <Ionicons name="checkmark-done-circle-outline" size={40} color="#059669" />
+              <Ionicons
+                name="checkmark-done-circle-outline"
+                size={40}
+                color="#059669"
+              />
               <Text style={styles.emptyTitle}>No Pending Deliveries</Text>
               <Text style={styles.emptySub}>
-                All nearby orders are currently assigned. Stay online, new orders appear automatically!
+                All nearby orders are currently assigned. Stay online, new
+                orders appear automatically!
               </Text>
             </View>
           ) : (
@@ -517,7 +631,10 @@ export default function DeliveryDashboardScreen() {
                       <Text style={styles.orderShopName}>
                         {ord.shopName || "AkA Partner Store"}
                       </Text>
-                      <Text style={styles.orderCustomerAddress} numberOfLines={1}>
+                      <Text
+                        style={styles.orderCustomerAddress}
+                        numberOfLines={1}
+                      >
                         Deliver to: {ord.address?.street || "Customer address"}
                       </Text>
                     </View>
@@ -528,7 +645,8 @@ export default function DeliveryDashboardScreen() {
 
                   <View style={styles.orderCardBottom}>
                     <Text style={styles.orderItemsCount}>
-                      {ord.items?.length || 1} Material(s) • Total: ₹{ord.amount} ({ord.paymentMethod})
+                      {ord.items?.length || 1} Material(s) • Total: ₹
+                      {ord.amount} ({ord.paymentMethod})
                     </Text>
 
                     <TouchableOpacity
@@ -558,11 +676,20 @@ export default function DeliveryDashboardScreen() {
             </View>
 
             <Text style={styles.inputLabel}>Available Balance</Text>
-            <Text style={{ fontSize: 24, fontWeight: "900", color: "#2563EB", marginBottom: 12 }}>
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: "900",
+                color: "#2563EB",
+                marginBottom: 12,
+              }}
+            >
               ₹{partner.walletBalance || 0}
             </Text>
 
-            <Text style={styles.inputLabel}>Enter UPI ID (GPay / PhonePe / Paytm) *</Text>
+            <Text style={styles.inputLabel}>
+              Enter UPI ID (GPay / PhonePe / Paytm) *
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="e.g. 9876543210@paytm or rider@okicici"
@@ -573,7 +700,10 @@ export default function DeliveryDashboardScreen() {
             />
 
             <TouchableOpacity
-              style={[styles.submitBtn, { backgroundColor: "#2563EB", marginTop: 18 }]}
+              style={[
+                styles.submitBtn,
+                { backgroundColor: "#2563EB", marginTop: 18 },
+              ]}
               onPress={handleRequestPayout}
             >
               <Text style={styles.submitBtnText}>Submit Payout Request</Text>
