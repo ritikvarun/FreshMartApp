@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import Footer from "../../../components/Footer";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = (width - 40 - 12) / 2;
+const CARD_WIDTH_3COL = Math.floor((width - 24 - 16) / 3);
 const BANNER_WIDTH = width - 40;
 
 // 5 Promotional Slides for Auto-playing Carousel
@@ -37,7 +38,8 @@ const PROMO_SLIDES = [
     bgColor: "#F3F4F6",
     accentColor: "#111827",
     btnBg: "#111827",
-    imageUrl: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80",
   },
   {
     id: "slide2",
@@ -50,7 +52,8 @@ const PROMO_SLIDES = [
     bgColor: "#EEF2FF",
     accentColor: "#4F46E5",
     btnBg: "#4F46E5",
-    imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
   },
   {
     id: "slide3",
@@ -63,7 +66,8 @@ const PROMO_SLIDES = [
     bgColor: "#FFF1F2",
     accentColor: "#E11D48",
     btnBg: "#E11D48",
-    imageUrl: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&q=80",
   },
   {
     id: "slide4",
@@ -76,7 +80,8 @@ const PROMO_SLIDES = [
     bgColor: "#FEF3C7",
     accentColor: "#D97706",
     btnBg: "#D97706",
-    imageUrl: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80",
   },
   {
     id: "slide5",
@@ -89,18 +94,85 @@ const PROMO_SLIDES = [
     bgColor: "#ECFDF5",
     accentColor: "#059669",
     btnBg: "#059669",
-    imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80",
   },
 ];
 
-// E-Commerce Categories
-const CATEGORIES = [
-  { id: "all", name: "All", icon: "grid-outline" },
-  { id: "men", name: "Men", icon: "shirt-outline" },
-  { id: "women", name: "Women", icon: "rose-outline" },
-  { id: "kids", name: "Kids", icon: "happy-outline" },
-  { id: "shoes", name: "Shoes", icon: "footsteps-outline" },
-  { id: "accessories", name: "Accessories", icon: "watch-outline" },
+// Category keyword mapping for Quick Grocery Section
+const GROCERY_CATEGORY_MAP: Record<string, string[]> = {
+  "Vegetables &\nFruits": ["fruit", "fresh", "veg", "banana", "apple"],
+  "Atta, Rice &\nDal": ["atta", "rice", "dal", "grain", "flour"],
+  "Oil, Ghee &\nMasala": ["oil", "oils", "ghee", "masala", "honey"],
+  "Dairy, Bread &\nEggs": ["milk", "dairy", "bread", "egg", "fresh"],
+  "Bakery &\nBiscuits": ["bakery", "biscuit", "cookie", "snack"],
+  "Dry Fruits &\nCereals": ["dry fruit", "cereal", "oils", "snack"],
+  "Chicken, Meat\n& Fish": ["meat", "chicken", "fish", "fresh"],
+  "Kitchenware &\nAppliances": ["kitchen", "appliance", "hardware", "material", "paint"],
+  "Chips &\nNamkeen": ["snack", "chips", "namkeen", "crunchy"],
+  "Sweets &\nChocolates": ["sweet", "chocolate", "dessert", "snack"],
+  "Drinks &\nJuices": ["drink", "juice", "beverage"],
+  "Tea, Coffee &\nMilk Drinks": ["tea", "coffee", "beverage", "milk"],
+  "Instant\nFood": ["instant", "noodle", "maggi", "snack"],
+  "Sauces &\nSpreads": ["sauce", "spread", "ketchup", "honey", "oil"],
+  "Paan\nCorner": ["paan", "mouth freshener", "snack"],
+  "Ice Creams &\nMore": ["ice cream", "dessert", "fresh", "milk"],
+};
+
+function getCategoryIcon(name: string): any {
+  const n = name.toLowerCase();
+  if (n.includes("fruit")) return "nutrition-outline";
+  if (n.includes("fresh") || n.includes("veg")) return "leaf-outline";
+  if (n.includes("snack")) return "fast-food-outline";
+  if (n.includes("oil")) return "water-outline";
+  if (n.includes("shoe")) return "footsteps-outline";
+  if (n.includes("men")) return "shirt-outline";
+  if (n.includes("women")) return "rose-outline";
+  if (n.includes("material") || n.includes("hardware") || n.includes("paint")) return "construct-outline";
+  return "grid-outline";
+}
+
+const DEFAULT_DEAL_ITEMS = [
+  {
+    id: "deal1",
+    title: "Epigamia Turbo Chocolate Protein...",
+    price: "₹99",
+    originalPrice: "₹141",
+    badge: "29% OFF on MRP",
+    detail: "140 kcal",
+    image:
+      "https://images.unsplash.com/photo-1574170566232-1f6a0f9a0f1a?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: "deal2",
+    title: "Tide Plus Double Power Washing D...",
+    price: "₹889",
+    originalPrice: "₹1,179",
+    badge: "₹290 OFF",
+    detail: "8 mins",
+    image:
+      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: "deal3",
+    title: "Vaseline Lip Therapy Rosy Lip...",
+    price: "₹189",
+    originalPrice: "₹295",
+    badge: "Lowest in 30 days",
+    detail: "8 mins",
+    image:
+      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: "deal4",
+    title: "Nestasia Snacks Box",
+    price: "₹559",
+    originalPrice: "₹1,095",
+    badge: "₹536 OFF",
+    detail: "220 ml",
+    image:
+      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80",
+  },
 ];
 
 interface HomeProduct {
@@ -127,7 +199,8 @@ const INITIAL_PRODUCTS: HomeProduct[] = [
     price: "₹1,499",
     unit: "Sizes: S, M, L, XL",
     bgColor: "#FFFFFF",
-    image1: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80",
+    image1:
+      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80",
     isFavorite: true,
     rawProduct: {
       _id: "p1",
@@ -146,7 +219,8 @@ const INITIAL_PRODUCTS: HomeProduct[] = [
     price: "₹2,499",
     unit: "Sizes: 7, 8, 9, 10",
     bgColor: "#FFFFFF",
-    image1: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
+    image1:
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
     isFavorite: false,
     rawProduct: {
       _id: "p2",
@@ -165,7 +239,8 @@ const INITIAL_PRODUCTS: HomeProduct[] = [
     price: "₹1,899",
     unit: "Sizes: S, M, L",
     bgColor: "#FFFFFF",
-    image1: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&q=80",
+    image1:
+      "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&q=80",
     isFavorite: false,
     rawProduct: {
       _id: "p3",
@@ -184,7 +259,8 @@ const INITIAL_PRODUCTS: HomeProduct[] = [
     price: "₹1,999",
     unit: "Sizes: M, L, XXL",
     bgColor: "#FFFFFF",
-    image1: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=800&q=80",
+    image1:
+      "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=800&q=80",
     isFavorite: true,
     rawProduct: {
       _id: "p4",
@@ -197,19 +273,153 @@ const INITIAL_PRODUCTS: HomeProduct[] = [
   },
 ];
 
+function getProductCardMeta(product: HomeProduct, index: number) {
+  // 1. Extract Unit & Options Count
+  const rawSizes = product.rawProduct?.sizes || [];
+  let unit = "1 unit";
+  let optionsCount = 1;
+
+  if (Array.isArray(rawSizes) && rawSizes.length > 0) {
+    unit = rawSizes[0];
+    optionsCount = rawSizes.length;
+  } else if (product.unit) {
+    if (product.unit.toLowerCase().startsWith("sizes:")) {
+      const parts = product.unit.replace(/sizes:/i, "").split(",").map((s: string) => s.trim());
+      unit = parts[0] || "1 unit";
+      optionsCount = parts.length;
+    } else {
+      unit = product.unit;
+    }
+  }
+
+  // 2. Price calculation
+  const rawPrice =
+    typeof product.rawProduct?.price === "number"
+      ? product.rawProduct.price
+      : parseFloat(String(product.price).replace(/[^0-9.]/g, "")) || 199;
+  const currentPrice = `₹${Math.round(rawPrice)}`;
+  const mrpPrice = `₹${Math.round(rawPrice * (index % 2 === 0 ? 1.25 : 1.35))}`;
+
+  // 3. Dynamic tags (matching 2nd image beige pills)
+  const cat = (product.category || "").toLowerCase();
+  const title = (product.title || "").toLowerCase();
+  let tags: string[] = [];
+
+  if (title.includes("vitamin") || title.includes("serum") || title.includes("cream")) {
+    tags = ["Vitamin C", "Glow Skin"];
+  } else if (title.includes("banana") || title.includes("apple") || cat.includes("fruit")) {
+    tags = ["Fresh", "Organic"];
+  } else if (cat.includes("veg") || title.includes("veggie")) {
+    tags = ["Farm Fresh", "Organic"];
+  } else if (cat.includes("oil") || title.includes("oil") || title.includes("ghee")) {
+    tags = ["Pure", "Cold Pressed"];
+  } else if (cat.includes("milk") || cat.includes("dairy")) {
+    tags = ["Farm Fresh", "Pure"];
+  } else if (cat.includes("snack") || title.includes("snack") || title.includes("chips")) {
+    tags = ["Crunchy", "Snack"];
+  } else if (cat.includes("shoe")) {
+    tags = ["Sneakers", "Running"];
+  } else if (cat.includes("men") || cat.includes("women")) {
+    tags = ["Pure Cotton", "Trending"];
+  } else {
+    tags = [product.category || "Fresh", "Verified"];
+  }
+
+  // 4. Delivery time & Lowest tag
+  const deliveryTime = index % 3 === 0 ? "16 mins" : "8 mins";
+  const isLowestDeal = index === 0;
+
+  return {
+    unit,
+    optionsCount,
+    currentPrice,
+    mrpPrice,
+    tags,
+    deliveryTime,
+    isLowestDeal,
+  };
+}
+
 export default function HomeScreen() {
   const router = useRouter();
-  const { addToCart, cartCount, grandTotal } = useCart();
+  const { addToCart, updateQuantity, cartItems, cartCount, grandTotal } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const [menuDrawerVisible, setMenuDrawerVisible] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<HomeProduct[]>(INITIAL_PRODUCTS);
+  const [customSections, setCustomSections] = useState<any[]>([]);
+
+  // Dynamic Categories synced with backend & admin products
+  const dynamicCategories = useMemo(() => {
+    const fromBackend = Array.from(
+      new Set(products.map((p) => p.category).filter(Boolean))
+    );
+    const defaults = ["All", "Fresh", "Fruits", "Snack", "Oils", "Shoes", "Men"];
+    const merged = Array.from(new Set([...defaults, ...fromBackend]));
+    return merged.map((name) => ({
+      id: name.toLowerCase(),
+      name,
+      icon: getCategoryIcon(name),
+    }));
+  }, [products]);
+
+  useEffect(() => {
+    async function loadHomeSections() {
+      try {
+        const res = await fetch(ENDPOINTS.SETTINGS.GET_HOME_SECTIONS);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setCustomSections(data);
+        }
+      } catch (err) {
+        console.warn("Home sections fetch failed", err);
+      }
+    }
+    loadHomeSections();
+  }, []);
+
+  const dealProducts: Array<{
+    id: string;
+    title: string;
+    price: string;
+    originalPrice: string;
+    badge: string;
+    detail: string;
+    image: string;
+    productId?: string;
+  }> =
+    products.length > 0
+      ? products.slice(0, 4).map((product, index) => {
+          const rawPrice =
+            typeof product.rawProduct?.price === "number"
+              ? product.rawProduct.price
+              : parseFloat(String(product.price).replace(/[^0-9.]/g, "")) || 0;
+          const listedPrice = `₹${Math.round(rawPrice)}`;
+          const originalPrice = `₹${Math.round(rawPrice * (index % 2 === 0 ? 1.35 : 1.55))}`;
+
+          return {
+            id: product._id || product.id,
+            title: product.title,
+            price: listedPrice,
+            originalPrice,
+            badge: index % 2 === 0 ? "Hot Deal" : "Best Value",
+            detail: product.unit || "Fresh pick",
+            image:
+              product.image1 ||
+              "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800",
+            productId: product._id || product.id,
+          };
+        })
+      : DEFAULT_DEAL_ITEMS.map((item) => ({ ...item, productId: undefined }));
 
   // Smooth Animations for Cart Badge & Floating Cart Bar
   const cartBadgeScale = useRef(new Animated.Value(1)).current;
   const prevCartCountRef = useRef(cartCount);
-  const floatingCartAnim = useRef(new Animated.Value(cartCount > 0 ? 1 : 0)).current;
+  const floatingCartAnim = useRef(
+    new Animated.Value(cartCount > 0 ? 1 : 0),
+  ).current;
 
   useEffect(() => {
     if (cartCount > prevCartCountRef.current && cartCount > 0) {
@@ -321,7 +531,10 @@ export default function HomeScreen() {
               title: p.name,
               category: p.category,
               price: `₹${Number(p.price || 0)}`,
-              unit: p.sizes && p.sizes.length > 0 ? `Sizes: ${p.sizes.join(", ")}` : "Standard",
+              unit:
+                p.sizes && p.sizes.length > 0
+                  ? `Sizes: ${p.sizes.join(", ")}`
+                  : "Standard",
               bgColor: "#F9FAFB",
               image1: p.image1,
               isFavorite: false,
@@ -331,20 +544,32 @@ export default function HomeScreen() {
           }
         }
       } catch (err) {
-        console.warn("Backend products fetch failed, using local defaults", err);
+        console.warn(
+          "Backend products fetch failed, using local defaults",
+          err,
+        );
       }
     }
     loadBackendProducts();
   }, []);
 
   const handleAddToCartClick = (product: any) => {
-    const rawSizes = product.rawProduct?.sizes || (Array.isArray(product.sizes) ? product.sizes : []);
-    if (rawSizes && rawSizes.length > 1) {
-      setSizeModalProduct(product);
-      setSelectedModalSize(rawSizes[0]);
-    } else {
-      executeAddToCart(product, rawSizes[0] || "Standard");
+    let rawSizes =
+      product.rawProduct?.sizes ||
+      (Array.isArray(product.sizes) ? product.sizes : []);
+    if (
+      (!rawSizes || rawSizes.length === 0) &&
+      product.unit &&
+      product.unit.toLowerCase().startsWith("sizes:")
+    ) {
+      rawSizes = product.unit
+        .replace(/sizes:/i, "")
+        .split(",")
+        .map((s: string) => s.trim());
     }
+    const sizeToUse =
+      rawSizes && rawSizes.length > 0 ? rawSizes[0] : "Standard";
+    executeAddToCart(product, sizeToUse);
   };
 
   const executeAddToCart = (product: any, sizeToUse: string) => {
@@ -364,7 +589,7 @@ export default function HomeScreen() {
         category: product.category || "General",
         sizes: product.rawProduct?.sizes || [sizeToUse],
       },
-      sizeToUse
+      sizeToUse,
     );
   };
 
@@ -372,15 +597,19 @@ export default function HomeScreen() {
   const toggleFavorite = (id: string) => {
     setProducts((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, isFavorite: !item.isFavorite } : item
-      )
+        item.id === id ? { ...item, isFavorite: !item.isFavorite } : item,
+      ),
     );
   };
 
   // Filter & Sort State
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [sortBy, setSortBy] = useState<"featured" | "price_asc" | "price_desc" | "newest">("featured");
-  const [priceRange, setPriceRange] = useState<"all" | "under_1000" | "1000_2500" | "above_2500">("all");
+  const [sortBy, setSortBy] = useState<
+    "featured" | "price_asc" | "price_desc" | "newest"
+  >("featured");
+  const [priceRange, setPriceRange] = useState<
+    "all" | "under_1000" | "1000_2500" | "above_2500"
+  >("all");
   const [onlyBestsellers, setOnlyBestsellers] = useState(false);
 
   const isFilterActive =
@@ -395,12 +624,22 @@ export default function HomeScreen() {
   // Filter & Sort products by search, category, price range, and sort order
   const filteredProducts = products
     .filter((item) => {
-      const matchesCategory =
-        activeCategory === "All" ||
-        item.category?.toLowerCase() === activeCategory.toLowerCase();
-      const matchesSearch = item.title
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+      const itemCat = (item.category || "").toLowerCase();
+      const itemTitle = (item.title || "").toLowerCase();
+      const itemSub = (item.rawProduct?.subCategory || "").toLowerCase();
+
+      // 1. Search text filter
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesSearch =
+          itemTitle.includes(q) || itemCat.includes(q) || itemSub.includes(q);
+        if (!matchesSearch) return false;
+      }
+
+      // 2. Horizontal Category Chip filter
+      if (activeCategory !== "All") {
+        if (itemCat !== activeCategory.toLowerCase()) return false;
+      }
 
       const numPrice =
         typeof item.price === "number"
@@ -420,7 +659,7 @@ export default function HomeScreen() {
         ? item.rawProduct?.bestseller || (item as any).bestseller
         : true;
 
-      return matchesCategory && matchesSearch && matchesPrice && matchesBestseller;
+      return matchesPrice && matchesBestseller;
     })
     .sort((a, b) => {
       const priceA =
@@ -477,13 +716,8 @@ export default function HomeScreen() {
                 </Animated.View>
               )}
             </TouchableOpacity>
-
-            <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
-              <Ionicons name="notifications-outline" size={20} color="#1A1D26" />
-            </TouchableOpacity>
           </View>
         </View>
-
 
         {/* Search & Filter Bar */}
         <View style={styles.searchRow}>
@@ -537,14 +771,19 @@ export default function HomeScreen() {
                 key={slide.id || idx}
                 style={[
                   styles.carouselSlide,
-                  { backgroundColor: slide.bgColor || "#F3F4F6", width: BANNER_WIDTH },
+                  {
+                    backgroundColor: slide.bgColor || "#F3F4F6",
+                    width: BANNER_WIDTH,
+                  },
                 ]}
               >
                 <View style={styles.slideLeft}>
                   <View
                     style={[
                       styles.slideBadgeContainer,
-                      { backgroundColor: `${slide.accentColor || "#111827"}15` },
+                      {
+                        backgroundColor: `${slide.accentColor || "#111827"}15`,
+                      },
                     ]}
                   >
                     <Text
@@ -559,11 +798,17 @@ export default function HomeScreen() {
 
                   <Text style={styles.slideTitle}>{slide.title}</Text>
                   <Text
-                    style={[styles.slideDiscount, { color: slide.accentColor || "#111827" }]}
+                    style={[
+                      styles.slideDiscount,
+                      { color: slide.accentColor || "#111827" },
+                    ]}
                   >
                     {slide.discount}{" "}
                     <Text
-                      style={[styles.slideOff, { color: slide.accentColor || "#111827" }]}
+                      style={[
+                        styles.slideOff,
+                        { color: slide.accentColor || "#111827" },
+                      ]}
                     >
                       {slide.offText || "OFF"}
                     </Text>
@@ -581,7 +826,9 @@ export default function HomeScreen() {
                       }
                     }}
                   >
-                    <Text style={styles.slideButtonText}>{slide.btnText || "Shop Now"}</Text>
+                    <Text style={styles.slideButtonText}>
+                      {slide.btnText || "Shop Now"}
+                    </Text>
                     <Ionicons name="arrow-forward" size={12} color="#FFFFFF" />
                   </TouchableOpacity>
                 </View>
@@ -622,9 +869,13 @@ export default function HomeScreen() {
           <View style={styles.shopsPromoLeft}>
             <View style={styles.shopsPromoBadge}>
               <Ionicons name="shield-checkmark" size={12} color="#059669" />
-              <Text style={styles.shopsPromoBadgeText}>LOCAL STORES & SUPPLIERS</Text>
+              <Text style={styles.shopsPromoBadgeText}>
+                LOCAL STORES & SUPPLIERS
+              </Text>
             </View>
-            <Text style={styles.shopsPromoTitle}>Nearby Materials & Verified Shops</Text>
+            <Text style={styles.shopsPromoTitle}>
+              Nearby Materials & Verified Shops
+            </Text>
             <Text style={styles.shopsPromoSub}>
               Browse shops, direct call to shopkeeper, or inquiry on WhatsApp
             </Text>
@@ -648,7 +899,7 @@ export default function HomeScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoriesScroll}
         >
-          {CATEGORIES.map((cat: any) => {
+          {dynamicCategories.map((cat: any) => {
             const isSelected = activeCategory === cat.name;
             return (
               <TouchableOpacity
@@ -683,96 +934,229 @@ export default function HomeScreen() {
           })}
         </ScrollView>
 
-        {/* Featured Products Section */}
-        <View style={styles.productsHeaderRow}>
-          <Text style={styles.sectionTitle}>Curated Collection</Text>
-          <TouchableOpacity activeOpacity={0.6}>
-            <Text style={styles.seeAllText}>See all</Text>
-          </TouchableOpacity>
-        </View>
+        {customSections.length > 0 &&
+          customSections.map((section) => {
+            const sectionProducts = (section.productIds || [])
+              .map((productId: string) =>
+                products.find(
+                  (product) => (product._id || product.id) === productId,
+                ),
+              )
+              .filter(Boolean)
+              .slice(0, 4);
 
-        {/* Product Cards Grid */}
-        <View style={styles.productsGrid}>
-          {filteredProducts.map((product) => {
-            const prodId = product._id || product.id;
+            if (!sectionProducts.length) return null;
+
             return (
-              <TouchableOpacity
-                key={product.id}
-                style={styles.productCard}
-                onPress={() =>
-                  router.push({
-                    pathname: "/(root)/product/[id]",
-                    params: { id: prodId },
-                  })
-                }
-                activeOpacity={0.88}
+              <View
+                key={section.id || section.title}
+                style={styles.customSection}
               >
-                {/* Product Image on Top */}
-                <View style={styles.productImageWrapper}>
-                  {product.image1 ? (
-                    <Image
-                      source={{ uri: product.image1 }}
-                      style={styles.productImage}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <Image
-                      source={product.image}
-                      style={styles.productImage}
-                      resizeMode="cover"
-                    />
-                  )}
-
-                  {/* Floating Wishlist Heart */}
-                  <TouchableOpacity
-                    onPress={() => toggleFavorite(product.id)}
-                    style={styles.cardHeartBtn}
-                    activeOpacity={0.8}
-                  >
-                    <Ionicons
-                      name={product.isFavorite ? "heart" : "heart-outline"}
-                      size={16}
-                      color={product.isFavorite ? "#E11D48" : "#374151"}
-                    />
-                  </TouchableOpacity>
-
-                  {/* Category Pill Tag */}
-                  {product.category && (
-                    <View style={styles.cardCategoryBadge}>
-                      <Text style={styles.cardCategoryBadgeText}>
-                        {product.category.toUpperCase()}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-
-                {/* Card Info Body */}
-                <View style={styles.cardBody}>
-                  <Text style={styles.productTitle} numberOfLines={1}>
-                    {product.title?.replace("\n", " ")}
-                  </Text>
-
-                  <Text style={styles.productUnit} numberOfLines={1}>
-                    {product.unit}
-                  </Text>
-
-                  {/* Card Bottom: Price and Quick Add */}
-                  <View style={styles.cardFooter}>
-                    <Text style={styles.productPrice}>{product.price}</Text>
-
+                <Text style={styles.customSectionTitle}>{section.title}</Text>
+                <View style={styles.customSectionGrid}>
+                  {sectionProducts.map((product: HomeProduct) => (
                     <TouchableOpacity
-                      style={styles.addCartBtn}
-                      onPress={() => handleAddToCartClick(product)}
-                      activeOpacity={0.8}
+                      key={product.id}
+                      style={styles.customSectionCard}
+                      activeOpacity={0.85}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(root)/product/[id]",
+                          params: { id: String(product._id || product.id) },
+                        })
+                      }
                     >
-                      <Ionicons name="add" size={18} color="#FFFFFF" />
+                      <Image
+                        source={{
+                          uri:
+                            product.image1 ||
+                            "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800",
+                        }}
+                        style={styles.customSectionImage}
+                        resizeMode="cover"
+                      />
+                      <Text
+                        style={styles.customSectionCardText}
+                        numberOfLines={2}
+                      >
+                        {product.title}
+                      </Text>
                     </TouchableOpacity>
-                  </View>
+                  ))}
                 </View>
-              </TouchableOpacity>
+              </View>
             );
           })}
+
+        {/* Featured Products Section (3-Column Grid) */}
+        <View style={styles.productsHeaderRow}>
+          <Text style={styles.sectionTitle}>
+            {activeCategory !== "All"
+              ? `${activeCategory} Products`
+              : "Curated Collection"} ({filteredProducts.length})
+          </Text>
+          {(activeCategory !== "All" || searchQuery) ? (
+            <TouchableOpacity
+              onPress={() => {
+                setActiveCategory("All");
+                setSearchQuery("");
+              }}
+              activeOpacity={0.6}
+            >
+              <Text style={styles.seeAllText}>Show All ({products.length})</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity activeOpacity={0.6}>
+              <Text style={styles.seeAllText}>See all</Text>
+            </TouchableOpacity>
+          )}
         </View>
+
+        {/* Product Cards 3-Column Grid */}
+        {filteredProducts.length === 0 ? (
+          <View style={styles.emptyProductsBox}>
+            <Ionicons name="basket-outline" size={44} color="#9CA3AF" />
+            <Text style={styles.emptyProductsTitle}>
+              No items in "{activeCategory}"
+            </Text>
+            <Text style={styles.emptyProductsSub}>
+              Products added from the Admin Panel will appear here live.
+            </Text>
+            <TouchableOpacity
+              style={styles.resetFilterBtn}
+              onPress={() => {
+                setActiveCategory("All");
+                setSearchQuery("");
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.resetFilterBtnText}>
+                Show All Available Products ({products.length})
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.productsGrid3Col}>
+            {filteredProducts.map((product, idx) => {
+              const prodId = product._id || product.id;
+              const inCart = cartItems.find((ci) => ci.productId === prodId);
+              const meta = getProductCardMeta(product, idx);
+
+              return (
+                <TouchableOpacity
+                  key={product.id}
+                  style={styles.cardContainer3Col}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(root)/product/[id]",
+                      params: { id: prodId },
+                    })
+                  }
+                  activeOpacity={0.88}
+                >
+                  {/* Top Media Box with Light Grey Border */}
+                  <View style={styles.cardMediaBox3Col}>
+                    {/* Floating Wishlist Heart Icon at Top Right */}
+                    <TouchableOpacity
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(product.id);
+                      }}
+                      style={styles.cardHeartBtn3Col}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons
+                        name={product.isFavorite ? "heart" : "heart-outline"}
+                        size={15}
+                        color={product.isFavorite ? "#E11D48" : "#94A3B8"}
+                      />
+                    </TouchableOpacity>
+
+                    {/* Centered Product Image */}
+                    <View style={styles.imageInnerContainer3Col}>
+                      {product.image1 ? (
+                        <Image
+                          source={{ uri: product.image1 }}
+                          style={styles.productImage3Col}
+                          resizeMode="contain"
+                        />
+                      ) : (
+                        <Image
+                          source={product.image}
+                          style={styles.productImage3Col}
+                          resizeMode="contain"
+                        />
+                      )}
+                    </View>
+
+                    {/* Docked Unit & ADD Button Bar at Bottom of Media Box */}
+                    <View style={styles.dockedBar3Col}>
+                      <Text style={styles.dockedUnitText3Col} numberOfLines={1}>
+                        {meta.unit}
+                      </Text>
+
+                      {inCart && inCart.quantity > 0 ? (
+                        <View style={styles.dockedQtyBox3Col}>
+                          <TouchableOpacity
+                            style={styles.dockedQtyBtn3Col}
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              updateQuantity(inCart.productId, inCart.size, inCart.quantity - 1);
+                            }}
+                            activeOpacity={0.7}
+                          >
+                            <Ionicons name="remove" size={12} color="#FFFFFF" />
+                          </TouchableOpacity>
+                          <Text style={styles.dockedQtyText3Col}>{inCart.quantity}</Text>
+                          <TouchableOpacity
+                            style={styles.dockedQtyBtn3Col}
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              updateQuantity(inCart.productId, inCart.size, inCart.quantity + 1);
+                            }}
+                            activeOpacity={0.7}
+                          >
+                            <Ionicons name="add" size={12} color="#FFFFFF" />
+                          </TouchableOpacity>
+                        </View>
+                      ) : (
+                        <TouchableOpacity
+                          style={styles.dockedAddBtn3Col}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            handleAddToCartClick(product);
+                          }}
+                          activeOpacity={0.8}
+                        >
+                          <Text style={styles.dockedAddBtnText3Col}>ADD</Text>
+                          {meta.optionsCount > 1 && (
+                            <Text style={styles.dockedOptionsText3Col}>
+                              {meta.optionsCount} options
+                            </Text>
+                          )}
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+
+                  {/* Below Media Box Content */}
+                  <View style={styles.cardDetails3Col}>
+                    {/* Price Row */}
+                    <View style={styles.priceRow3Col}>
+                      <Text style={styles.priceBold3Col}>{meta.currentPrice}</Text>
+                      <Text style={styles.priceMrp3Col}>{meta.mrpPrice}</Text>
+                    </View>
+
+                    {/* Product Title (2 lines) */}
+                    <Text style={styles.cardTitle3Col} numberOfLines={2}>
+                      {product.title?.replace("\n", " ")}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
 
         {/* Footer Section */}
         <Footer />
@@ -813,13 +1197,20 @@ export default function HomeScreen() {
               </View>
               <View>
                 <Text style={styles.cartBarTitle}>Items in Cart</Text>
-                <Text style={styles.cartBarPrice}>₹{grandTotal.toFixed(0)}</Text>
+                <Text style={styles.cartBarPrice}>
+                  ₹{grandTotal.toFixed(0)}
+                </Text>
               </View>
             </View>
 
             <View style={styles.floatingCartRight}>
               <Text style={styles.viewCartText}>View Cart</Text>
-              <Ionicons name="arrow-forward" size={16} color="#FFFFFF" style={{ marginLeft: 4 }} />
+              <Ionicons
+                name="arrow-forward"
+                size={16}
+                color="#FFFFFF"
+                style={{ marginLeft: 4 }}
+              />
             </View>
           </TouchableOpacity>
         </Animated.View>
@@ -867,36 +1258,39 @@ export default function HomeScreen() {
               {/* Size Selector Heading */}
               <Text style={styles.sizeModalSubtitle}>
                 {sizeModalProduct.category?.toLowerCase() === "shoes" ||
-                sizeModalProduct.rawProduct?.subCategory?.toLowerCase() === "shoes"
+                sizeModalProduct.rawProduct?.subCategory?.toLowerCase() ===
+                  "shoes"
                   ? "👟 Select Shoe Size:"
                   : "👕 Select Apparel Size:"}
               </Text>
 
               {/* Sizes Row */}
               <View style={styles.sizeModalChipsRow}>
-                {(sizeModalProduct.rawProduct?.sizes || ["Std"]).map((sz: string) => {
-                  const isSel = selectedModalSize === sz;
-                  return (
-                    <TouchableOpacity
-                      key={sz}
-                      style={[
-                        styles.sizeModalChip,
-                        isSel && styles.sizeModalChipActive,
-                      ]}
-                      onPress={() => setSelectedModalSize(sz)}
-                      activeOpacity={0.8}
-                    >
-                      <Text
+                {(sizeModalProduct.rawProduct?.sizes || ["Std"]).map(
+                  (sz: string) => {
+                    const isSel = selectedModalSize === sz;
+                    return (
+                      <TouchableOpacity
+                        key={sz}
                         style={[
-                          styles.sizeModalChipText,
-                          isSel && styles.sizeModalChipTextActive,
+                          styles.sizeModalChip,
+                          isSel && styles.sizeModalChipActive,
                         ]}
+                        onPress={() => setSelectedModalSize(sz)}
+                        activeOpacity={0.8}
                       >
-                        {sz}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+                        <Text
+                          style={[
+                            styles.sizeModalChipText,
+                            isSel && styles.sizeModalChipTextActive,
+                          ]}
+                        >
+                          {sz}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  },
+                )}
               </View>
 
               {/* Add to Cart Confirm Action */}
@@ -910,7 +1304,8 @@ export default function HomeScreen() {
               >
                 <Ionicons name="cart" size={18} color="#FFFFFF" />
                 <Text style={styles.sizeModalConfirmText}>
-                  Add to Cart {selectedModalSize ? `(Size: ${selectedModalSize})` : ""}
+                  Add to Cart{" "}
+                  {selectedModalSize ? `(Size: ${selectedModalSize})` : ""}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -929,12 +1324,16 @@ export default function HomeScreen() {
           <View style={styles.filterModalSheet}>
             {/* Modal Header */}
             <View style={styles.filterModalHeader}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+              >
                 <Ionicons name="options-outline" size={20} color="#111827" />
                 <Text style={styles.filterModalTitle}>Filter & Sort</Text>
               </View>
 
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 14 }}
+              >
                 {isFilterActive && (
                   <TouchableOpacity onPress={resetFilters} activeOpacity={0.7}>
                     <Text style={styles.filterResetText}>Reset</Text>
@@ -949,7 +1348,10 @@ export default function HomeScreen() {
               </View>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 420 }}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={{ maxHeight: 420 }}
+            >
               {/* Sort By Section */}
               <Text style={styles.filterSectionTitle}>Sort By</Text>
               <View style={styles.filterChipsWrap}>
@@ -964,7 +1366,10 @@ export default function HomeScreen() {
                     <TouchableOpacity
                       key={s.id}
                       onPress={() => setSortBy(s.id as any)}
-                      style={[styles.filterOptionChip, isSel && styles.filterOptionChipActive]}
+                      style={[
+                        styles.filterOptionChip,
+                        isSel && styles.filterOptionChipActive,
+                      ]}
                       activeOpacity={0.8}
                     >
                       <Text
@@ -994,7 +1399,10 @@ export default function HomeScreen() {
                     <TouchableOpacity
                       key={p.id}
                       onPress={() => setPriceRange(p.id as any)}
-                      style={[styles.filterOptionChip, isSel && styles.filterOptionChipActive]}
+                      style={[
+                        styles.filterOptionChip,
+                        isSel && styles.filterOptionChipActive,
+                      ]}
                       activeOpacity={0.8}
                     >
                       <Text
@@ -1018,7 +1426,9 @@ export default function HomeScreen() {
               >
                 <View style={{ flex: 1 }}>
                   <Text style={styles.filterToggleLabel}>Bestsellers Only</Text>
-                  <Text style={styles.filterToggleSub}>Show only top-selling trending items</Text>
+                  <Text style={styles.filterToggleSub}>
+                    Show only top-selling trending items
+                  </Text>
                 </View>
                 <View
                   style={[
@@ -1095,7 +1505,10 @@ export default function HomeScreen() {
                 </TouchableOpacity>
               </View>
 
-              <ScrollView showsVerticalScrollIndicator={false} style={styles.drawerScroll}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.drawerScroll}
+              >
                 {/* Main Navigation Items */}
                 <Text style={styles.drawerSectionHeading}>EXPLORE</Text>
 
@@ -1158,7 +1571,9 @@ export default function HomeScreen() {
                   <Text style={styles.drawerItemText}>Shopping Cart</Text>
                   {cartCount > 0 && (
                     <View style={styles.drawerItemBadge}>
-                      <Text style={styles.drawerItemBadgeText}>{cartCount}</Text>
+                      <Text style={styles.drawerItemBadgeText}>
+                        {cartCount}
+                      </Text>
                     </View>
                   )}
                   <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
@@ -1185,11 +1600,31 @@ export default function HomeScreen() {
                 </Text>
 
                 {[
-                  { name: "Men", icon: "shirt-outline", label: "Men's Collection" },
-                  { name: "Women", icon: "rose-outline", label: "Women's Collection" },
-                  { name: "Kids", icon: "happy-outline", label: "Kids & Teens" },
-                  { name: "Shoes", icon: "footsteps-outline", label: "Sneakers & Shoes" },
-                  { name: "Accessories", icon: "watch-outline", label: "Watches & Bags" },
+                  {
+                    name: "Men",
+                    icon: "shirt-outline",
+                    label: "Men's Collection",
+                  },
+                  {
+                    name: "Women",
+                    icon: "rose-outline",
+                    label: "Women's Collection",
+                  },
+                  {
+                    name: "Kids",
+                    icon: "happy-outline",
+                    label: "Kids & Teens",
+                  },
+                  {
+                    name: "Shoes",
+                    icon: "footsteps-outline",
+                    label: "Sneakers & Shoes",
+                  },
+                  {
+                    name: "Accessories",
+                    icon: "watch-outline",
+                    label: "Watches & Bags",
+                  },
                 ].map((cat) => (
                   <TouchableOpacity
                     key={cat.name}
@@ -1201,10 +1636,18 @@ export default function HomeScreen() {
                     activeOpacity={0.7}
                   >
                     <View style={styles.drawerItemIconBox}>
-                      <Ionicons name={cat.icon as any} size={18} color="#4B5563" />
+                      <Ionicons
+                        name={cat.icon as any}
+                        size={18}
+                        color="#4B5563"
+                      />
                     </View>
                     <Text style={styles.drawerCategoryText}>{cat.label}</Text>
-                    <Ionicons name="chevron-forward" size={16} color="#D1D5DB" />
+                    <Ionicons
+                      name="chevron-forward"
+                      size={16}
+                      color="#D1D5DB"
+                    />
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -1220,7 +1663,11 @@ export default function HomeScreen() {
                     }}
                     activeOpacity={0.8}
                   >
-                    <Ionicons name="log-out-outline" size={18} color="#DC2626" />
+                    <Ionicons
+                      name="log-out-outline"
+                      size={18}
+                      color="#DC2626"
+                    />
                     <Text style={styles.drawerSignOutText}>Sign Out</Text>
                   </TouchableOpacity>
                 ) : (
@@ -1233,7 +1680,9 @@ export default function HomeScreen() {
                     activeOpacity={0.85}
                   >
                     <Ionicons name="log-in-outline" size={18} color="#FFFFFF" />
-                    <Text style={styles.drawerSignInText}>Sign In / Register</Text>
+                    <Text style={styles.drawerSignInText}>
+                      Sign In / Register
+                    </Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -1529,12 +1978,136 @@ const styles = StyleSheet.create({
     color: "#374151",
   },
 
+  dealSection: {
+    backgroundColor: "#EFE3B8",
+    borderRadius: 22,
+    paddingHorizontal: 10,
+    paddingTop: 14,
+    paddingBottom: 12,
+    marginBottom: 24,
+  },
+  dealRow: {
+    paddingBottom: 4,
+    paddingRight: 8,
+  },
+  dealCard: {
+    width: 175,
+    backgroundColor: "#F8F8F4",
+    borderRadius: 18,
+    marginRight: 12,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#E9E4D3",
+  },
+  dealImageWrapper: {
+    height: 190,
+    backgroundColor: "#F6F4EF",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  dealImage: {
+    width: "100%",
+    height: "100%",
+  },
+  dealPlusButton: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.82)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#2E8B57",
+  },
+  dealCardBody: {
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 12,
+  },
+  dealPriceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  dealPrice: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#111827",
+    marginRight: 6,
+  },
+  dealOriginalPrice: {
+    fontSize: 12,
+    color: "#7B7F8A",
+    textDecorationLine: "line-through",
+  },
+  dealBadge: {
+    fontSize: 12,
+    color: "#4B5563",
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  dealName: {
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 18,
+    color: "#111827",
+    marginBottom: 6,
+  },
+  dealMeta: {
+    fontSize: 11,
+    color: "#6B7280",
+  },
+
+  customSection: {
+    marginBottom: 22,
+  },
+  customSectionTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#111827",
+    marginBottom: 12,
+    letterSpacing: -0.3,
+  },
+  customSectionGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  customSectionCard: {
+    width: (width - 40 - 18) / 4,
+    backgroundColor: "#F4F8F7",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#DDE9E5",
+    paddingBottom: 10,
+    marginBottom: 12,
+    overflow: "hidden",
+  },
+  customSectionImage: {
+    width: "100%",
+    height: 120,
+    backgroundColor: "#EAF1EF",
+  },
+  customSectionCardText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#1F2937",
+    lineHeight: 17,
+    paddingHorizontal: 10,
+    paddingTop: 10,
+  },
+
   // Products Header Row
   productsHeaderRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 14,
+    marginHorizontal: -10,
   },
   seeAllText: {
     fontSize: 12,
@@ -2187,5 +2760,207 @@ const styles = StyleSheet.create({
     backgroundColor: "#DCFCE7",
     alignItems: "center",
     justifyContent: "center",
+  },
+
+  // 3-Column Product Grid styles (matching 2nd image Blinkit UI)
+  productsGrid3Col: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
+    columnGap: 7,
+    rowGap: 16,
+    marginHorizontal: -10,
+    paddingHorizontal: 0,
+    marginBottom: 24,
+  },
+  cardContainer3Col: {
+    width: "31.8%", // Exactly 3 in a row guaranteed (3 * 31.8% = 95.4% < 100%)
+    marginBottom: 0,
+  },
+  cardMediaBox3Col: {
+    width: "100%",
+    aspectRatio: 0.82,
+    backgroundColor: "#F8F9FA",
+    borderRadius: 16,
+    borderWidth: 1.2,
+    borderColor: "#E5E7EB",
+    position: "relative",
+    justifyContent: "space-between",
+    overflow: "hidden",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  cardHeartBtn3Col: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    zIndex: 10,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.85)",
+  },
+  imageInnerContainer3Col: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 8,
+    paddingHorizontal: 4,
+    paddingBottom: 2,
+  },
+  productImage3Col: {
+    width: "92%",
+    height: "92%",
+    borderRadius: 12,
+  },
+  dockedBar3Col: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#FFFFFF",
+    borderTopWidth: 1,
+    borderTopColor: "#F1F5F9",
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    height: 33,
+  },
+  dockedUnitText3Col: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#374151",
+    flex: 1,
+    marginRight: 4,
+  },
+  dockedAddBtn3Col: {
+    borderWidth: 1.5,
+    borderColor: "#16A34A",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 44,
+    shadowColor: "#16A34A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 1.5,
+  },
+  dockedAddBtnText3Col: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#16A34A",
+    letterSpacing: 0.5,
+    lineHeight: 13,
+  },
+  dockedOptionsText3Col: {
+    fontSize: 7,
+    fontWeight: "700",
+    color: "#16A34A",
+    marginTop: 0.5,
+  },
+  dockedQtyBox3Col: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#16A34A",
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    minWidth: 44,
+    height: 25,
+    justifyContent: "space-between",
+    shadowColor: "#16A34A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.25,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  dockedQtyBtn3Col: {
+    width: 13,
+    height: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dockedQtyText3Col: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    paddingHorizontal: 2,
+  },
+  cardDetails3Col: {
+    paddingTop: 5,
+    paddingHorizontal: 2,
+  },
+  priceRow3Col: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 4,
+    marginBottom: 2,
+    marginTop: 4,
+  },
+  priceBold3Col: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#0F172A",
+  },
+  priceMrp3Col: {
+    fontSize: 10,
+    color: "#64748B",
+    textDecorationLine: "line-through",
+    fontWeight: "500",
+  },
+  cardTitle3Col: {
+    fontSize: 10.5,
+    fontWeight: "600",
+    color: "#1E293B",
+    lineHeight: 14,
+    height: 28,
+    marginTop: 1,
+    marginBottom: 4,
+  },
+
+  // Empty products state
+  emptyProductsBox: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 36,
+    paddingHorizontal: 20,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginBottom: 24,
+  },
+  emptyProductsTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1F2937",
+    marginTop: 10,
+    textAlign: "center",
+  },
+  emptyProductsSub: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginTop: 4,
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  resetFilterBtn: {
+    backgroundColor: "#111827",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  resetFilterBtnText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "700",
   },
 });

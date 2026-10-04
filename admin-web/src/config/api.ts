@@ -4,7 +4,9 @@ const isProduction = Boolean((import.meta as any).env?.PROD);
 
 export const API_BASE_URL: string =
   (import.meta as any).env?.VITE_API_URL ||
-  (isProduction ? "https://freshmartapp.onrender.com" : "http://localhost:5000");
+  (isProduction
+    ? "https://freshmartapp.onrender.com"
+    : "http://localhost:5000");
 
 export const ENDPOINTS = {
   ADMIN_LOGIN: `${API_BASE_URL}/api/auth/adminlogin`,
@@ -19,7 +21,8 @@ export const ENDPOINTS = {
     LIST: `${API_BASE_URL}/api/order/list`,
     STATUS: `${API_BASE_URL}/api/order/status`,
     ASSIGN_DELIVERY: `${API_BASE_URL}/api/order/assign-delivery`,
-    INVOICE: (orderId: string) => `${API_BASE_URL}/api/order/invoice/${orderId}`,
+    INVOICE: (orderId: string) =>
+      `${API_BASE_URL}/api/order/invoice/${orderId}`,
   },
   RETURNS: {
     ALL: `${API_BASE_URL}/api/return/all`,
@@ -28,6 +31,8 @@ export const ENDPOINTS = {
   SETTINGS: {
     GET: `${API_BASE_URL}/api/setting`,
     GET_BANNERS: `${API_BASE_URL}/api/setting/banners`,
+    GET_HOME_SECTIONS: `${API_BASE_URL}/api/setting/home-sections`,
+    UPDATE_HOME_SECTIONS: `${API_BASE_URL}/api/setting/home-sections`,
     UPDATE_IMAGE: `${API_BASE_URL}/api/setting/update-image`,
     UPDATE_BANNER: `${API_BASE_URL}/api/setting/update-banner`,
   },

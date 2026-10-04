@@ -5,6 +5,7 @@ import {
   Package,
   PlusCircle,
   Image as ImageIcon,
+  Layers3,
   Users2,
   RotateCcw,
   LogOut,
@@ -20,6 +21,7 @@ export type TabType =
   | "products"
   | "add-product"
   | "banners"
+  | "home-sections"
   | "partners"
   | "returns";
 
@@ -75,6 +77,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       badge: null,
     },
     {
+      id: "home-sections" as TabType,
+      label: "Home Sections",
+      icon: Layers3,
+      badge: null,
+    },
+    {
       id: "partners" as TabType,
       label: "Partners & Splits",
       icon: Users2,
@@ -125,7 +133,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   Admin
                 </span>
               </div>
-              <p className="text-xs text-slate-400 font-medium">Console & Control Hub</p>
+              <p className="text-xs text-slate-400 font-medium">
+                Console & Control Hub
+              </p>
             </div>
           </div>
 
@@ -147,7 +157,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </span>
               <span>Store Dispatch Live</span>
             </div>
-            <span className="text-[11px] font-semibold text-emerald-700">v2.0</span>
+            <span className="text-[11px] font-semibold text-emerald-700">
+              v2.0
+            </span>
           </div>
         </div>
 
@@ -172,7 +184,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div className="flex items-center gap-3">
                   <Icon
                     className={`h-4.5 w-4.5 transition-colors ${
-                      isActive ? "text-emerald-400" : "text-slate-400 group-hover:text-slate-700"
+                      isActive
+                        ? "text-emerald-400"
+                        : "text-slate-400 group-hover:text-slate-700"
                     }`}
                   />
                   <span>{item.label}</span>
@@ -202,13 +216,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <p className="truncate text-xs font-bold text-slate-900">
                   {adminUser?.email || "admin@freshmart.com"}
                 </p>
-                <p className="text-[11px] font-medium text-slate-400">Super Administrator</p>
+                <p className="text-[11px] font-medium text-slate-400">
+                  Super Administrator
+                </p>
               </div>
             </div>
 
             <button
               onClick={() => {
-                if (window.confirm("Are you sure you want to sign out from the Admin Console?")) {
+                if (
+                  window.confirm(
+                    "Are you sure you want to sign out from the Admin Console?",
+                  )
+                ) {
                   logout();
                 }
               }}

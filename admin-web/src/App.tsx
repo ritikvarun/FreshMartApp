@@ -9,6 +9,7 @@ import { Orders } from "./pages/Orders";
 import { Products } from "./pages/Products";
 import { AddProduct } from "./pages/AddProduct";
 import { Banners } from "./pages/Banners";
+import { HomeSections } from "./pages/HomeSections";
 import { Partners } from "./pages/Partners";
 import { Returns } from "./pages/Returns";
 import type { Order, Product, DeliveryPartner } from "./types";
@@ -18,7 +19,9 @@ import { ShieldCheck } from "lucide-react";
 // Web Audio API Ding-Dong Notification Sound Generator
 function playOrderChime() {
   try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const ctx = new (
+      window.AudioContext || (window as any).webkitAudioContext
+    )();
     const now = ctx.currentTime;
 
     // Tone 1 (High chime)
@@ -59,7 +62,9 @@ const AdminApp: React.FC = () => {
   // Global Store Data
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [deliveryPartners, setDeliveryPartners] = useState<DeliveryPartner[]>([]);
+  const [deliveryPartners, setDeliveryPartners] = useState<DeliveryPartner[]>(
+    [],
+  );
   const [returnsCount, setReturnsCount] = useState(0);
 
   const [isFetchingData, setIsFetchingData] = useState(false);
@@ -67,7 +72,8 @@ const AdminApp: React.FC = () => {
   const previousOrdersCount = useRef<number | null>(null);
 
   // Selected Order for Modal from Dashboard
-  const [selectedOrderForModal, setSelectedOrderForModal] = useState<Order | null>(null);
+  const [selectedOrderForModal, setSelectedOrderForModal] =
+    useState<Order | null>(null);
 
   // Fetch all core datasets
   const fetchGlobalData = async () => {
@@ -129,7 +135,9 @@ const AdminApp: React.FC = () => {
       if (returnsRes.ok) {
         const retData = await returnsRes.json();
         if (Array.isArray(retData)) {
-          const pendingRet = retData.filter((r) => r.status === "Pending").length;
+          const pendingRet = retData.filter(
+            (r) => r.status === "Pending",
+          ).length;
           setReturnsCount(pendingRet);
         }
       }
@@ -156,8 +164,12 @@ const AdminApp: React.FC = () => {
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-slate-950 shadow-xl shadow-emerald-500/20 animate-bounce">
           <ShieldCheck className="h-8 w-8" />
         </div>
-        <h2 className="mt-4 text-base font-extrabold tracking-tight">AkA Admin Console</h2>
-        <p className="mt-1 text-xs text-slate-400">Verifying session authentication...</p>
+        <h2 className="mt-4 text-base font-extrabold tracking-tight">
+          AkA Admin Console
+        </h2>
+        <p className="mt-1 text-xs text-slate-400">
+          Verifying session authentication...
+        </p>
       </div>
     );
   }
@@ -169,7 +181,9 @@ const AdminApp: React.FC = () => {
 
   // Pending orders count for sidebar badge
   const pendingOrdersCount = orders.filter(
-    (o) => (o.status || "").toLowerCase() !== "delivered" && (o.status || "").toLowerCase() !== "cancelled"
+    (o) =>
+      (o.status || "").toLowerCase() !== "delivered" &&
+      (o.status || "").toLowerCase() !== "cancelled",
   ).length;
 
   return (
@@ -239,6 +253,10 @@ const AdminApp: React.FC = () => {
           )}
 
           {currentTab === "banners" && <Banners />}
+
+          {currentTab === "home-sections" && (
+            <HomeSections products={products} />
+          )}
 
           {currentTab === "partners" && <Partners />}
 

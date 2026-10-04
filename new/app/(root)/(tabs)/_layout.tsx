@@ -1,12 +1,15 @@
 import React from "react";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useCart } from "../../../context/CartContext";
 
 // Custom floating pill bottom navigation bar matching the design
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { cartCount } = useCart();
 
   return (
     <View
@@ -50,29 +53,51 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             label = "Profile";
           }
 
+          // If this is the profile route, insert Cart button right before it
+          const isBeforeProfile = route.name === "profile";
+
           return (
-            <TouchableOpacity
-              key={route.key}
-              accessibilityRole="button"
-              accessibilityState={isFocused ? { selected: true } : {}}
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-              testID={options.tabBarTestID}
-              onPress={onPress}
-              activeOpacity={0.8}
-              style={[
-                styles.tabItem,
-                isFocused && styles.tabItemActive,
-              ]}
-            >
-              <Ionicons
-                name={iconName}
-                size={isFocused ? 18 : 22}
-                color={isFocused ? "#FFFFFF" : "#8E94A4"}
-              />
-              {isFocused && (
-                <Text style={styles.tabItemText}>{label}</Text>
+            <React.Fragment key={route.key}>
+              {isBeforeProfile && (
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  onPress={() => router.push("/(root)/cart" as any)}
+                  activeOpacity={0.8}
+                  style={styles.tabItem}
+                >
+                  <View style={{ position: "relative" }}>
+                    <Ionicons name="cart-outline" size={22} color="#8E94A4" />
+                    {cartCount > 0 && (
+                      <View style={styles.cartBadge}>
+                        <Text style={styles.cartBadgeText}>{cartCount}</Text>
+                      </View>
+                    )}
+                  </View>
+                </TouchableOpacity>
               )}
-            </TouchableOpacity>
+
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityState={isFocused ? { selected: true } : {}}
+                accessibilityLabel={options.tabBarAccessibilityLabel}
+                testID={options.tabBarTestID}
+                onPress={onPress}
+                activeOpacity={0.8}
+                style={[
+                  styles.tabItem,
+                  isFocused && styles.tabItemActive,
+                ]}
+              >
+                <Ionicons
+                  name={iconName}
+                  size={isFocused ? 18 : 22}
+                  color={isFocused ? "#FFFFFF" : "#8E94A4"}
+                />
+                {isFocused && (
+                  <Text style={styles.tabItemText}>{label}</Text>
+                )}
+              </TouchableOpacity>
+            </React.Fragment>
           );
         })}
       </View>
@@ -164,5 +189,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
     marginLeft: 6,
+  },
+  cartBadge: {
+    position: "absolute",
+    top: -6,
+    right: -10,
+    backgroundColor: "#DC2626",
+    borderRadius: 9,
+    minWidth: 16,
+    height: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 3,
+  },
+  cartBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontWeight: "800",
   },
 });

@@ -34,6 +34,7 @@ export const ENDPOINTS = {
   },
   SETTINGS: {
     GET_BANNERS: `${API_BASE_URL}/api/setting/banners`,
+    GET_HOME_SECTIONS: `${API_BASE_URL}/api/setting/home-sections`,
   },
   SHOPS: {
     LIST: `${API_BASE_URL}/api/shop/list`,
@@ -41,7 +42,8 @@ export const ENDPOINTS = {
     REGISTER: `${API_BASE_URL}/api/shop/register`,
     LOGIN: `${API_BASE_URL}/api/shop/login`,
     ADD_PRODUCT: `${API_BASE_URL}/api/shop/add-product`,
-    MY_PRODUCTS: (shopId: string) => `${API_BASE_URL}/api/shop/my-products/${shopId}`,
+    MY_PRODUCTS: (shopId: string) =>
+      `${API_BASE_URL}/api/shop/my-products/${shopId}`,
     TOGGLE_OPEN: `${API_BASE_URL}/api/shop/toggle-open`,
   },
   DELIVERY: {
@@ -54,4 +56,3 @@ export const ENDPOINTS = {
     UPDATE_LOCATION: `${API_BASE_URL}/api/delivery/update-location`,
   },
 };
-

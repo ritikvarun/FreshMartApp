@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  Menu,
-  RotateCw,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { Menu, RotateCw, Volume2, VolumeX } from "lucide-react";
 import type { TabType } from "./Sidebar";
 
 interface HeaderProps {
@@ -19,11 +14,13 @@ interface HeaderProps {
 const TAB_TITLES: Record<TabType, { title: string; subtitle: string }> = {
   dashboard: {
     title: "Executive Dashboard",
-    subtitle: "Real-time store metrics, gross sales, and recent customer activity",
+    subtitle:
+      "Real-time store metrics, gross sales, and recent customer activity",
   },
   orders: {
     title: "Orders & Dispatch",
-    subtitle: "Track order lifecycle, assign delivery boys, and view commissions",
+    subtitle:
+      "Track order lifecycle, assign delivery boys, and view commissions",
   },
   products: {
     title: "Store Catalog",
@@ -31,11 +28,17 @@ const TAB_TITLES: Record<TabType, { title: string; subtitle: string }> = {
   },
   "add-product": {
     title: "Add New Product",
-    subtitle: "Upload up to 5 photos, set sizes, category pricing, and discounts",
+    subtitle:
+      "Upload up to 5 photos, set sizes, category pricing, and discounts",
   },
   banners: {
     title: "Promotional Banners",
     subtitle: "Configure 5 auto-scrolling hero banners on the customer app",
+  },
+  "home-sections": {
+    title: "Home Sections",
+    subtitle:
+      "Create custom product sections and assign products into each section",
   },
   partners: {
     title: "Partners & Finance",
@@ -87,7 +90,11 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Sound Alert Toggle */}
         <button
           onClick={() => setSoundEnabled(!soundEnabled)}
-          title={soundEnabled ? "Audio alerts enabled (Click to mute)" : "Audio alerts muted (Click to enable)"}
+          title={
+            soundEnabled
+              ? "Audio alerts enabled (Click to mute)"
+              : "Audio alerts muted (Click to enable)"
+          }
           className={`flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border px-2.5 sm:px-3 text-xs font-semibold transition cursor-pointer ${
             soundEnabled
               ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
@@ -113,7 +120,9 @@ export const Header: React.FC<HeaderProps> = ({
           disabled={isRefreshing}
           className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 sm:px-3 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 hover:text-slate-900 active:scale-95 disabled:opacity-50 transition cursor-pointer"
         >
-          <RotateCw className={`h-3.5 w-3.5 text-slate-600 ${isRefreshing ? "animate-spin" : ""}`} />
+          <RotateCw
+            className={`h-3.5 w-3.5 text-slate-600 ${isRefreshing ? "animate-spin" : ""}`}
+          />
           <span className="hidden sm:inline">Refresh</span>
         </button>
 
