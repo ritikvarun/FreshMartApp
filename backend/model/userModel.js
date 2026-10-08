@@ -16,6 +16,14 @@ const userSchema = new mongoose.Schema({
     cartData:{
         type:Object,
         default:{}
+    },
+    image:{
+        type:String,
+        default:""
+    },
+    phone:{
+        type:String,
+        default:""
     }
 },{timestamps:true , minimize:false})
 

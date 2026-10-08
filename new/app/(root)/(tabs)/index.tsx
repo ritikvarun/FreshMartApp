@@ -17,6 +17,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 import { useCart } from "../../../context/CartContext";
 import { useAuth } from "../../../context/AuthContext";
+import { useSaved } from "../../../context/SavedContext";
 import { ENDPOINTS } from "../../../config/api";
 import Footer from "../../../components/Footer";
 
@@ -201,7 +202,7 @@ const INITIAL_PRODUCTS: HomeProduct[] = [
     bgColor: "#FFFFFF",
     image1:
       "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80",
-    isFavorite: true,
+    isFavorite: false,
     rawProduct: {
       _id: "p1",
       name: "Classic White Linen Shirt",
@@ -261,7 +262,7 @@ const INITIAL_PRODUCTS: HomeProduct[] = [
     bgColor: "#FFFFFF",
     image1:
       "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=800&q=80",
-    isFavorite: true,
+    isFavorite: false,
     rawProduct: {
       _id: "p4",
       name: "Urban Streetwear Graphic Hoodie",
@@ -344,6 +345,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { addToCart, updateQuantity, cartItems, cartCount, grandTotal } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
+  const { isSaved, toggleSave } = useSaved();
   const [menuDrawerVisible, setMenuDrawerVisible] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -594,12 +596,8 @@ export default function HomeScreen() {
   };
 
   // Toggle favorite on card
-  const toggleFavorite = (id: string) => {
-    setProducts((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, isFavorite: !item.isFavorite } : item,
-      ),
-    );
+  const toggleFavorite = (product: HomeProduct) => {
+    toggleSave(product.rawProduct || product);
   };
 
   // Filter & Sort State
@@ -892,6 +890,12 @@ export default function HomeScreen() {
         {/* Categories Section */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Categories</Text>
+          <TouchableOpacity
+            onPress={() => router.push("/(root)/(tabs)/categories" as any)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.seeAllText}>See all</Text>
+          </TouchableOpacity>
         </View>
 
         <ScrollView
@@ -1060,15 +1064,23 @@ export default function HomeScreen() {
                     <TouchableOpacity
                       onPress={(e) => {
                         e.stopPropagation();
-                        toggleFavorite(product.id);
+                        toggleFavorite(product);
                       }}
                       style={styles.cardHeartBtn3Col}
                       activeOpacity={0.7}
                     >
                       <Ionicons
-                        name={product.isFavorite ? "heart" : "heart-outline"}
+                        name={
+                          isSaved(product.id || product._id)
+                            ? "heart"
+                            : "heart-outline"
+                        }
                         size={15}
-                        color={product.isFavorite ? "#E11D48" : "#94A3B8"}
+                        color={
+                          isSaved(product.id || product._id)
+                            ? "#E11D48"
+                            : "#94A3B8"
+                        }
                       />
                     </TouchableOpacity>
 
@@ -1539,6 +1551,21 @@ export default function HomeScreen() {
                     <Ionicons name="cube-outline" size={19} color="#111827" />
                   </View>
                   <Text style={styles.drawerItemText}>My Orders</Text>
+                  <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.drawerItem}
+                  onPress={() => {
+                    setMenuDrawerVisible(false);
+                    router.push("/(root)/(tabs)/categories" as any);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.drawerItemIconBox}>
+                    <Ionicons name="grid-outline" size={19} color="#111827" />
+                  </View>
+                  <Text style={styles.drawerItemText}>All Categories</Text>
                   <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
                 </TouchableOpacity>
 

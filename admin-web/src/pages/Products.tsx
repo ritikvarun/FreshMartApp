@@ -16,16 +16,22 @@ import type { TabType } from "../components/Sidebar";
 
 const PRESET_CATEGORIES = [
   "All",
-  "Men",
-  "Women",
-  "Kids",
-  "Shoes",
-  "Accessories",
-  "Unisex",
-  "Grocery",
-  "Beauty",
-  "Building Material",
-  "Hardware & Paints",
+  "Vegetables",
+  "Atta & Dal",
+  "Oil & Ghee",
+  "Dairy",
+  "Bakery",
+  "Dry Fruits",
+  "Meat & Fish",
+  "Kitchenware",
+  "Snacks",
+  "Sweets",
+  "Drinks",
+  "Beverages",
+  "Instant Food",
+  "Sauces",
+  "Paan Corner",
+  "Ice Creams",
 ];
 
 interface ProductsProps {

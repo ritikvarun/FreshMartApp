@@ -8,6 +8,7 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
+  image?: string;
   role?: string;
 }
 
@@ -123,6 +124,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         _id: data._id,
         name: data.name,
         email: data.email,
+        phone: data.phone || "",
+        image: data.image || "",
         role: data.role,
       };
 
@@ -170,6 +173,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         _id: data._id,
         name: data.name,
         email: data.email,
+        phone: data.phone || "",
+        image: data.image || "",
         role: data.role,
       };
 

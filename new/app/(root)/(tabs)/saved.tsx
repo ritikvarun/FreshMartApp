@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -8,135 +8,33 @@ import {
   StyleSheet,
   StatusBar,
   Dimensions,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useRouter } from "expo-router";
 import { useCart } from "../../../context/CartContext";
+import { useSaved, SavedProduct } from "../../../context/SavedContext";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = (width - 48 - 14) / 2;
 
-interface SavedProduct {
-  id: string;
-  title: string;
-  category: string;
-  price: string;
-  rawPrice: number;
-  unit: string;
-  size: string;
-  bgColor: string;
-  image: string;
-  rating: number;
-}
-
-const INITIAL_SAVED: SavedProduct[] = [
-  {
-    id: "s1",
-    title: "Classic White\nLinen Shirt",
-    category: "Men",
-    price: "₹1,499",
-    rawPrice: 1499,
-    unit: "Size: L",
-    size: "L",
-    bgColor: "#F3F4F6",
-    image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80",
-    rating: 4.9,
-  },
-  {
-    id: "s2",
-    title: "Air Cushion\nRunning Shoes",
-    category: "Shoes",
-    price: "₹2,499",
-    rawPrice: 2499,
-    unit: "Size: 9",
-    size: "9",
-    bgColor: "#EEF2FF",
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
-    rating: 4.8,
-  },
-  {
-    id: "s3",
-    title: "Floral Printed\nSummer Dress",
-    category: "Women",
-    price: "₹1,899",
-    rawPrice: 1899,
-    unit: "Size: M",
-    size: "M",
-    bgColor: "#FFF1F2",
-    image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&q=80",
-    rating: 4.7,
-  },
-  {
-    id: "s4",
-    title: "Casual Leather\nSneakers",
-    category: "Shoes",
-    price: "₹2,999",
-    rawPrice: 2999,
-    unit: "Size: 8",
-    size: "8",
-    bgColor: "#F8FAFC",
-    image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&q=80",
-    rating: 4.9,
-  },
-];
-
-const CATEGORIES = ["All", "Men", "Women", "Shoes", "Kids"];
-
-import * as SecureStore from "expo-secure-store";
-import { Platform } from "react-native";
-
-const SAVED_STORAGE_KEY = "freshmart_saved_items";
-
 export default function SavedScreen() {
+  const router = useRouter();
   const { addToCart } = useCart();
-  const [savedItems, setSavedItems] = useState<SavedProduct[]>(INITIAL_SAVED);
+  const { savedItems, removeSaved, clearSaved } = useSaved();
   const [selectedFilter, setSelectedFilter] = useState("All");
 
-  useEffect(() => {
-    async function loadSaved() {
-      try {
-        let stored: string | null = null;
-        if (Platform.OS === "web") {
-          stored = localStorage.getItem(SAVED_STORAGE_KEY);
-        } else {
-          stored = await SecureStore.getItemAsync(SAVED_STORAGE_KEY);
-        }
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) {
-            setSavedItems(parsed);
-          }
-        }
-      } catch (e) {
-        console.warn("Failed to load saved items:", e);
-      }
-    }
-    loadSaved();
-  }, []);
+  const categories = useMemo(() => {
+    const cats = Array.from(
+      new Set(savedItems.map((item) => item.category).filter(Boolean))
+    );
+    return ["All", ...cats];
+  }, [savedItems]);
 
-  const updateSavedItems = (items: SavedProduct[]) => {
-    setSavedItems(items);
-    try {
-      const serialized = JSON.stringify(items);
-      if (Platform.OS === "web") {
-        localStorage.setItem(SAVED_STORAGE_KEY, serialized);
-      } else {
-        SecureStore.setItemAsync(SAVED_STORAGE_KEY, serialized);
-      }
-    } catch (e) {
-      console.warn("Failed to save items to storage:", e);
-    }
-  };
-
-  const removeItem = (id: string) => {
-    updateSavedItems(savedItems.filter((item) => item.id !== id));
-  };
-
-  const filteredItems = savedItems.filter((item) => {
-    if (selectedFilter === "All") return true;
-    return item.category === selectedFilter;
-  });
+  const filteredItems = useMemo(() => {
+    if (selectedFilter === "All") return savedItems;
+    return savedItems.filter((item) => item.category === selectedFilter);
+  }, [savedItems, selectedFilter]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
@@ -147,14 +45,14 @@ export default function SavedScreen() {
         <View>
           <Text style={styles.headerTitle}>My Wishlist</Text>
           <Text style={styles.headerSubtitle}>
-            {savedItems.length} items saved for later
+            {savedItems.length} {savedItems.length === 1 ? "item" : "items"} saved for later
           </Text>
         </View>
 
         {savedItems.length > 0 && (
           <TouchableOpacity
             style={styles.clearAllBtn}
-            onPress={() => updateSavedItems([])}
+            onPress={clearSaved}
             activeOpacity={0.7}
           >
             <Ionicons name="trash-outline" size={18} color="#8E94A4" />
@@ -162,60 +60,73 @@ export default function SavedScreen() {
         )}
       </View>
 
-      {/* Category Filter Chips */}
-      <View style={styles.filterWrapper}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterScroll}
-        >
-          {CATEGORIES.map((cat) => {
-            const isSelected = selectedFilter === cat;
-            return (
-              <TouchableOpacity
-                key={cat}
-                onPress={() => setSelectedFilter(cat)}
-                style={[
-                  styles.filterChip,
-                  isSelected && styles.filterChipActive,
-                ]}
-                activeOpacity={0.8}
-              >
-                <Text
+      {/* Category Filter Chips - Only show if there are saved items with multiple categories */}
+      {savedItems.length > 0 && categories.length > 2 && (
+        <View style={styles.filterWrapper}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterScroll}
+          >
+            {categories.map((cat) => {
+              const isSelected = selectedFilter === cat;
+              return (
+                <TouchableOpacity
+                  key={cat}
+                  onPress={() => setSelectedFilter(cat)}
                   style={[
-                    styles.filterChipText,
-                    isSelected && styles.filterChipTextActive,
+                    styles.filterChip,
+                    isSelected && styles.filterChipActive,
                   ]}
+                  activeOpacity={0.8}
                 >
-                  {cat}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
+                  <Text
+                    style={[
+                      styles.filterChipText,
+                      isSelected && styles.filterChipTextActive,
+                    ]}
+                  >
+                    {cat}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+      )}
 
       {/* Main Content */}
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {filteredItems.length === 0 ? (
+        {savedItems.length === 0 ? (
           <View style={styles.emptyContainer}>
             <View style={styles.emptyIconCircle}>
               <Ionicons name="heart-dislike-outline" size={42} color="#E11D48" />
             </View>
             <Text style={styles.emptyTitle}>Your Wishlist is Empty</Text>
             <Text style={styles.emptySub}>
-              Explore fresh products and tap the heart icon to save your
-              favorites here.
+              Explore fresh groceries and tap the heart icon on any product to save it here.
             </Text>
             <TouchableOpacity
               style={styles.exploreBtn}
-              onPress={() => updateSavedItems(INITIAL_SAVED)}
+              onPress={() => router.push("/(root)/(tabs)" as any)}
               activeOpacity={0.85}
             >
-              <Text style={styles.exploreBtnText}>Restore Sample Items</Text>
+              <Text style={styles.exploreBtnText}>Explore Products</Text>
+            </TouchableOpacity>
+          </View>
+        ) : filteredItems.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>No items in this category</Text>
+            <Text style={styles.emptySub}>Try selecting a different filter.</Text>
+            <TouchableOpacity
+              style={styles.exploreBtn}
+              onPress={() => setSelectedFilter("All")}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.exploreBtnText}>View All Items</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -223,7 +134,7 @@ export default function SavedScreen() {
             {filteredItems.map((product) => (
               <View
                 key={product.id}
-                style={[styles.card, { backgroundColor: product.bgColor }]}
+                style={[styles.card, { backgroundColor: product.bgColor || "#F9FAFB" }]}
               >
                 {/* Top Row: Title + Remove Button */}
                 <View style={styles.cardHeader}>
@@ -231,7 +142,7 @@ export default function SavedScreen() {
                     {product.title}
                   </Text>
                   <TouchableOpacity
-                    onPress={() => removeItem(product.id)}
+                    onPress={() => removeSaved(product.id)}
                     style={styles.heartBtn}
                     activeOpacity={0.7}
                   >
@@ -241,17 +152,21 @@ export default function SavedScreen() {
 
                 {/* Product Image */}
                 <View style={styles.imageContainer}>
-                  <Image
-                    source={{ uri: product.image }}
-                    style={styles.image}
-                    resizeMode="cover"
-                  />
+                  {product.image ? (
+                    <Image
+                      source={{ uri: product.image }}
+                      style={styles.image}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <Ionicons name="cube-outline" size={40} color="#CBD5E1" />
+                  )}
                 </View>
 
                 {/* Rating Badge */}
                 <View style={styles.ratingRow}>
                   <Ionicons name="star" size={13} color="#F59E0B" />
-                  <Text style={styles.ratingText}>{product.rating}</Text>
+                  <Text style={styles.ratingText}>{product.rating || 4.8}</Text>
                   <Text style={styles.inStockBadge}>• In Stock</Text>
                 </View>
 
@@ -259,7 +174,9 @@ export default function SavedScreen() {
                 <View style={styles.cardFooter}>
                   <Text style={styles.price}>
                     {product.price}{" "}
-                    <Text style={styles.unit}>{product.unit}</Text>
+                    {product.unit ? (
+                      <Text style={styles.unit}>{product.unit}</Text>
+                    ) : null}
                   </Text>
                   <TouchableOpacity
                     style={styles.addToCartBtn}
@@ -271,7 +188,7 @@ export default function SavedScreen() {
                           price: product.rawPrice,
                           image1: product.image,
                           category: product.category,
-                          sizes: [product.size],
+                          sizes: product.size ? [product.size] : [],
                         },
                         product.size
                       )

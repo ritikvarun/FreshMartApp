@@ -45,9 +45,9 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           } else if (route.name === "saved") {
             iconName = isFocused ? "heart" : "heart-outline";
             label = "Saved";
-          } else if (route.name === "search") {
-            iconName = isFocused ? "search" : "search-outline";
-            label = "Search";
+          } else if (route.name === "categories") {
+            iconName = isFocused ? "grid" : "grid-outline";
+            label = "Categories";
           } else if (route.name === "profile") {
             iconName = isFocused ? "person" : "person-outline";
             label = "Profile";
@@ -126,9 +126,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="categories"
         options={{
-          title: "Search",
+          title: "Categories",
         }}
       />
       <Tabs.Screen

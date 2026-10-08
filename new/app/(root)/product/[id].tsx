@@ -20,6 +20,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { ENDPOINTS } from "../../../config/api";
 import { useCart, ProductItem } from "../../../context/CartContext";
 import { useAuth } from "../../../context/AuthContext";
+import { useSaved } from "../../../context/SavedContext";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -39,12 +40,12 @@ export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { addToCart, cartCount } = useCart();
   const { user, token, isAuthenticated } = useAuth();
+  const { isSaved, toggleSave } = useSaved();
 
   const [product, setProduct] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>("");
-  const [isFavorite, setIsFavorite] = useState(false);
   const [addedToast, setAddedToast] = useState(false);
 
   // Reviews state
@@ -304,13 +305,25 @@ export default function ProductDetailScreen() {
           <View style={styles.headerRightRow}>
             <TouchableOpacity
               style={styles.iconCircle}
-              onPress={() => setIsFavorite(!isFavorite)}
+              onPress={() => {
+                if (product) {
+                  toggleSave(product);
+                }
+              }}
               activeOpacity={0.8}
             >
               <Ionicons
-                name={isFavorite ? "heart" : "heart-outline"}
+                name={
+                  isSaved(id || product?._id || product?.id)
+                    ? "heart"
+                    : "heart-outline"
+                }
                 size={20}
-                color={isFavorite ? "#E11D48" : "#111827"}
+                color={
+                  isSaved(id || product?._id || product?.id)
+                    ? "#E11D48"
+                    : "#111827"
+                }
               />
             </TouchableOpacity>
 

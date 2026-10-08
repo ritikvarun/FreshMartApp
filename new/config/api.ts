@@ -9,6 +9,10 @@ export const ENDPOINTS = {
     REGISTER: `${API_BASE_URL}/api/auth/registration`,
     LOGOUT: `${API_BASE_URL}/api/auth/logout`,
   },
+  USER: {
+    GET_CURRENT: `${API_BASE_URL}/api/user/getcurrentuser`,
+    UPDATE_PROFILE: `${API_BASE_URL}/api/user/updateprofile`,
+  },
   PRODUCTS: {
     LIST: `${API_BASE_URL}/api/product/list`,
     DETAIL: (id: string) => `${API_BASE_URL}/api/product/${id}`,

@@ -15,23 +15,119 @@ import { ENDPOINTS } from "../config/api";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import { TabType } from "../components/Sidebar";
 
-const CATEGORIES = ["Men", "Women", "Kids", "Shoes", "Accessories", "Unisex", "Grocery", "Beauty"];
-const SUB_CATEGORIES = [
-  "TopWear",
-  "BottomWear",
-  "WinterWear",
-  "Shoes",
-  "Accessories",
-  "Organic",
-  "Fresh Fruits",
-  "Snacks & Drinks",
-  "Personal Care",
+export interface CategoryOption {
+  value: string;
+  label: string;
+  group: "Grocery & Kitchen" | "Snacks & Drinks";
+  subCategories: string[];
+}
+
+export const ADMIN_GROCERY_CATEGORIES: CategoryOption[] = [
+  // Grocery & Kitchen
+  {
+    value: "Vegetables",
+    label: "Vegetables & Fruits",
+    group: "Grocery & Kitchen",
+    subCategories: ["Fresh Vegetables", "Fresh Fruits", "Exotic & Organic", "Seasonal Special", "Leafy Greens", "Herbs & Spices"],
+  },
+  {
+    value: "Atta & Dal",
+    label: "Atta, Rice & Dal",
+    group: "Grocery & Kitchen",
+    subCategories: ["Chakki Atta & Flours", "Basmati & Daily Rice", "Toor & Moong Dal", "Chana, Rajma & Pulses", "Poha & Grains"],
+  },
+  {
+    value: "Oil & Ghee",
+    label: "Oil, Ghee & Masala",
+    group: "Grocery & Kitchen",
+    subCategories: ["Cooking Oils", "Pure Cow Ghee", "Mustard & Sunflower Oil", "Powdered Spices", "Whole Spices & Blends"],
+  },
+  {
+    value: "Dairy",
+    label: "Dairy, Bread & Eggs",
+    group: "Grocery & Kitchen",
+    subCategories: ["Milk & Packaged Pouches", "Butter & Spreads", "Fresh Paneer", "Bread & Buns", "Farm Eggs", "Curd & Yogurt", "Cheese"],
+  },
+  {
+    value: "Bakery",
+    label: "Bakery & Biscuits",
+    group: "Grocery & Kitchen",
+    subCategories: ["Cookies & Biscuits", "Cream Biscuits", "Rusk & Khari", "Cakes & Pastries", "Buns & Pav"],
+  },
+  {
+    value: "Dry Fruits",
+    label: "Dry Fruits & Cereals",
+    group: "Grocery & Kitchen",
+    subCategories: ["Almonds & Badam", "Cashews & Kaju", "Raisins & Kishmish", "Walnuts & Pistachios", "Breakfast Cereals & Oats"],
+  },
+  {
+    value: "Meat & Fish",
+    label: "Chicken, Meat & Fish",
+    group: "Grocery & Kitchen",
+    subCategories: ["Fresh Chicken Curry Cut", "Boneless Chicken", "Fish & Seafood", "Mutton & Cuts", "Eggs & Cuts"],
+  },
+  {
+    value: "Kitchenware",
+    label: "Kitchenware & Appliances",
+    group: "Grocery & Kitchen",
+    subCategories: ["Water Bottles & Flasks", "Cookware & Pans", "Storage Containers", "Electric Kettles & Appliances", "Choppers & Cutlery"],
+  },
+
+  // Snacks & Drinks
+  {
+    value: "Snacks",
+    label: "Chips & Namkeen",
+    group: "Snacks & Drinks",
+    subCategories: ["Potato Chips", "Namkeen & Bhujia", "Nachos & Crisps", "Puffs & Popcorn", "Roasted Snacks"],
+  },
+  {
+    value: "Sweets",
+    label: "Sweets & Chocolates",
+    group: "Snacks & Drinks",
+    subCategories: ["Cadbury & Silk Chocolates", "Indian Mithai & Tins", "Gift Packs & Boxes", "Candies & Toffees", "Dessert Mixes"],
+  },
+  {
+    value: "Drinks",
+    label: "Drinks & Juices",
+    group: "Snacks & Drinks",
+    subCategories: ["Cold Drinks & Cans", "Fruit Juices", "Energy Drinks", "Soda & Mineral Water", "Syrups & Concentrates"],
+  },
+  {
+    value: "Beverages",
+    label: "Tea, Coffee & Milk Drinks",
+    group: "Snacks & Drinks",
+    subCategories: ["Tea & Chai Leaves", "Green Tea & Herbal", "Instant Coffee", "Health Food Drinks (Bournvita/Horlicks)"],
+  },
+  {
+    value: "Instant Food",
+    label: "Instant Food",
+    group: "Snacks & Drinks",
+    subCategories: ["Instant Noodles & Maggi", "Pasta & Vermicelli", "Ready-to-Eat Meals", "Instant Soups & Mixes"],
+  },
+  {
+    value: "Sauces",
+    label: "Sauces & Spreads",
+    group: "Snacks & Drinks",
+    subCategories: ["Tomato Ketchup", "Mayonnaise & Dips", "Jams & Honey", "Chocolate Spreads & Nutella", "Schezwan & Chutneys"],
+  },
+  {
+    value: "Paan Corner",
+    label: "Paan Corner",
+    group: "Snacks & Drinks",
+    subCategories: ["Mukhwas & Saunf", "Mouth Fresheners", "Chewing Gums & Mints", "Paan Chutney & Elaichi"],
+  },
+  {
+    value: "Ice Creams",
+    label: "Ice Creams & More",
+    group: "Snacks & Drinks",
+    subCategories: ["Ice Cream Tubs & Family Packs", "Cones & Chocobars", "Kulfi & Candies", "Frozen Desserts"],
+  },
 ];
 
 const PRESET_SIZES: Record<string, string[]> = {
-  clothing: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
-  shoes: ["6", "7", "8", "9", "10", "11", "12"],
-  accessories: ["Free Size", "Standard", "One Size", "500g", "1kg"],
+  weight: ["100g", "250g", "500g", "1kg", "2kg", "5kg", "10kg"],
+  volume: ["100ml", "200ml", "500ml", "750ml", "1L", "2L", "5L"],
+  units: ["1 pc", "2 pcs", "4 pcs", "6 pcs", "12 pcs", "Pack of 1", "Pack of 2", "Pack of 4"],
 };
 
 interface AddProductProps {
@@ -46,10 +142,10 @@ export const AddProduct: React.FC<AddProductProps> = ({ onProductAdded, onNaviga
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("Men");
-  const [subCategory, setSubCategory] = useState("TopWear");
-  const [sizeType, setSizeType] = useState<"clothing" | "shoes" | "accessories">("clothing");
-  const [selectedSizes, setSelectedSizes] = useState<string[]>(["M", "L"]);
+  const [category, setCategory] = useState("Vegetables");
+  const [subCategory, setSubCategory] = useState("Fresh Vegetables");
+  const [sizeType, setSizeType] = useState<"weight" | "volume" | "units">("weight");
+  const [selectedSizes, setSelectedSizes] = useState<string[]>(["1kg"]);
   const [customSize, setCustomSize] = useState("");
   const [bestseller, setBestseller] = useState(false);
 
@@ -415,18 +511,34 @@ export const AddProduct: React.FC<AddProductProps> = ({ onProductAdded, onNaviga
             {/* Category */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
-                Store Category
+                Store Category *
               </label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => {
+                  const newCat = e.target.value;
+                  setCategory(newCat);
+                  const catObj = ADMIN_GROCERY_CATEGORIES.find((c) => c.value === newCat);
+                  if (catObj && catObj.subCategories.length > 0) {
+                    setSubCategory(catObj.subCategories[0]);
+                  }
+                }}
                 className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-900 outline-none focus:border-slate-900 focus:bg-white"
               >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
+                <optgroup label="Grocery & Kitchen">
+                  {ADMIN_GROCERY_CATEGORIES.filter((c) => c.group === "Grocery & Kitchen").map((cat) => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Snacks & Drinks">
+                  {ADMIN_GROCERY_CATEGORIES.filter((c) => c.group === "Snacks & Drinks").map((cat) => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </optgroup>
               </select>
             </div>
 
@@ -440,7 +552,11 @@ export const AddProduct: React.FC<AddProductProps> = ({ onProductAdded, onNaviga
                 onChange={(e) => setSubCategory(e.target.value)}
                 className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-900 outline-none focus:border-slate-900 focus:bg-white"
               >
-                {SUB_CATEGORIES.map((sub) => (
+                {(
+                  ADMIN_GROCERY_CATEGORIES.find((c) => c.value === category)?.subCategories || [
+                    "General",
+                  ]
+                ).map((sub) => (
                   <option key={sub} value={sub}>
                     {sub}
                   </option>
@@ -454,15 +570,15 @@ export const AddProduct: React.FC<AddProductProps> = ({ onProductAdded, onNaviga
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-2xs space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
-              <h3 className="text-base font-extrabold text-slate-900">Available Sizes & Pack Sizes</h3>
+              <h3 className="text-base font-extrabold text-slate-900">Available Packaging & Sizes</h3>
               <p className="text-xs text-slate-400">
-                Select predefined sizes or add custom packing variants (e.g. 500g, 1L, Free Size).
+                Select predefined sizes or add custom packing variants (e.g. 500g, 1L, Pack of 6).
               </p>
             </div>
 
             {/* Size Type Tabs */}
             <div className="flex rounded-lg bg-slate-100 p-0.5">
-              {(["clothing", "shoes", "accessories"] as const).map((type) => (
+              {(["weight", "volume", "units"] as const).map((type) => (
                 <button
                   key={type}
                   type="button"
@@ -471,7 +587,7 @@ export const AddProduct: React.FC<AddProductProps> = ({ onProductAdded, onNaviga
                     sizeType === type ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500"
                   }`}
                 >
-                  {type}
+                  {type === "weight" ? "Weight (g/kg)" : type === "volume" ? "Volume (ml/L)" : "Packs/Units"}
                 </button>
               ))}
             </div>
