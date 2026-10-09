@@ -550,40 +550,11 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Centered User Info */}
+          {/* Centered User Info - Name Only */}
           <View style={styles.userInfoCentered}>
-            <View style={styles.nameRowCentered}>
-              <Text style={styles.userNameCentered} numberOfLines={1}>
-                {user?.name || "Customer Member"}
-              </Text>
-              <View style={styles.memberBadge}>
-                <Ionicons name="shield-checkmark" size={11} color="#D97706" />
-                <Text style={styles.memberBadgeText}>VIP MEMBER</Text>
-              </View>
-            </View>
-
-            <Text style={styles.userEmailCentered} numberOfLines={1}>
-              {user?.email || "user@example.com"}
+            <Text style={styles.userNameCentered} numberOfLines={1}>
+              {user?.name || "Customer Member"}
             </Text>
-
-            <View style={styles.phoneStatusRowCentered}>
-              <Ionicons name="checkmark-circle" size={14} color="#10B981" />
-              <Text style={styles.userPhoneCentered}>
-                {user?.phone ? `${user.phone} • Verified` : "Verified Account"}
-              </Text>
-            </View>
-
-            {/* Tap to change photo button */}
-            <TouchableOpacity
-              style={styles.changePhotoBtn}
-              onPress={() => setShowPhotoOptionsModal(true)}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="camera-outline" size={13} color="#059669" />
-              <Text style={styles.changePhotoBtnText}>
-                {user?.image ? "Change Photo" : "Upload Photo"}
-              </Text>
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -1477,7 +1448,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#FFFFFF",
     borderRadius: 24,
-    paddingVertical: 24,
+    paddingVertical: 20,
     paddingHorizontal: 20,
     borderWidth: 1.5,
     borderColor: "#E2E8F0",
@@ -1492,7 +1463,7 @@ const styles = StyleSheet.create({
     position: "relative",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 12,
+    marginBottom: 10,
   },
   avatarTouchBox: {
     width: 96,
