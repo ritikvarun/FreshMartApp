@@ -660,27 +660,6 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Preferences (Dark Mode Removed) */}
-        <View style={styles.menuGroup}>
-          <Text style={styles.menuGroupTitle}>Preferences</Text>
-
-          <View style={styles.menuItem}>
-            <View style={[styles.menuIconCircle, { backgroundColor: "#FFFBEB" }]}>
-              <Ionicons name="notifications-outline" size={20} color="#D97706" />
-            </View>
-            <View style={styles.menuContent}>
-              <Text style={styles.menuTitle}>Order Notifications</Text>
-              <Text style={styles.menuSubtitle}>Real-time delivery status alerts</Text>
-            </View>
-            <Switch
-              value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
-              trackColor={{ false: "#E2E8F0", true: "#0F172A" }}
-              thumbColor="#FFFFFF"
-            />
-          </View>
-        </View>
-
         {/* Marketplace & Partner Programs (₹500 Registration) */}
         <View style={styles.menuGroup}>
           <Text style={styles.menuGroupTitle}>Marketplace & Partner Programs</Text>

@@ -25,6 +25,8 @@ const { width } = Dimensions.get("window");
 const CARD_WIDTH = (width - 40 - 12) / 2;
 const CARD_WIDTH_3COL = Math.floor((width - 24 - 16) / 3);
 const BANNER_WIDTH = width - 40;
+const DEFAULT_AVATAR =
+  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&q=80";
 
 // 5 Promotional Slides for Auto-playing Carousel
 const PROMO_SLIDES = [
@@ -1493,11 +1495,25 @@ export default function HomeScreen() {
               {/* Drawer Top User Profile Card */}
               <View style={styles.drawerHeader}>
                 <View style={styles.drawerUserRow}>
-                  <View style={styles.drawerAvatar}>
-                    <Text style={styles.drawerAvatarText}>
-                      {(user?.name || "G")[0].toUpperCase()}
-                    </Text>
-                  </View>
+                  <TouchableOpacity
+                    style={styles.drawerAvatar}
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      setMenuDrawerVisible(false);
+                      router.push("/(root)/(tabs)/profile" as any);
+                    }}
+                  >
+                    <Image
+                      source={{
+                        uri:
+                          user?.image && user.image.trim()
+                            ? user.image
+                            : DEFAULT_AVATAR,
+                      }}
+                      style={styles.drawerAvatarImg}
+                      resizeMode="cover"
+                    />
+                  </TouchableOpacity>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.drawerUserName} numberOfLines={1}>
                       {user?.name || "Welcome, Guest"}
@@ -2606,9 +2622,17 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#111827",
+    backgroundColor: "#F1F5F9",
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+  },
+  drawerAvatarImg: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 22,
   },
   drawerAvatarText: {
     color: "#FFFFFF",
