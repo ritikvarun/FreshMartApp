@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,10 +11,11 @@ import {
   Dimensions,
   Modal,
   Animated,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useCart } from "../../../context/CartContext";
 import { useAuth } from "../../../context/AuthContext";
 import { useSaved } from "../../../context/SavedContext";
@@ -353,36 +354,77 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<HomeProduct[]>(INITIAL_PRODUCTS);
   const [customSections, setCustomSections] = useState<any[]>([]);
+  const [customCategories, setCustomCategories] = useState<any[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Dynamic Categories synced with backend & admin products
+  // Dynamic Categories synced with backend products & admin custom categories
   const dynamicCategories = useMemo(() => {
     const fromBackend = Array.from(
       new Set(products.map((p) => p.category).filter(Boolean))
     );
+    const customNames = customCategories.map((c) => c.name).filter(Boolean);
     const defaults = ["All", "Fresh", "Fruits", "Snack", "Oils", "Shoes", "Men"];
-    const merged = Array.from(new Set([...defaults, ...fromBackend]));
+    const merged = Array.from(new Set([...defaults, ...customNames, ...fromBackend]));
     return merged.map((name) => ({
       id: name.toLowerCase(),
       name,
       icon: getCategoryIcon(name),
     }));
-  }, [products]);
+  }, [products, customCategories]);
 
-  useEffect(() => {
-    async function loadHomeSections() {
+  const loadHomeData = useCallback(async () => {
+    try {
+      // 1. Load Custom Home Sections
+      let secLoaded = false;
       try {
-        const res = await fetch(ENDPOINTS.SETTINGS.GET_HOME_SECTIONS);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setCustomSections(data);
+        const secRes = await fetch(ENDPOINTS.SETTINGS.GET_HOME_SECTIONS);
+        if (secRes.ok) {
+          const secData = await secRes.json();
+          if (Array.isArray(secData)) {
+            setCustomSections(secData);
+            secLoaded = true;
+          }
         }
-      } catch (err) {
-        console.warn("Home sections fetch failed", err);
+      } catch (e) {}
+
+      // 2. Load Custom Categories from Admin
+      let catLoaded = false;
+      try {
+        const catRes = await fetch(ENDPOINTS.SETTINGS.GET_CATEGORIES);
+        if (catRes.ok) {
+          const catData = await catRes.json();
+          if (Array.isArray(catData)) {
+            setCustomCategories(catData);
+            catLoaded = true;
+          }
+        }
+      } catch (e) {}
+
+      // 3. Fallback to GET_ALL setting if either failed
+      if (!secLoaded || !catLoaded) {
+        try {
+          const allRes = await fetch(ENDPOINTS.SETTINGS.GET_ALL);
+          if (allRes.ok) {
+            const allData = await allRes.json();
+            if (!secLoaded && Array.isArray(allData?.homeSections)) {
+              setCustomSections(allData.homeSections);
+            }
+            if (!catLoaded && Array.isArray(allData?.customCategories)) {
+              setCustomCategories(allData.customCategories);
+            }
+          }
+        } catch (e) {}
       }
+    } catch (err) {
+      console.warn("Home data fetch failed", err);
     }
-    loadHomeSections();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadHomeData();
+    }, [loadHomeData])
+  );
 
   const dealProducts: Array<{
     id: string;
@@ -396,26 +438,26 @@ export default function HomeScreen() {
   }> =
     products.length > 0
       ? products.slice(0, 4).map((product, index) => {
-          const rawPrice =
-            typeof product.rawProduct?.price === "number"
-              ? product.rawProduct.price
-              : parseFloat(String(product.price).replace(/[^0-9.]/g, "")) || 0;
-          const listedPrice = `₹${Math.round(rawPrice)}`;
-          const originalPrice = `₹${Math.round(rawPrice * (index % 2 === 0 ? 1.35 : 1.55))}`;
+        const rawPrice =
+          typeof product.rawProduct?.price === "number"
+            ? product.rawProduct.price
+            : parseFloat(String(product.price).replace(/[^0-9.]/g, "")) || 0;
+        const listedPrice = `₹${Math.round(rawPrice)}`;
+        const originalPrice = `₹${Math.round(rawPrice * (index % 2 === 0 ? 1.35 : 1.55))}`;
 
-          return {
-            id: product._id || product.id,
-            title: product.title,
-            price: listedPrice,
-            originalPrice,
-            badge: index % 2 === 0 ? "Hot Deal" : "Best Value",
-            detail: product.unit || "Fresh pick",
-            image:
-              product.image1 ||
-              "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800",
-            productId: product._id || product.id,
-          };
-        })
+        return {
+          id: product._id || product.id,
+          title: product.title,
+          price: listedPrice,
+          originalPrice,
+          badge: index % 2 === 0 ? "Hot Deal" : "Best Value",
+          detail: product.unit || "Fresh pick",
+          image:
+            product.image1 ||
+            "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800",
+          productId: product._id || product.id,
+        };
+      })
       : DEFAULT_DEAL_ITEMS.map((item) => ({ ...item, productId: undefined }));
 
   // Smooth Animations for Cart Badge & Floating Cart Bar
@@ -627,6 +669,16 @@ export default function HomeScreen() {
       const itemCat = (item.category || "").toLowerCase();
       const itemTitle = (item.title || "").toLowerCase();
       const itemSub = (item.rawProduct?.subCategory || "").toLowerCase();
+      const itemId = String(item._id || item.id);
+
+      // 0. Anti-duplication on Home screen:
+      // If a product is already displayed in any custom Home section, hide it from Curated Collection below
+      if (activeCategory === "All" && !searchQuery.trim()) {
+        const isInAnySection = customSections.some((s) =>
+          (s.productIds || []).some((pid: string) => String(pid) === itemId)
+        );
+        if (isInAnySection) return false;
+      }
 
       // 1. Search text filter
       if (searchQuery.trim()) {
@@ -638,7 +690,18 @@ export default function HomeScreen() {
 
       // 2. Horizontal Category Chip filter
       if (activeCategory !== "All") {
-        if (itemCat !== activeCategory.toLowerCase()) return false;
+        // Check if activeCategory is a custom category from Admin
+        const matchedCustomCat = customCategories.find(
+          (c) => c.name?.toLowerCase() === activeCategory.toLowerCase()
+        );
+        if (matchedCustomCat) {
+          const assignedIds = new Set(
+            (matchedCustomCat.productIds || []).map((id: string) => String(id))
+          );
+          if (!assignedIds.has(itemId)) return false;
+        } else if (itemCat !== activeCategory.toLowerCase()) {
+          return false;
+        }
       }
 
       const numPrice =
@@ -683,6 +746,17 @@ export default function HomeScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={async () => {
+              setIsRefreshing(true);
+              await loadHomeData();
+              setIsRefreshing(false);
+            }}
+            colors={["#059669"]}
+          />
+        }
       >
         {/* Top Header */}
         <View style={styles.header}>
@@ -945,11 +1019,11 @@ export default function HomeScreen() {
             const sectionProducts = (section.productIds || [])
               .map((productId: string) =>
                 products.find(
-                  (product) => (product._id || product.id) === productId,
+                  (product) =>
+                    String(product._id || product.id) === String(productId),
                 ),
               )
-              .filter(Boolean)
-              .slice(0, 4);
+              .filter(Boolean);
 
             if (!sectionProducts.length) return null;
 
@@ -958,37 +1032,141 @@ export default function HomeScreen() {
                 key={section.id || section.title}
                 style={styles.customSection}
               >
-                <Text style={styles.customSectionTitle}>{section.title}</Text>
-                <View style={styles.customSectionGrid}>
-                  {sectionProducts.map((product: HomeProduct) => (
-                    <TouchableOpacity
-                      key={product.id}
-                      style={styles.customSectionCard}
-                      activeOpacity={0.85}
-                      onPress={() =>
-                        router.push({
-                          pathname: "/(root)/product/[id]",
-                          params: { id: String(product._id || product.id) },
-                        })
-                      }
-                    >
-                      <Image
-                        source={{
-                          uri:
-                            product.image1 ||
-                            "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800",
-                        }}
-                        style={styles.customSectionImage}
-                        resizeMode="cover"
-                      />
-                      <Text
-                        style={styles.customSectionCardText}
-                        numberOfLines={2}
+                <View style={styles.customSectionHeaderRow}>
+                  <Text style={styles.customSectionTitle}>{section.title}</Text>
+                  <Text style={styles.customSectionCountText}>
+                    {sectionProducts.length} items
+                  </Text>
+                </View>
+
+                {/* 3-Column Grid wrapping all items in this section */}
+                <View style={styles.productsGrid3Col}>
+                  {sectionProducts.map((product: HomeProduct, idx: number) => {
+                    const prodId = product._id || product.id;
+                    const inCart = cartItems.find((ci) => ci.productId === prodId);
+                    const meta = getProductCardMeta(product, idx);
+
+                    return (
+                      <TouchableOpacity
+                        key={`custom-${section.id}-${prodId}-${idx}`}
+                        style={styles.cardContainer3Col}
+                        onPress={() =>
+                          router.push({
+                            pathname: "/(root)/product/[id]",
+                            params: { id: prodId },
+                          })
+                        }
+                        activeOpacity={0.88}
                       >
-                        {product.title}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                        {/* Top Media Box with Light Grey Border */}
+                        <View style={styles.cardMediaBox3Col}>
+                          {/* Floating Wishlist Heart Icon at Top Right */}
+                          <TouchableOpacity
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              toggleFavorite(product);
+                            }}
+                            style={styles.cardHeartBtn3Col}
+                            activeOpacity={0.7}
+                          >
+                            <Ionicons
+                              name={
+                                isSaved(product.id || product._id)
+                                  ? "heart"
+                                  : "heart-outline"
+                              }
+                              size={15}
+                              color={
+                                isSaved(product.id || product._id)
+                                  ? "#E11D48"
+                                  : "#94A3B8"
+                              }
+                            />
+                          </TouchableOpacity>
+
+                          {/* Centered Product Image */}
+                          <View style={styles.imageInnerContainer3Col}>
+                            {product.image1 ? (
+                              <Image
+                                source={{ uri: product.image1 }}
+                                style={styles.productImage3Col}
+                                resizeMode="contain"
+                              />
+                            ) : (
+                              <Image
+                                source={product.image}
+                                style={styles.productImage3Col}
+                                resizeMode="contain"
+                              />
+                            )}
+                          </View>
+
+                          {/* Docked Unit & ADD Button Bar at Bottom of Media Box */}
+                          <View style={styles.dockedBar3Col}>
+                            <Text style={styles.dockedUnitText3Col} numberOfLines={1}>
+                              {meta.unit}
+                            </Text>
+
+                            {inCart && inCart.quantity > 0 ? (
+                              <View style={styles.dockedQtyBox3Col}>
+                                <TouchableOpacity
+                                  style={styles.dockedQtyBtn3Col}
+                                  onPress={(e) => {
+                                    e.stopPropagation();
+                                    updateQuantity(inCart.productId, inCart.size, inCart.quantity - 1);
+                                  }}
+                                  activeOpacity={0.7}
+                                >
+                                  <Ionicons name="remove" size={12} color="#FFFFFF" />
+                                </TouchableOpacity>
+                                <Text style={styles.dockedQtyText3Col}>{inCart.quantity}</Text>
+                                <TouchableOpacity
+                                  style={styles.dockedQtyBtn3Col}
+                                  onPress={(e) => {
+                                    e.stopPropagation();
+                                    updateQuantity(inCart.productId, inCart.size, inCart.quantity + 1);
+                                  }}
+                                  activeOpacity={0.7}
+                                >
+                                  <Ionicons name="add" size={12} color="#FFFFFF" />
+                                </TouchableOpacity>
+                              </View>
+                            ) : (
+                              <TouchableOpacity
+                                style={styles.dockedAddBtn3Col}
+                                onPress={(e) => {
+                                  e.stopPropagation();
+                                  handleAddToCartClick(product);
+                                }}
+                                activeOpacity={0.8}
+                              >
+                                <Text style={styles.dockedAddBtnText3Col}>ADD</Text>
+                                {meta.optionsCount > 1 && (
+                                  <Text style={styles.dockedOptionsText3Col}>
+                                    {meta.optionsCount} options
+                                  </Text>
+                                )}
+                              </TouchableOpacity>
+                            )}
+                          </View>
+                        </View>
+
+                        {/* Below Media Box Content */}
+                        <View style={styles.cardDetails3Col}>
+                          {/* Price Row */}
+                          <View style={styles.priceRow3Col}>
+                            <Text style={styles.priceBold3Col}>{meta.currentPrice}</Text>
+                            <Text style={styles.priceMrp3Col}>{meta.mrpPrice}</Text>
+                          </View>
+
+                          {/* Product Title (2 lines) */}
+                          <Text style={styles.cardTitle3Col} numberOfLines={2}>
+                            {product.title?.replace("\n", " ")}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
             );
@@ -1272,7 +1450,7 @@ export default function HomeScreen() {
               {/* Size Selector Heading */}
               <Text style={styles.sizeModalSubtitle}>
                 {sizeModalProduct.category?.toLowerCase() === "shoes" ||
-                sizeModalProduct.rawProduct?.subCategory?.toLowerCase() ===
+                  sizeModalProduct.rawProduct?.subCategory?.toLowerCase() ===
                   "shoes"
                   ? "👟 Select Shoe Size:"
                   : "👕 Select Apparel Size:"}
@@ -1504,9 +1682,10 @@ export default function HomeScreen() {
                     }}
                   >
                     <Image
+                      key={user?.image || "drawer-avatar-key"}
                       source={{
                         uri:
-                          user?.image && user.image.trim()
+                          user?.image && typeof user.image === "string" && user.image.trim().length > 0
                             ? user.image
                             : DEFAULT_AVATAR,
                       }}
@@ -2106,42 +2285,25 @@ const styles = StyleSheet.create({
   },
 
   customSection: {
-    marginBottom: 22,
+    marginBottom: 28,
+  },
+  customSectionHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 14,
+    marginHorizontal: -10,
   },
   customSectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "800",
     color: "#111827",
-    marginBottom: 12,
     letterSpacing: -0.3,
   },
-  customSectionGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
-  customSectionCard: {
-    width: (width - 40 - 18) / 4,
-    backgroundColor: "#F4F8F7",
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#DDE9E5",
-    paddingBottom: 10,
-    marginBottom: 12,
-    overflow: "hidden",
-  },
-  customSectionImage: {
-    width: "100%",
-    height: 120,
-    backgroundColor: "#EAF1EF",
-  },
-  customSectionCardText: {
+  customSectionCountText: {
     fontSize: 12,
-    fontWeight: "700",
-    color: "#1F2937",
-    lineHeight: 17,
-    paddingHorizontal: 10,
-    paddingTop: 10,
+    fontWeight: "600",
+    color: "#8B92A2",
   },
 
   // Products Header Row
@@ -2630,8 +2792,8 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
   },
   drawerAvatarImg: {
-    width: "100%",
-    height: "100%",
+    width: 44,
+    height: 44,
     borderRadius: 22,
   },
   drawerAvatarText: {

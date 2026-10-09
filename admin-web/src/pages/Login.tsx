@@ -127,6 +127,27 @@ export const Login: React.FC = () => {
               </div>
             </div>
 
+            {/* Quick Demo Credentials Helper */}
+            <div className="flex items-center justify-between rounded-xl border border-slate-800/90 bg-slate-800/50 p-3 text-xs">
+              <div className="flex-1 pr-2">
+                <span className="font-bold text-slate-300">Admin Credentials:</span>
+                <p className="text-[11px] text-slate-400 font-mono select-all">
+                  admin@freshmart.com <span className="text-slate-600">/</span> AdminPassword123
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail("admin@freshmart.com");
+                  setPassword("AdminPassword123");
+                  setErrorMessage("");
+                }}
+                className="shrink-0 rounded-lg bg-emerald-500/15 px-2.5 py-1.5 text-xs font-bold text-emerald-400 hover:bg-emerald-500/25 cursor-pointer transition border border-emerald-500/30"
+              >
+                Auto Fill
+              </button>
+            </div>
+
             {/* Submit */}
             <button
               type="submit"

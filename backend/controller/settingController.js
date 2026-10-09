@@ -264,3 +264,79 @@ export const updateSettingImage = async (req, res) => {
       .json({ message: `UpdateSettingImage error: ${error.message}` });
   }
 };
+
+// Fetch custom categories
+export const getCustomCategories = async (req, res) => {
+  try {
+    const setting = await Setting.findOne({ key: "customCategories" });
+    if (setting && Array.isArray(setting.value)) {
+      return res.status(200).json(setting.value);
+    }
+    return res.status(200).json([]);
+  } catch (error) {
+    console.error("GetCustomCategories error:", error);
+    return res
+      .status(500)
+      .json({ message: `GetCustomCategories error: ${error.message}` });
+  }
+};
+
+// Save custom categories
+export const saveCustomCategories = async (req, res) => {
+  try {
+    const { categories } = req.body;
+
+    if (!Array.isArray(categories)) {
+      return res.status(400).json({ message: "Categories array is required" });
+    }
+
+    const cleaned = categories
+      .map((cat, index) => ({
+        id: cat?.id || `cat-${Date.now()}-${index}`,
+        name: String(cat?.name || "").trim(),
+        image: String(cat?.image || "").trim(),
+        productIds: Array.isArray(cat?.productIds)
+          ? cat.productIds.filter(Boolean).map((id) => String(id))
+          : [],
+      }))
+      .filter((cat) => cat.name.length > 0);
+
+    const updated = await Setting.findOneAndUpdate(
+      { key: "customCategories" },
+      { value: cleaned },
+      { new: true, upsert: true }
+    );
+
+    return res.status(200).json({
+      message: "Custom categories saved successfully",
+      categories: updated.value,
+    });
+  } catch (error) {
+    console.error("SaveCustomCategories error:", error);
+    return res
+      .status(500)
+      .json({ message: `SaveCustomCategories error: ${error.message}` });
+  }
+};
+
+// Upload category image to Cloudinary (or fallback)
+export const uploadCategoryImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No image file provided" });
+    }
+    try {
+      const cloudUrl = await uploadOnCloudinary(req.file.path, "freshmart_categories");
+      return res.status(200).json({ imageUrl: cloudUrl });
+    } catch (uploadErr) {
+      console.warn("Cloudinary upload failed, fallback to local url:", uploadErr.message);
+      const host = req.get("host") || "localhost:5000";
+      const filename = path.basename(req.file.path);
+      const localUrl = `${req.protocol}://${host}/public/${filename}`;
+      return res.status(200).json({ imageUrl: localUrl });
+    }
+  } catch (error) {
+    console.error("UploadCategoryImage error:", error);
+    return res.status(500).json({ message: error.message });
+  }
+};

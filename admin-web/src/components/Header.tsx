@@ -40,6 +40,11 @@ const TAB_TITLES: Record<TabType, { title: string; subtitle: string }> = {
     subtitle:
       "Create custom product sections and assign products into each section",
   },
+  categories: {
+    title: "Categories Manager",
+    subtitle:
+      "Create custom categories with image & title, and assign uploaded products",
+  },
   partners: {
     title: "Partners & Finance",
     subtitle: "Merchant approvals, delivery boy duty status, and payout splits",

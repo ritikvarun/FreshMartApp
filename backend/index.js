@@ -49,10 +49,21 @@ const allowedOrigins = [...localOrigins, ...productionOrigins].map(
 const uniqueAllowedOrigins = [...new Set(allowedOrigins)];
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow server-to-server/no-origin requests.
+    // Allow server-to-server/no-origin requests (e.g. Mobile Expo apps, curl)
     if (!origin) return callback(null, true);
 
     const normalized = normalizeOrigin(origin);
+
+    // Development & local network origins (any port on localhost or 127.0.0.1)
+    if (
+      normalized.startsWith("http://localhost:") ||
+      normalized.startsWith("http://127.0.0.1:") ||
+      normalized.startsWith("https://localhost:") ||
+      normalized.startsWith("https://127.0.0.1:")
+    ) {
+      return callback(null, true);
+    }
+
     if (uniqueAllowedOrigins.includes(normalized)) {
       return callback(null, true);
     }

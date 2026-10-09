@@ -30,8 +30,8 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   login: async () => ({ success: false }),
   register: async () => ({ success: false }),
-  logout: async () => {},
-  updateUser: async () => {},
+  logout: async () => { },
+  updateUser: async () => { },
 });
 
 const TOKEN_KEY = "freshmart_auth_token";
@@ -201,7 +201,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       // Notify backend if online
-      fetch(ENDPOINTS.AUTH.LOGOUT).catch(() => {});
+      fetch(ENDPOINTS.AUTH.LOGOUT).catch(() => { });
     } finally {
       setUser(null);
       setToken(null);

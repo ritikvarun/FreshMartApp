@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Linking,
-  Alert,
-} from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 interface PerkItem {
@@ -53,29 +46,10 @@ const PERKS: PerkItem[] = [
   },
 ];
 
-const QUICK_LINKS = [
-  { id: "1", label: "About Us" },
-  { id: "2", label: "Help Center" },
-  { id: "3", label: "Return Policy" },
-  { id: "4", label: "Privacy Policy" },
-  { id: "5", label: "Terms of Service" },
-];
-
-const SOCIALS: { id: string; icon: keyof typeof Ionicons.glyphMap; name: string }[] = [
-  { id: "1", icon: "logo-instagram", name: "Instagram" },
-  { id: "2", icon: "logo-whatsapp", name: "WhatsApp" },
-  { id: "3", icon: "logo-twitter", name: "Twitter" },
-  { id: "4", icon: "mail-outline", name: "Email" },
-];
-
 export default function Footer() {
-  const handleLinkPress = (label: string) => {
-    Alert.alert(label, `Navigating to ${label}...`, [{ text: "OK" }]);
-  };
-
   return (
     <View style={styles.container}>
-      {/* 4 Perks Grid */}
+      {/* 4 Trust Perks Grid */}
       <View style={styles.perksGrid}>
         {PERKS.map((perk) => (
           <View key={perk.id} style={styles.perkCard}>
@@ -90,57 +64,21 @@ export default function Footer() {
         ))}
       </View>
 
-      {/* Brand & Mission Banner */}
-      <View style={styles.brandCard}>
-        <View style={styles.brandHeader}>
-          <View style={styles.brandBadge}>
-            <Ionicons name="basket" size={16} color="#E05315" />
-            <Text style={styles.brandBadgeText}>FreshMart</Text>
-          </View>
-          <Text style={styles.brandTagline}>Eat Fresh • Live Healthy</Text>
+      {/* Clean Mobile App Brand Signoff */}
+      <View style={styles.brandSignoff}>
+        <View style={styles.brandBadge}>
+          <Ionicons name="basket" size={15} color="#E05315" />
+          <Text style={styles.brandBadgeText}>FreshMart</Text>
         </View>
 
-        <Text style={styles.brandDesc}>
-          Bringing farm-fresh vegetables, organic fruits, and daily essentials
-          straight to your door with care and quality.
+        <Text style={styles.taglineText}>Eat Fresh • Live Healthy</Text>
+
+        <Text style={styles.craftedText}>
+          India's trusted fresh grocery store • Crafted with 💚
         </Text>
 
-        {/* Quick Links Chips */}
-        <View style={styles.linksContainer}>
-          {QUICK_LINKS.map((link) => (
-            <TouchableOpacity
-              key={link.id}
-              style={styles.linkChip}
-              onPress={() => handleLinkPress(link.label)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.linkChipText}>{link.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Social Icons Row */}
-        <View style={styles.socialRow}>
-          {SOCIALS.map((social) => (
-            <TouchableOpacity
-              key={social.id}
-              style={styles.socialBtn}
-              onPress={() => handleLinkPress(social.name)}
-              activeOpacity={0.75}
-            >
-              <Ionicons name={social.icon} size={18} color="#4A5060" />
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {/* Copyright & Info Footer */}
-      <View style={styles.bottomBar}>
         <Text style={styles.copyrightText}>
-          © 2026 FreshMart Inc. All rights reserved.
-        </Text>
-        <Text style={styles.loveText}>
-          Crafted with 💚 for fresh lifestyles
+          © 2026 FreshMart Inc.
         </Text>
       </View>
     </View>
@@ -149,15 +87,16 @@ export default function Footer() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 28,
-    paddingTop: 8,
+    marginTop: 24,
+    paddingTop: 4,
+    paddingBottom: 28,
   },
   perksGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
     rowGap: 12,
-    marginBottom: 20,
+    marginBottom: 24,
   },
   perkCard: {
     width: "48.5%",
@@ -194,26 +133,24 @@ const styles = StyleSheet.create({
     color: "#8E94A4",
     lineHeight: 15,
   },
-  brandCard: {
+  brandSignoff: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 18,
+    paddingHorizontal: 16,
     backgroundColor: "#F9FAFC",
     borderRadius: 20,
-    padding: 18,
     borderWidth: 1,
     borderColor: "#EEF0F5",
-  },
-  brandHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 10,
   },
   brandBadge: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFF0E8",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
     borderRadius: 20,
+    marginBottom: 8,
   },
   brandBadgeText: {
     fontSize: 13,
@@ -221,69 +158,21 @@ const styles = StyleSheet.create({
     color: "#E05315",
     marginLeft: 5,
   },
-  brandTagline: {
-    fontSize: 11,
-    color: "#8E94A4",
-    fontWeight: "600",
-  },
-  brandDesc: {
+  taglineText: {
     fontSize: 12,
-    color: "#6B7280",
-    lineHeight: 18,
-    marginBottom: 16,
-  },
-  linksContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginBottom: 18,
-  },
-  linkChip: {
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-  linkChipText: {
-    fontSize: 11,
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#4B5563",
+    marginBottom: 4,
   },
-  socialRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#EAECEF",
-  },
-  socialBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-  bottomBar: {
-    alignItems: "center",
-    marginTop: 18,
-    marginBottom: 8,
+  craftedText: {
+    fontSize: 11,
+    color: "#9CA3AF",
+    textAlign: "center",
+    marginBottom: 6,
   },
   copyrightText: {
-    fontSize: 11,
-    color: "#9CA3AF",
+    fontSize: 10,
+    color: "#CBD5E1",
     fontWeight: "500",
-    marginBottom: 3,
-  },
-  loveText: {
-    fontSize: 11,
-    color: "#9CA3AF",
-    fontStyle: "italic",
   },
 });

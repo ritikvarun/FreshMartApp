@@ -4,6 +4,9 @@ import {
   getBanners,
   getHomeSections,
   saveHomeSections,
+  getCustomCategories,
+  saveCustomCategories,
+  uploadCategoryImage,
   updateBanner,
   updateSettingImage,
 } from "../controller/settingController.js";
@@ -16,6 +19,7 @@ const settingRouter = express.Router();
 settingRouter.get("/", getSettings);
 settingRouter.get("/banners", getBanners);
 settingRouter.get("/home-sections", getHomeSections);
+settingRouter.get("/categories", getCustomCategories);
 
 // Admin routes to update settings and banners
 settingRouter.post(
@@ -31,5 +35,12 @@ settingRouter.post(
   updateBanner,
 );
 settingRouter.post("/home-sections", adminAuth, saveHomeSections);
+settingRouter.post("/categories", adminAuth, saveCustomCategories);
+settingRouter.post(
+  "/category-image",
+  adminAuth,
+  upload.single("image"),
+  uploadCategoryImage,
+);
 
 export default settingRouter;

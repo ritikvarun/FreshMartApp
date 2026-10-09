@@ -37,8 +37,10 @@ export const ENDPOINTS = {
     MY_RETURNS: `${API_BASE_URL}/api/return/my`,
   },
   SETTINGS: {
+    GET_ALL: `${API_BASE_URL}/api/setting`,
     GET_BANNERS: `${API_BASE_URL}/api/setting/banners`,
     GET_HOME_SECTIONS: `${API_BASE_URL}/api/setting/home-sections`,
+    GET_CATEGORIES: `${API_BASE_URL}/api/setting/categories`,
   },
   SHOPS: {
     LIST: `${API_BASE_URL}/api/shop/list`,

@@ -6,6 +6,7 @@ import {
   PlusCircle,
   Image as ImageIcon,
   Layers3,
+  LayoutGrid,
   Users2,
   RotateCcw,
   LogOut,
@@ -20,6 +21,7 @@ export type TabType =
   | "orders"
   | "products"
   | "add-product"
+  | "categories"
   | "banners"
   | "home-sections"
   | "partners"
@@ -80,6 +82,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: "home-sections" as TabType,
       label: "Home Sections",
       icon: Layers3,
+      badge: null,
+    },
+    {
+      id: "categories" as TabType,
+      label: "Categories Manager",
+      icon: LayoutGrid,
       badge: null,
     },
     {

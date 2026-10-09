@@ -10,6 +10,7 @@ import { Products } from "./pages/Products";
 import { AddProduct } from "./pages/AddProduct";
 import { Banners } from "./pages/Banners";
 import { HomeSections } from "./pages/HomeSections";
+import { CategoriesManager } from "./pages/CategoriesManager";
 import { Partners } from "./pages/Partners";
 import { Returns } from "./pages/Returns";
 import type { Order, Product, DeliveryPartner } from "./types";
@@ -256,6 +257,10 @@ const AdminApp: React.FC = () => {
 
           {currentTab === "home-sections" && (
             <HomeSections products={products} />
+          )}
+
+          {currentTab === "categories" && (
+            <CategoriesManager products={products} />
           )}
 
           {currentTab === "partners" && <Partners />}
